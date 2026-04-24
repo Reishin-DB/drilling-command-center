@@ -4,12 +4,14 @@ import ThreeDViewerTab  from './components/ThreeDViewerTab'
 import EconomicsTab     from './components/EconomicsTab'
 import GovernanceTab    from './components/GovernanceTab'
 import ExpertAgentTab   from './components/ExpertAgentTab'
+import LogViewerTab     from './components/LogViewerTab'
 import DataFlowTab      from './components/DataFlowTab'
 import GenieSidebar     from './components/GenieSidebar'
 
 const TABS = [
   { id: 'overview',   label: '🛰️ Overview' },
   { id: '3d',         label: '🌐 3D Viewer' },
+  { id: 'viewer',     label: '📊 Log Viewer' },
   { id: 'economics',  label: '💰 Economics' },
   { id: 'governance', label: '🛡️ Governance' },
   { id: 'agent',      label: '🤖 Expert Agent' },
@@ -79,6 +81,7 @@ export default function App() {
       <main style={{ padding: '20px 24px', maxWidth: 1800, margin: '0 auto' }}>
         {active === 'overview'   && <OverviewTab     onOpenWell={openWell} />}
         {active === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} />}
+        {active === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'economics'  && <EconomicsTab    wellId={activeWell} />}
         {active === 'governance' && <GovernanceTab />}
         {active === 'agent'      && <ExpertAgentTab  wellId={activeWell} onWellChange={setActiveWell} />}
