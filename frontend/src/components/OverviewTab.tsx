@@ -134,6 +134,45 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
         </Panel>
       </div>
 
+      {/* Ingest pipeline */}
+      <Panel title="OSDU Ingest Pipeline" subtitle="Medallion flow: live OSDU → Bronze → Silver → Gold → Serving">
+        <svg width="100%" viewBox="0 0 1000 150" style={{ display: 'block' }}>
+          <defs>
+            <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#00E5FF" stopOpacity="0" />
+              <stop offset="0.5" stopColor="#00E5FF" stopOpacity="1" />
+              <stop offset="1" stopColor="#00E5FF" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {[
+            { x: 30,  label: 'ADME / OSDU',      sub: 'opendes partition',          color: '#27AE60', badge: 'SOURCE' },
+            { x: 230, label: 'Bronze',           sub: 'bronze_wellbore (raw)',      color: '#CD6116', badge: 'BRONZE' },
+            { x: 430, label: 'Silver',           sub: 'silver_wellbore (cleaned)',  color: '#8E9AAF', badge: 'SILVER' },
+            { x: 630, label: 'Gold',             sub: 'wellbore_search_source',     color: '#F39C12', badge: 'GOLD' },
+            { x: 830, label: 'Vector Search',    sub: 'subsurface-vs · gte-large',  color: '#00E5FF', badge: 'SERVING' },
+          ].map((n, i, arr) => (
+            <g key={n.label}>
+              {i < arr.length - 1 && (
+                <>
+                  <line x1={n.x + 140} y1="55" x2={arr[i+1].x} y2="55" stroke="#2a2e3a" strokeWidth="1" strokeDasharray="4 3" />
+                  <circle cx={n.x + 140} cy="55" r="2" fill="#00E5FF">
+                    <animate attributeName="cx" values={`${n.x + 140};${arr[i+1].x}`} dur="2.5s" repeatCount="indefinite" begin={`${i * 0.5}s`} />
+                    <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin={`${i * 0.5}s`} />
+                  </circle>
+                </>
+              )}
+              <rect x={n.x} y="20" width="140" height="70" rx="6" fill="var(--bg-panel)" stroke={n.color} strokeWidth="1.5" />
+              <text x={n.x + 70} y="42" textAnchor="middle" fill={n.color} fontSize="11" fontWeight="700" fontFamily="monospace">{n.badge}</text>
+              <text x={n.x + 70} y="62" textAnchor="middle" fill="var(--text-primary)" fontSize="13" fontWeight="600">{n.label}</text>
+              <text x={n.x + 70} y="78" textAnchor="middle" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">{n.sub}</text>
+            </g>
+          ))}
+          <text x="500" y="125" textAnchor="middle" fill="var(--text-muted)" fontSize="11" fontStyle="italic">
+            Auto Loader → Delta Live Tables → Vector Search Δ-Sync · governed by Unity Catalog row filters + column masks
+          </text>
+        </svg>
+      </Panel>
+
       {/* Well list with drill-in */}
       <Panel title="Fleet status" subtitle="Click a row to open the Log Viewer">
         <div style={{ overflow: 'auto', maxHeight: 420 }}>

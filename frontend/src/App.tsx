@@ -1,41 +1,32 @@
 import { useState } from 'react'
-import WellsTab      from './components/WellsTab'
-import LogViewerTab  from './components/LogViewerTab'
-import QCTab         from './components/QCTab'
-import RecipesTab    from './components/RecipesTab'
-import AdvisorTab    from './components/AdvisorTab'
-import DataFlowTab   from './components/DataFlowTab'
-import EconomicsTab  from './components/EconomicsTab'
-import GovernanceTab from './components/GovernanceTab'
-import OverviewTab     from './components/OverviewTab'
-import ThreeDViewerTab from './components/ThreeDViewerTab'
-import GenieSidebar    from './components/GenieSidebar'
+import OverviewTab      from './components/OverviewTab'
+import ThreeDViewerTab  from './components/ThreeDViewerTab'
+import EconomicsTab     from './components/EconomicsTab'
+import GovernanceTab    from './components/GovernanceTab'
+import ExpertAgentTab   from './components/ExpertAgentTab'
+import DataFlowTab      from './components/DataFlowTab'
+import GenieSidebar     from './components/GenieSidebar'
 
 const TABS = [
   { id: 'overview',   label: '🛰️ Overview' },
-  { id: 'wells',      label: '🛢️ Wells' },
   { id: '3d',         label: '🌐 3D Viewer' },
-  { id: 'viewer',     label: '📊 Log Viewer' },
-  { id: 'qc',         label: '🔍 QC' },
   { id: 'economics',  label: '💰 Economics' },
   { id: 'governance', label: '🛡️ Governance' },
-  { id: 'recipes',    label: '⚙️ Recipes' },
-  { id: 'advisor',    label: '🤖 AI Advisor' },
+  { id: 'agent',      label: '🤖 Expert Agent' },
   { id: 'dataflow',   label: '🔀 Data Flow' },
 ]
 
 export default function App() {
-  const [active, setActive]     = useState('overview')
-  const [activeWell, setActiveWell] = useState('BAKER-001')
+  const [active, setActive]         = useState('overview')
+  const [activeWell, setActiveWell] = useState('OSDU-WB-1')
 
-  const openWell = (wellId: string, tab: string = 'viewer') => {
+  const openWell = (wellId: string, tab: string = '3d') => {
     setActiveWell(wellId)
     setActive(tab)
   }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      {/* Header */}
       <header style={{
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border)',
@@ -49,7 +40,7 @@ export default function App() {
               Subsurface Intelligence
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-              OSDU · Unity Catalog · Genie · Foundation Models
+              OSDU · Unity Catalog · Genie · Foundation Models · Vector Search
             </div>
           </div>
         </div>
@@ -61,7 +52,7 @@ export default function App() {
               color: active === t.id ? 'var(--text-primary)' : 'var(--text-muted)',
               border: active === t.id ? '1px solid var(--border)' : '1px solid transparent',
               borderRadius: 6, padding: '4px 13px', fontSize: 12,
-              fontWeight: active === t.id ? 600 : 400,
+              fontWeight: active === t.id ? 600 : 400, cursor: 'pointer',
             }}>
               {t.label}
             </button>
@@ -86,15 +77,11 @@ export default function App() {
       </header>
 
       <main style={{ padding: '20px 24px', maxWidth: 1800, margin: '0 auto' }}>
-        {active === 'overview'   && <OverviewTab   onOpenWell={openWell} />}
-        {active === 'wells'      && <WellsTab      activeWell={activeWell} onOpenWell={openWell} />}
+        {active === 'overview'   && <OverviewTab     onOpenWell={openWell} />}
         {active === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} />}
-        {active === 'viewer'     && <LogViewerTab  wellId={activeWell} onWellChange={setActiveWell} />}
-        {active === 'qc'         && <QCTab         wellId={activeWell} onWellChange={setActiveWell} />}
-        {active === 'economics'  && <EconomicsTab  wellId={activeWell} />}
+        {active === 'economics'  && <EconomicsTab    wellId={activeWell} />}
         {active === 'governance' && <GovernanceTab />}
-        {active === 'recipes'    && <RecipesTab    wellId={activeWell} />}
-        {active === 'advisor'    && <AdvisorTab    wellId={activeWell} onWellChange={setActiveWell} />}
+        {active === 'agent'      && <ExpertAgentTab  wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'dataflow'   && <DataFlowTab />}
       </main>
       <GenieSidebar />

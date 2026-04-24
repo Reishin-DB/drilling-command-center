@@ -41,6 +41,7 @@ from server.routes.economics  import router as economics_router
 from server.routes.governance import router as governance_router
 from server.routes.genie      import router as genie_router
 from server.routes.subsurface import router as subsurface_router
+from server.routes.agent      import router as agent_router
 
 app.include_router(wells_router,      prefix="/api")
 app.include_router(logs_router,       prefix="/api")
@@ -51,6 +52,7 @@ app.include_router(economics_router,  prefix="/api")
 app.include_router(governance_router, prefix="/api")
 app.include_router(genie_router,      prefix="/api")
 app.include_router(subsurface_router, prefix="/api")
+app.include_router(agent_router,      prefix="/api")
 
 # Serve React SPA
 frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")

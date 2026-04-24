@@ -110,6 +110,8 @@ function project(x: number, y: number, z: number, yaw: number, pitch: number, zo
 }
 
 // ─────────── Component ─────────────────────────────────────────────────────
+interface Similar { well_key: string; well_name?: string; platform?: string; primary_reservoir?: string; drilling_result?: string; score: number }
+
 export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: string; onWellChange: (w: string) => void }) {
   const [scene, setScene] = useState<Scene | null>(null)
   const [loading, setLoading] = useState(true)
@@ -118,12 +120,18 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
   const [zoom, setZoom]   = useState(0.9)
   const [prop, setProp]   = useState<PropKey>('ooip')
   const [hover, setHover] = useState<string | null>(null)
+  const [similar, setSimilar] = useState<Similar[]>([])
   const dragRef = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     setLoading(true)
     fetch('/api/subsurface/scene').then(r => r.json()).then(s => { setScene(s); setLoading(false) })
   }, [])
+
+  useEffect(() => {
+    if (!wellId) return
+    fetch(`/api/subsurface/similar/${wellId}`).then(r => r.json()).then(d => setSimilar(d.results || []))
+  }, [wellId])
 
   const geo = useMemo(() => {
     if (!scene) return { lat0: 40, lon0: -100 }
@@ -346,10 +354,41 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
       )})
     })
 
+    // Similar-well connection rays (Vector Search overlay)
+    if (scene && similar.length > 0) {
+      const active = scene.wells.find(w => w.well_id === wellId)
+      if (active) {
+        const [ax, az] = wellSurface(active)
+        const a3 = project(ax * FT_TO_UNIT, 0, az * FT_TO_UNIT, yaw, pitch, zoom)
+        similar.forEach((s, i) => {
+          // Match OSDU well_key suffix to an existing scene well by the hash prefix
+          const match = scene.wells.find(w => w.well_id.startsWith('OSDU-') && s.well_key.endsWith(w.well_id.slice(5)))
+          if (!match) return
+          const [bx, bz] = wellSurface(match)
+          const b3 = project(bx * FT_TO_UNIT, 0, bz * FT_TO_UNIT, yaw, pitch, zoom)
+          const zMean = (a3[2] + b3[2]) / 2 + 6000
+          out.push({
+            z: zMean,
+            render: () => (
+              <g key={`similar-${s.well_key}-${i}`}>
+                <line x1={a3[0]} y1={a3[1]} x2={b3[0]} y2={b3[1]}
+                      stroke="#00E5FF" strokeWidth="1" strokeDasharray="4 3" opacity="0.55" />
+                <circle cx={b3[0]} cy={b3[1]} r="14" fill="none" stroke="#00E5FF" strokeWidth="1" opacity="0.4" />
+                <text x={(a3[0] + b3[0]) / 2} y={(a3[1] + b3[1]) / 2 - 4} fill="#00E5FF"
+                      fontSize="9" fontFamily="monospace" textAnchor="middle" style={{ pointerEvents: 'none' }}>
+                  {s.score.toFixed(2)}
+                </text>
+              </g>
+            ),
+          })
+        })
+      }
+    }
+
     // Painter's algorithm
     out.sort((a, b) => a.z - b.z)
     return out
-  }, [scene, yaw, pitch, zoom, prop, wellId, hover])
+  }, [scene, yaw, pitch, zoom, prop, wellId, hover, similar])
 
   function onMouseDown(e: React.MouseEvent) { dragRef.current = { x: e.clientX, y: e.clientY } }
   function onMouseMove(e: React.MouseEvent) {
@@ -481,6 +520,31 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
               )
             })}
           </div>
+        </Panel>
+
+        <Panel title="Similar wells · Vector Search" subtitle={`top ${similar.length} by semantic match`}>
+          {similar.length === 0 ? (
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>No matches yet.</div>
+          ) : (
+            <div style={{ display: 'grid', gap: 6 }}>
+              {similar.map(s => (
+                <div key={s.well_key} style={{
+                  background: 'var(--bg-panel)', border: '1px solid var(--border)',
+                  borderRadius: 4, padding: '6px 8px', fontSize: 11,
+                }}>
+                  <div style={{ fontFamily: 'monospace', color: 'var(--teal)', fontSize: 11 }}>
+                    {s.well_name || s.well_key.slice(-10)}
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>
+                    {s.platform} · {s.primary_reservoir} · {s.drilling_result}
+                  </div>
+                  <div style={{ color: 'var(--blue)', fontSize: 10, marginTop: 2 }}>
+                    score {s.score.toFixed(3)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Panel>
 
         <Panel title="Wells" subtitle={`${scene?.wells?.length || 0} total`}>

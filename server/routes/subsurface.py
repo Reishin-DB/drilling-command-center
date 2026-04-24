@@ -76,6 +76,60 @@ def _osdu_fetch(sql_text: str) -> list[dict]:
         return []
 
 
+VS_ENDPOINT = os.getenv("VS_ENDPOINT", "subsurface-vs")
+VS_INDEX    = os.getenv("VS_INDEX", f"{CATALOG}.{SCHEMA}.wellbore_vs_index")
+
+
+def _vs_search_sync(query_text: str, k: int) -> list[dict]:
+    from databricks.vector_search.client import VectorSearchClient
+    c = VectorSearchClient(disable_notice=True)
+    idx = c.get_index(endpoint_name=VS_ENDPOINT, index_name=VS_INDEX)
+    res = idx.similarity_search(
+        query_text=query_text,
+        columns=["well_key", "well_name", "platform", "primary_reservoir", "drilling_result"],
+        num_results=k,
+    )
+    rows = []
+    if res and "result" in res:
+        data = res["result"].get("data_array", [])
+        cols = [c["name"] for c in res["manifest"]["columns"]]
+        for r in data:
+            rows.append(dict(zip(cols, r)))
+    return rows
+
+
+@router.get("/subsurface/similar/{well_id}")
+async def similar_wells(well_id: str, k: int = 3):
+    """Return k wells most similar to the given one using Vector Search over OSDU metadata."""
+    # Seed well context from local DuckDB
+    w = await db.fetchrow(
+        "SELECT well_name, basin, notes FROM las.wells WHERE well_id = $1", well_id
+    )
+    if not w:
+        return {"well_id": well_id, "results": [], "error": "well not found"}
+    seed_text = f"{w.get('well_name','')} {w.get('basin','')} {w.get('notes','')}"[:500]
+    import asyncio as _a
+    try:
+        rows = await _a.to_thread(_vs_search_sync, seed_text, int(k) + 1)
+    except Exception as e:
+        return {"well_id": well_id, "results": [], "error": str(e)}
+    # Remove seed itself if present
+    cleaned = []
+    for r in rows:
+        wk = str(r.get("well_key", ""))
+        if well_id.startswith("OSDU-") and wk and wk.endswith(well_id[5:]):
+            continue
+        cleaned.append({
+            "well_key":          wk,
+            "well_name":         r.get("well_name"),
+            "platform":          r.get("platform"),
+            "primary_reservoir": r.get("primary_reservoir"),
+            "drilling_result":   r.get("drilling_result"),
+            "score":             float(r.get("score", 0)),
+        })
+    return {"well_id": well_id, "seed": seed_text, "results": cleaned[:int(k)]}
+
+
 @router.get("/subsurface/scene")
 async def scene():
     """Returns the full 3D scene: wells with trajectories, reservoirs, samples, formations."""
