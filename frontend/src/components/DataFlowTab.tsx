@@ -1,396 +1,378 @@
 import { useState } from 'react'
 
-/* ─── Node definitions ─────────────────────────────────────────────────── */
 interface NodeDef {
-  id: string; label: string; sub: string
+  id: string
+  label: string
+  sub: string
   x: number; y: number; w: number; h: number
-  color: string; badge?: string
+  color: string
+  badge?: string
   detail: string[]
 }
 
-const PIPELINE: NodeDef[] = [
-  {
-    id: 'las',   label: 'LAS / DLIS Files', sub: 'S3 Object Store',
-    x: 30, y: 130, w: 130, h: 64,
-    color: '#27AE60', badge: 'SOURCE',
-    detail: ['Raw .las / .dlis well-log files', 'Uploaded by OFS field engineers', 'Partitioned by well & date', 'Supported: LAS 1.2, 2.0, 3.0, DLIS'],
-  },
-  {
-    id: 'bronze', label: 'las_raw', sub: 'Bronze · Delta Lake',
-    x: 240, y: 130, w: 140, h: 64,
-    color: '#CD6116', badge: 'BRONZE',
-    detail: ['Auto Loader ingestion (cloudFiles)', 'Schema inference + evolution', 'Raw curve preservation', 'Unity Catalog: las.bronze.depth_logs'],
-  },
-  {
-    id: 'silver', label: 'las_curated', sub: 'Silver · DLT Pipeline',
-    x: 460, y: 130, w: 140, h: 64,
-    color: '#8E9AAF', badge: 'SILVER',
-    detail: ['Depth alignment (±0.5 ft tolerance)', 'Despiking (z-score > 3.5)', 'Environmental corrections (Rxo, temp)', 'Gap filling via interpolation'],
-  },
-  {
-    id: 'gold', label: 'las_gold', sub: 'Gold · ML-Derived',
-    x: 680, y: 130, w: 140, h: 64,
-    color: '#F39C12', badge: 'GOLD',
-    detail: ['VCL from linear GR (Larionov)', 'φ_eff: RHOB–NPHI crossplot', 'Sw: Archie equation (m=2, n=2)', 'DT synthetic (ML regression model)'],
-  },
-  {
-    id: 'duckdb', label: 'DuckDB (in-app)', sub: 'OLAP embedded',
-    x: 900, y: 130, w: 150, h: 64,
-    color: '#2980B9', badge: 'SERVING',
-    detail: ['Backend: DuckDB (in-process)', 'Tables: wells, depth_logs,', '  formation_tops, curve_quality,', '  qc_rules, recipes, anomalies,', '  economics, journal, alerts, personas'],
-  },
-]
-
-const APP_NODES: NodeDef[] = [
-  {
-    id: 'fastapi', label: 'FastAPI Backend', sub: 'Python · uvicorn',
-    x: 340, y: 360, w: 150, h: 64,
-    color: '#9B59B6', badge: 'API',
-    detail: ['/api/wells   /api/logs/{id}', '/api/qc      /api/corrections', '/api/recipes /api/recipes/runs', '/api/advisor/chat  /advisor/quick'],
-  },
-  {
-    id: 'ui', label: 'React UI', sub: 'TypeScript · Vite',
-    x: 580, y: 360, w: 150, h: 64,
-    color: '#16A085', badge: 'UI',
-    detail: ['Wells Registry (fleet table)', 'Log Viewer (7-track SVG plot)', 'QC & Corrections dashboard', 'Recipes  ·  Petrophysics AI Chat'],
-  },
-  {
-    id: 'claude', label: 'claude-sonnet-4-5', sub: 'Foundation Model API',
-    x: 340, y: 480, w: 150, h: 64,
-    color: '#8E44AD', badge: 'LLM',
-    detail: ['Databricks FMAPI endpoint', 'System prompt: petrophysics expert', 'Context: well status + QC scores', 'Conversation history preserved'],
-  },
-  {
-    id: 'user', label: 'OFS Engineer', sub: 'Petrophysicist',
-    x: 820, y: 360, w: 140, h: 64,
-    color: '#2C3E50', badge: 'USER',
-    detail: ['Views log tracks + QC scores', 'Runs correction recipes', 'Queries AI for interpretation', 'Exports petrophysical reports'],
-  },
-]
-
-/* ─── Edge definitions ──────────────────────────────────────────────────── */
 interface EdgeDef { from: string; to: string; label: string; color?: string; dashed?: boolean }
 
-const PIPELINE_EDGES: EdgeDef[] = [
-  { from: 'las',     to: 'bronze',   label: 'Auto Loader',  color: '#27AE60' },
-  { from: 'bronze',  to: 'silver',   label: 'DLT clean',    color: '#CD6116' },
-  { from: 'silver',  to: 'gold',     label: 'ML derive',    color: '#8E9AAF' },
-  { from: 'gold',    to: 'duckdb', label: 'Reverse ETL',  color: '#F39C12' },
+// ─── Row 1: Sources ────────────────────────────────────────────────────────
+const SOURCES: NodeDef[] = [
+  {
+    id: 'adme', label: 'ADME / OSDU', sub: 'opendes partition',
+    x: 60, y: 60, w: 150, h: 62,
+    color: '#27AE60', badge: 'SOURCE',
+    detail: [
+      'Live cloud OSDU instance (sandbox)',
+      'Managed Identity authentication',
+      'Wellbore, reservoir, rock_and_fluid',
+      'Entitlement groups + legal tags',
+    ],
+  },
+  {
+    id: 'fred', label: 'FRED WTI', sub: 'public market',
+    x: 60, y: 160, w: 150, h: 62,
+    color: '#27AE60', badge: 'SOURCE',
+    detail: [
+      'Daily WTI crude spot (DCOILWTICO)',
+      'Pulled at app startup',
+      'Synthetic fallback if egress blocked',
+      '784-day rolling window',
+    ],
+  },
 ]
 
-const APP_EDGES: EdgeDef[] = [
-  { from: 'duckdb', to: 'fastapi', label: 'asyncpg',     color: '#2980B9' },
-  { from: 'fastapi',  to: 'ui',      label: 'JSON REST',   color: '#9B59B6' },
-  { from: 'ui',       to: 'user',    label: 'browser',     color: '#16A085' },
-  { from: 'fastapi',  to: 'claude',  label: 'FMAPI',       color: '#8E44AD' },
-  { from: 'claude',   to: 'fastapi', label: 'AI response', color: '#8E44AD', dashed: true },
+// ─── Row 2: Medallion (Delta + UC) ─────────────────────────────────────────
+const MEDALLION: NodeDef[] = [
+  {
+    id: 'bronze', label: 'Bronze', sub: 'raw ingest',
+    x: 300, y: 60, w: 130, h: 62,
+    color: '#CD6116', badge: 'BRONZE',
+    detail: [
+      'bronze_wellbore · bronze_reservoir · bronze_rock_and_fluid',
+      'Auto Loader (cloudFiles)',
+      'Schema inference + evolution',
+      'Raw OSDU record preservation',
+    ],
+  },
+  {
+    id: 'silver', label: 'Silver', sub: 'cleaned',
+    x: 480, y: 60, w: 130, h: 62,
+    color: '#8E9AAF', badge: 'SILVER',
+    detail: [
+      'silver_wellbore · silver_reservoir · silver_rock_and_fluid',
+      'Type casting + dedup',
+      'Extension properties normalized',
+      'Silver payload as structured JSON',
+    ],
+  },
+  {
+    id: 'gold', label: 'Gold · Search', sub: 'wellbore_search_source',
+    x: 660, y: 60, w: 150, h: 62,
+    color: '#F39C12', badge: 'GOLD',
+    detail: [
+      'Delta table with CDF',
+      'Pre-joined text column for embedding',
+      'Row filter (external_partner_filter)',
+      'Column masks on lat/lon',
+    ],
+  },
+  {
+    id: 'gov_checkpoints', label: 'gov_* tables', sub: 'legal + entitlements',
+    x: 480, y: 160, w: 130, h: 62,
+    color: '#8E9AAF', badge: 'SILVER',
+    detail: [
+      'gov_legal_tags · gov_entitlements · gov_record_acl_mirror',
+      'Sync from OSDU entitlement service',
+      'Drives the Governance tab',
+    ],
+  },
 ]
 
-/* ─── Helpers ───────────────────────────────────────────────────────────── */
-function cx(n: NodeDef) { return n.x + n.w / 2 }
-function cy(n: NodeDef) { return n.y + n.h / 2 }
+// ─── Row 3: Serving / AI ───────────────────────────────────────────────────
+const SERVING: NodeDef[] = [
+  {
+    id: 'vs', label: 'Vector Search', sub: 'subsurface-vs',
+    x: 300, y: 280, w: 160, h: 62,
+    color: '#4dabf7', badge: 'VS',
+    detail: [
+      'Δ-sync index on wellbore_search_source',
+      'databricks-gte-large-en embeddings',
+      'Semantic well similarity',
+      'Powers "similar wells" in 3D viewer + Agent',
+    ],
+  },
+  {
+    id: 'uc_fn', label: 'UC Functions', sub: 'Python in catalog',
+    x: 480, y: 280, w: 160, h: 62,
+    color: '#b37feb', badge: 'UC FN',
+    detail: [
+      'calculate_npv10(capex, opex, rate, decline, wti, years)',
+      'calculate_break_even(capex, opex, rate, decline)',
+      'forecast_decline_curve(peak, decline, b, years)',
+      'EXECUTE grants to app SP',
+    ],
+  },
+  {
+    id: 'genie', label: 'Genie Space', sub: 'Drilling Command Center',
+    x: 660, y: 280, w: 160, h: 62,
+    color: '#00E5FF', badge: 'GENIE',
+    detail: [
+      'space_id 01f13f7f8e20...',
+      'Natural language → SQL over 5 OSDU tables',
+      'Conversation API (start + message + poll)',
+      'Floating sidebar launcher in every tab',
+    ],
+  },
+  {
+    id: 'fmapi', label: 'Claude Sonnet 4.5', sub: 'Foundation Model API',
+    x: 840, y: 280, w: 160, h: 62,
+    color: '#9254de', badge: 'LLM',
+    detail: [
+      'databricks-claude-sonnet-4-5 serving endpoint',
+      'Tool-calling (OpenAI-compatible schema)',
+      'Agent orchestrates VS + UC Fn + context',
+      'Trace surfaced inline per call',
+    ],
+  },
+]
 
-function nodeById(id: string): NodeDef | undefined {
-  return [...PIPELINE, ...APP_NODES].find(n => n.id === id)
+// ─── Row 4: App ────────────────────────────────────────────────────────────
+const APPL: NodeDef[] = [
+  {
+    id: 'duckdb', label: 'DuckDB (in-app)', sub: 'OLAP embedded',
+    x: 300, y: 420, w: 160, h: 62,
+    color: '#2980B9', badge: 'CACHE',
+    detail: [
+      'Seed on startup (OSDU → DuckDB)',
+      'Postgres-dialect shim over asyncpg API',
+      'Routes query locally — no warehouse round-trip',
+      'No persistence across app restart',
+    ],
+  },
+  {
+    id: 'fastapi', label: 'FastAPI', sub: 'Python · uvicorn',
+    x: 480, y: 420, w: 160, h: 62,
+    color: '#16A085', badge: 'API',
+    detail: [
+      '/api/subsurface/scene · similar · /wells · /logs',
+      '/api/economics · /governance · /genie · /agent',
+      'OBO via X-Forwarded-Access-Token',
+      'Deployed as Databricks App on Azure',
+    ],
+  },
+  {
+    id: 'agent', label: 'Expert Agent', sub: 'tool-calling loop',
+    x: 660, y: 420, w: 160, h: 62,
+    color: '#ffa940', badge: 'AGENT',
+    detail: [
+      'Claude + 5 tools',
+      'Per-call latency trace returned to UI',
+      'Fallback gracefully on tool errors',
+      'Context injected from active_well_id',
+    ],
+  },
+  {
+    id: 'react', label: 'React UI', sub: 'Vite + TypeScript',
+    x: 840, y: 420, w: 160, h: 62,
+    color: '#73d13d', badge: 'UI',
+    detail: [
+      'Dark theme, inherited + evolved from las-viewer',
+      '7 tabs + floating Genie + 3D SVG subsurface',
+      'Recharts for economics/timeseries',
+      'Built to static assets, served by FastAPI',
+    ],
+  },
+]
+
+// ─── User ──────────────────────────────────────────────────────────────────
+const USER: NodeDef = {
+  id: 'user', label: 'You', sub: 'SA / petrotech user',
+  x: 1040, y: 60, w: 120, h: 62,
+  color: '#2C3E50', badge: 'USER',
+  detail: [
+    'OBO identity forwarded to app',
+    'Persona toggle drives UC row/column masks',
+    'Launches Expert Agent + Genie queries',
+    'Clicks drill down into 3D / Log Viewer',
+  ],
 }
+
+// ─── Edges ─────────────────────────────────────────────────────────────────
+const EDGES: EdgeDef[] = [
+  // Sources → Bronze
+  { from: 'adme',    to: 'bronze',  label: 'connector',  color: '#27AE60' },
+  { from: 'fred',    to: 'duckdb',  label: 'httpx / fallback',  color: '#27AE60', dashed: true },
+  // Medallion
+  { from: 'bronze',  to: 'silver',  label: 'DLT clean',  color: '#CD6116' },
+  { from: 'silver',  to: 'gold',    label: 'text union', color: '#8E9AAF' },
+  // Silver → gov
+  { from: 'silver',  to: 'gov_checkpoints', label: 'gov split', color: '#8E9AAF', dashed: true },
+  // Gold → Vector Search
+  { from: 'gold',    to: 'vs',      label: 'Δ-sync · gte-large', color: '#F39C12' },
+  // Vector Search / UC Fn / Genie → Agent
+  { from: 'vs',      to: 'agent',   label: 'similarity',         color: '#4dabf7', dashed: true },
+  { from: 'uc_fn',   to: 'agent',   label: 'EXECUTE',            color: '#b37feb', dashed: true },
+  { from: 'genie',   to: 'fastapi', label: 'Conversation API',   color: '#00E5FF', dashed: true },
+  // FMAPI ↔ Agent
+  { from: 'fmapi',   to: 'agent',   label: 'tool-calls',         color: '#9254de' },
+  // DB → FastAPI
+  { from: 'duckdb',  to: 'fastapi', label: 'async queries',      color: '#2980B9' },
+  // Agent → FastAPI → React
+  { from: 'agent',   to: 'react',   label: 'answer + trace',     color: '#ffa940', dashed: true },
+  { from: 'fastapi', to: 'react',   label: 'JSON REST',          color: '#16A085' },
+  // React → User
+  { from: 'react',   to: 'user',    label: 'browser',            color: '#73d13d' },
+]
+
+const ALL_NODES: NodeDef[] = [...SOURCES, ...MEDALLION, ...SERVING, ...APPL, USER]
+const nodeById = (id: string) => ALL_NODES.find(n => n.id === id)
 
 function arrowPath(e: EdgeDef): string {
-  const a = nodeById(e.from)!
-  const b = nodeById(e.to)!
-  const ax = cx(a), ay = cy(a), bx = cx(b), by = cy(b)
+  const a = nodeById(e.from); const b = nodeById(e.to)
+  if (!a || !b) return ''
+  const ax = a.x + a.w / 2, ay = a.y + a.h / 2
+  const bx = b.x + b.w / 2, by = b.y + b.h / 2
 
-  // Horizontal edge (pipeline)
+  // Horizontal same-row edge
   if (Math.abs(ay - by) < 10) {
-    const sx = a.x + a.w, ex = b.x
-    return `M${sx},${ay} L${ex},${by}`
+    return `M${a.x + a.w},${ay} L${b.x},${by}`
   }
-
-  // lakebase → fastapi (down then left)
-  if (e.from === 'duckdb' && e.to === 'fastapi') {
-    const sx = cx(a), sy = a.y + a.h
-    const ex = b.x + b.w, ey = cy(b)
-    const midY = sy + 40
-    return `M${sx},${sy} L${sx},${midY} L${ex},${midY} L${ex},${ey}`
+  // Vertical arrow (same column)
+  if (Math.abs(ax - bx) < 10) {
+    return `M${ax},${a.y + a.h} L${bx},${b.y}`
   }
-
-  // fastapi → claude (down)
-  if (e.from === 'fastapi' && e.to === 'claude') {
-    const sx = cx(a), sy = a.y + a.h, ex = cx(b), ey = b.y
-    return `M${sx},${sy} L${sx},${(sy+ey)/2} L${ex},${(sy+ey)/2} L${ex},${ey}`
-  }
-
-  // claude → fastapi (up, offset to avoid overlap)
-  if (e.from === 'claude' && e.to === 'fastapi') {
-    const sx = cx(a) + 20, sy = a.y, ex = cx(b) + 20, ey = b.y + b.h
-    return `M${sx},${sy} L${sx},${(sy+ey)/2} L${ex},${(sy+ey)/2} L${ex},${ey}`
-  }
-
-  // Default: straight
-  return `M${ax},${ay} L${bx},${by}`
+  // Corner route: horizontal then vertical
+  const midX = (a.x + a.w + b.x) / 2
+  return `M${a.x + a.w},${ay} L${midX},${ay} L${midX},${by} L${b.x},${by}`
 }
 
-/* ─── FlowEdge component ────────────────────────────────────────────────── */
-function FlowEdge({ e, idx }: { e: EdgeDef; idx: number }) {
-  const d = arrowPath(e)
-  const col = e.color ?? '#555'
-  return (
-    <g>
-      <path d={d} fill="none" stroke={col} strokeWidth={1.5}
-        strokeDasharray={e.dashed ? '5 4' : '6 3'}
-        strokeOpacity={0.25} />
-      <path d={d} fill="none" stroke={col} strokeWidth={2}
-        strokeDasharray="6 3"
-        style={{ animation: `flow-dash 1.6s linear ${idx * 0.3}s infinite` }} />
-      <defs>
-        <marker id={`arr-${e.from}-${e.to}`} markerWidth={8} markerHeight={8}
-          refX={6} refY={3} orient="auto">
-          <path d="M0,0 L0,6 L8,3 z" fill={col} />
-        </marker>
-      </defs>
-      <path d={d} fill="none" stroke="none" markerEnd={`url(#arr-${e.from}-${e.to})`} />
-    </g>
-  )
-}
-
-/* ─── FlowNode component ────────────────────────────────────────────────── */
-function FlowNode({ n, selected, onSelect }: {
-  n: NodeDef; selected: boolean; onSelect: (id: string) => void
-}) {
-  return (
-    <g onClick={() => onSelect(n.id)} style={{ cursor: 'pointer' }}>
-      <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={8}
-        fill="var(--bg-card)"
-        stroke={selected ? n.color : 'var(--border)'}
-        strokeWidth={selected ? 2 : 1}
-        style={{ filter: selected ? `drop-shadow(0 0 6px ${n.color}88)` : 'none', transition: 'all 0.2s' }}
-      />
-      {/* Badge */}
-      {n.badge && (
-        <rect x={n.x + n.w - 52} y={n.y + 6} width={46} height={14} rx={3}
-          fill={n.color + '33'} stroke={n.color} strokeWidth={0.8} />
-      )}
-      {n.badge && (
-        <text x={n.x + n.w - 29} y={n.y + 16.5} textAnchor="middle"
-          fill={n.color} fontSize={8} fontFamily="monospace" fontWeight={700}>
-          {n.badge}
-        </text>
-      )}
-      {/* Label */}
-      <text x={n.x + 10} y={n.y + 24} fill="var(--text-primary)" fontSize={11}
-        fontFamily="Helvetica,sans-serif" fontWeight={700}>{n.label}</text>
-      <text x={n.x + 10} y={n.y + 40} fill="var(--text-muted)" fontSize={9.5}
-        fontFamily="Helvetica,sans-serif">{n.sub}</text>
-    </g>
-  )
-}
-
-/* ─── Main component ────────────────────────────────────────────────────── */
+// ─── Component ─────────────────────────────────────────────────────────────
 export default function DataFlowTab() {
-  const [sel, setSel] = useState<string | null>(null)
-  const selNode = sel ? nodeById(sel) : null
-
-  const select = (id: string) => setSel(s => s === id ? null : id)
+  const [selected, setSelected] = useState<string | null>(null)
+  const sel = selected ? nodeById(selected) : null
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-      {/* ── header strip ───────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        {[
-          { label: 'Data Pipeline', val: 'Bronze → Silver → Gold', color: 'var(--amber)' },
-          { label: 'Serving Layer', val: 'Lakebase (PostgreSQL 16)', color: 'var(--blue)' },
-          { label: 'AI Backend',   val: 'claude-sonnet-4-5 (FMAPI)', color: '#9B59B6' },
-          { label: 'Frontend',     val: 'React · 5 tabs · SVG tracks', color: 'var(--green)' },
-          { label: 'Governance',   val: 'Unity Catalog',              color: '#E67E22' },
-        ].map(k => (
-          <div key={k.label} className="card" style={{ padding: '8px 14px', flex: 1, minWidth: 160 }}>
-            <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 4 }}>
-              {k.label.toUpperCase()}
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: k.color, fontFamily: 'monospace' }}>
-              {k.val}
-            </div>
+    <div style={{ display: 'grid', gap: 16 }}>
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        borderRadius: 8, padding: 14,
+      }}>
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>Subsurface Intelligence · Data & AI Flow</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            Click any node to see what it does · orange dashed box = Unity Catalog governance boundary
           </div>
-        ))}
+        </div>
+
+        <svg viewBox="0 0 1200 520" style={{ width: '100%', background: 'var(--bg-primary)', borderRadius: 6 }}>
+          {/* Layer labels */}
+          <text x="12" y="32"  fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SOURCES</text>
+          <text x="12" y="130" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">(external)</text>
+          <text x="230" y="32" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">MEDALLION · Delta · Unity Catalog</text>
+          <text x="230" y="252" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SERVING · AI</text>
+          <text x="230" y="392" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">APPLICATION</text>
+
+          {/* Unity Catalog governance boundary */}
+          <rect x="270" y="40" width="570" height="320" fill="none" stroke="#F39C12" strokeWidth="1"
+                strokeDasharray="6 4" rx="10" opacity="0.8" />
+          <text x="560" y="37" textAnchor="middle" fill="#F39C12" fontSize="11" fontWeight="600" fontFamily="monospace">
+            Unity Catalog · governance · tags · row filters · masks
+          </text>
+
+          <defs>
+            <marker id="dfArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#6b7280" />
+            </marker>
+          </defs>
+
+          {/* Edges */}
+          {EDGES.map((e, i) => {
+            const d = arrowPath(e)
+            const col = e.color || '#6b7280'
+            return (
+              <g key={`edge-${i}`}>
+                <path d={d} fill="none" stroke={col} strokeWidth="1.2"
+                      strokeDasharray={e.dashed ? '5 4' : 'none'}
+                      markerEnd="url(#dfArrow)" opacity="0.85" />
+                <text fontSize="9" fill={col} fontFamily="monospace">
+                  <textPath href={`#label-path-${i}`} startOffset="40%" textAnchor="middle">{e.label}</textPath>
+                </text>
+                <path id={`label-path-${i}`} d={d} fill="none" stroke="none" />
+              </g>
+            )
+          })}
+
+          {/* Nodes */}
+          {ALL_NODES.map(n => (
+            <g key={n.id} style={{ cursor: 'pointer' }} onClick={() => setSelected(n.id)}>
+              <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="6"
+                    fill="var(--bg-card)" stroke={selected === n.id ? '#00E5FF' : n.color}
+                    strokeWidth={selected === n.id ? 2 : 1.2} />
+              {n.badge && (
+                <>
+                  <rect x={n.x + 8} y={n.y + 6} width="48" height="15" rx="3" fill={n.color} opacity="0.25" />
+                  <text x={n.x + 32} y={n.y + 17} textAnchor="middle" fill={n.color} fontSize="9"
+                        fontFamily="monospace" fontWeight="700">{n.badge}</text>
+                </>
+              )}
+              <text x={n.x + n.w / 2} y={n.y + 40} textAnchor="middle" fill="var(--text-primary)"
+                    fontSize="13" fontWeight="600">{n.label}</text>
+              <text x={n.x + n.w / 2} y={n.y + 54} textAnchor="middle" fill="var(--text-muted)"
+                    fontSize="10" fontFamily="monospace">{n.sub}</text>
+            </g>
+          ))}
+        </svg>
       </div>
 
-      {/* ── main diagram + detail panel ────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-
-        {/* SVG diagram */}
-        <div className="card" style={{ flex: 1, overflow: 'hidden', padding: 0 }}>
-          <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className="label">DATA &amp; AI FLOW DIAGRAM</span>
-            <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>
-              Click any node for details
-            </span>
-          </div>
-
-          <svg viewBox="0 0 1120 590" style={{ width: '100%', display: 'block' }}
-            xmlns="http://www.w3.org/2000/svg">
-
-            <style>{`
-              @keyframes flow-dash {
-                from { stroke-dashoffset: 18; }
-                to   { stroke-dashoffset: 0;  }
-              }
-            `}</style>
-
-            {/* ── Unity Catalog governance band ── */}
-            <rect x={210} y={104} width={860} height={82} rx={10}
-              fill="none" stroke="#E67E22" strokeWidth={1} strokeDasharray="6 3" strokeOpacity={0.5} />
-            <rect x={220} y={96} width={148} height={16} rx={4} fill="var(--bg-card)" />
-            <text x={226} y={107} fill="#E67E22" fontSize={10} fontFamily="Helvetica,sans-serif" fontWeight={700}>
-              Unity Catalog Governance
-            </text>
-
-            {/* ── Section labels ── */}
-            <text x={30} y={104} fill="var(--text-muted)" fontSize={10} fontFamily="Helvetica,sans-serif" fontWeight={700}>
-              DATA PIPELINE
-            </text>
-            <text x={30} y={344} fill="var(--text-muted)" fontSize={10} fontFamily="Helvetica,sans-serif" fontWeight={700}>
-              APP &amp; AI FLOW
-            </text>
-
-            {/* ── Divider ── */}
-            <line x1={20} y1={320} x2={1100} y2={320} stroke="var(--border)" strokeWidth={1} strokeDasharray="4 4" />
-
-            {/* ── Pipeline edges ── */}
-            {PIPELINE_EDGES.map((e, i) => <FlowEdge key={e.from+e.to} e={e} idx={i} />)}
-
-            {/* ── App edges ── */}
-            {APP_EDGES.map((e, i) => <FlowEdge key={e.from+e.to} e={e} idx={i+4} />)}
-
-            {/* ── Edge labels ── */}
-            {PIPELINE_EDGES.map(e => {
-              const a = nodeById(e.from)!, b = nodeById(e.to)!
-              const mx = (a.x + a.w + b.x) / 2, my = cy(a) - 11
-              return (
-                <text key={e.label} x={mx} y={my} textAnchor="middle"
-                  fill={e.color} fontSize={9} fontFamily="Helvetica,sans-serif" fontWeight={600}
-                  style={{ pointerEvents: 'none' }}>
-                  {e.label}
-                </text>
-              )
-            })}
-
-            {/* ── Pipeline nodes ── */}
-            {PIPELINE.map(n => (
-              <FlowNode key={n.id} n={n} selected={sel === n.id} onSelect={select} />
-            ))}
-
-            {/* ── App nodes ── */}
-            {APP_NODES.map(n => (
-              <FlowNode key={n.id} n={n} selected={sel === n.id} onSelect={select} />
-            ))}
-
-            {/* ── lakebase→fastapi label ── */}
-            <text x={720} y={298} fill="#2980B9" fontSize={9} fontFamily="Helvetica,sans-serif" fontWeight={600}>
-              asyncpg
-            </text>
-
-            {/* ── Claude loop labels ── */}
-            <text x={310} y={432} fill="#8E44AD" fontSize={9} fontFamily="Helvetica,sans-serif" fontWeight={600}>
-              FMAPI call
-            </text>
-            <text x={360} y={452} fill="#8E44AD" fontSize={9} fontFamily="Helvetica,sans-serif" fontWeight={600}>
-              response
-            </text>
-
-            {/* ── Legend ── */}
-            <g transform="translate(30, 548)">
+      {/* Detail panel */}
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        borderRadius: 8, padding: 16,
+      }}>
+        {sel ? (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <span style={{
+                padding: '2px 8px', borderRadius: 3, background: sel.color, opacity: 0.85,
+                fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: '#0d0e11',
+              }}>{sel.badge}</span>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{sel.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>· {sel.sub}</div>
+              <button onClick={() => setSelected(null)} style={{
+                marginLeft: 'auto', background: 'transparent', color: 'var(--text-muted)',
+                border: '1px solid var(--border)', borderRadius: 4, padding: '2px 10px',
+                fontSize: 11, cursor: 'pointer',
+              }}>Back to overview</button>
+            </div>
+            <ul style={{ fontSize: 12, color: 'var(--text-secondary)', paddingLeft: 20, lineHeight: 1.7 }}>
+              {sel.detail.map((d, i) => <li key={i}>{d}</li>)}
+            </ul>
+          </>
+        ) : (
+          <>
+            <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', marginBottom: 10 }}>
+              How it works
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
-                { color: '#27AE60', label: 'Source' },
-                { color: '#CD6116', label: 'Bronze' },
-                { color: '#8E9AAF', label: 'Silver' },
-                { color: '#F39C12', label: 'Gold' },
-                { color: '#2980B9', label: 'Lakebase' },
-                { color: '#9B59B6', label: 'App' },
-                { color: '#8E44AD', label: 'AI / LLM' },
-              ].map((l, i) => (
-                <g key={l.label} transform={`translate(${i * 130}, 0)`}>
-                  <rect x={0} y={0} width={12} height={12} rx={2} fill={l.color} />
-                  <text x={16} y={10} fill="var(--text-muted)" fontSize={9} fontFamily="Helvetica,sans-serif">
-                    {l.label}
-                  </text>
-                </g>
-              ))}
-            </g>
-
-          </svg>
-        </div>
-
-        {/* Detail panel */}
-        <div style={{ width: 240, flexShrink: 0 }}>
-          {selNode ? (
-            <div className="card" style={{ padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 10, height: 10, borderRadius: 2, background: selNode.color }} />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>
-                    {selNode.label}
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{selNode.sub}</div>
-                </div>
-              </div>
-              {selNode.badge && (
-                <div style={{
-                  display: 'inline-block', marginBottom: 10,
-                  background: selNode.color + '22', color: selNode.color,
-                  border: `1px solid ${selNode.color}`, borderRadius: 4,
-                  padding: '2px 8px', fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
+                { h: '1 · Ingest',     c: 'OSDU → Bronze via connector. FRED crude via HTTP. Everything lands in Delta, governed by Unity Catalog.', col: '#27AE60' },
+                { h: '2 · Transform',  c: 'DLT cleans Bronze → Silver. Silver joins into a Gold search table with CDF for Vector Search syncing.', col: '#CD6116' },
+                { h: '3 · Serve',      c: 'Vector Search indexes the Gold text; UC Functions expose NPV, break-even, decline forecasts; Genie owns NL→SQL.', col: '#4dabf7' },
+                { h: '4 · Reason',     c: 'The Expert Agent (Claude Sonnet 4.5) orchestrates tools — VS + UC Fn + context — and returns an answer with trace.', col: '#9254de' },
+                { h: 'Governance',     c: 'UC row filters + column masks apply on lat/lon and drilling_result depending on persona group membership.', col: '#F39C12' },
+                { h: 'OBO auth',       c: 'Databricks Apps forwards X-Forwarded-Access-Token. SQL queries, Vector Search, and Genie run as the user, not the app SP.', col: '#2980B9' },
+                { h: 'Cache',          c: 'DuckDB in-process caches seeded OSDU + synthetic economics for sub-ms reads. No Lakebase dependency.', col: '#16A085' },
+                { h: 'UI',             c: 'React 18 + Recharts + SVG 3D. Dark theme. Built once, served static from FastAPI. Floating Genie on every tab.', col: '#73d13d' },
+              ].map(c => (
+                <div key={c.h} style={{
+                  background: 'var(--bg-panel)', border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${c.col}`, borderRadius: 4,
+                  padding: '10px 12px',
                 }}>
-                  {selNode.badge}
-                </div>
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {selNode.detail.map((d, i) => (
-                  <div key={i} style={{
-                    fontSize: 11, color: 'var(--text-secondary)',
-                    padding: '5px 9px', background: 'var(--bg-panel)',
-                    borderRadius: 5, fontFamily: 'monospace', lineHeight: 1.5,
-                  }}>
-                    {d}
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => setSel(null)} style={{
-                marginTop: 12, width: '100%', background: 'transparent',
-                border: '1px solid var(--border)', borderRadius: 5,
-                color: 'var(--text-muted)', fontSize: 11, padding: '5px 0', cursor: 'pointer',
-              }}>
-                Dismiss
-              </button>
-            </div>
-          ) : (
-            <div className="card" style={{ padding: 16 }}>
-              <div className="label" style={{ marginBottom: 12 }}>HOW IT WORKS</div>
-              {[
-                { step: '1', color: '#27AE60', text: 'LAS/DLIS files land in S3' },
-                { step: '2', color: '#CD6116', text: 'Auto Loader ingests to las_raw (Bronze)' },
-                { step: '3', color: '#8E9AAF', text: 'DLT pipeline cleans & corrects to las_curated (Silver)' },
-                { step: '4', color: '#F39C12', text: 'ML derives VCL, φ_eff, Sw into las_gold' },
-                { step: '5', color: '#2980B9', text: 'Reverse ETL syncs gold to Lakebase for low-latency queries' },
-                { step: '6', color: '#9B59B6', text: 'FastAPI serves data to React UI via asyncpg' },
-                { step: '7', color: '#8E44AD', text: 'AI Advisor calls Claude via FMAPI for petrophysical interpretation' },
-              ].map(s => (
-                <div key={s.step} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
-                  <div style={{
-                    width: 20, height: 20, borderRadius: '50%', background: s.color + '33',
-                    border: `1px solid ${s.color}`, color: s.color,
-                    fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    {s.step}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    {s.text}
-                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 12, color: c.col, marginBottom: 4 }}>{c.h}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{c.c}</div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
   )
