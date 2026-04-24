@@ -1,0 +1,31 @@
+command:
+  - "python"
+  - "-m"
+  - "uvicorn"
+  - "app:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+
+env:
+  - name: PGHOST
+    value: "ep-delicate-lake-eb6jcns3.database.southcentralus.azuredatabricks.net"
+  - name: PGPORT
+    value: "5432"
+  - name: PGDATABASE
+    value: "databricks_postgres"
+  - name: LAKEBASE_INSTANCE
+    value: "drilling-cc-db"
+  - name: ADME_CATALOG
+    value: "adme_adb_sbx_scus_dbx_ws_1"
+  - name: ADME_SCHEMA
+    value: "adme_client_demo"
+  - name: DATABRICKS_WAREHOUSE_ID
+    value: "186af4be97756033"
+  - name: GENIE_SPACE_ID
+    value: "01f13f7f8e201dc3bbf806bdba354f39"
+
+user_api_scopes:
+  - sql
+  - dashboards.genie
