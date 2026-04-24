@@ -91,7 +91,7 @@ async def legal_tags():
             http_path=f"/sql/1.0/warehouses/{WAREHOUSE_ID}",
             credentials_provider=lambda: cfg.authenticate,
         ) as c, c.cursor() as cur:
-            cur.execute(f"SELECT legal_tag_name, description, is_valid FROM `{CATALOG}`.`{SCHEMA}`.gov_legal_tags LIMIT 20")
+            cur.execute(f"SELECT legal_tag_name, COALESCE(source, data_partition_id) AS description, is_valid FROM `{CATALOG}`.`{SCHEMA}`.gov_legal_tags LIMIT 20")
             rows = cur.fetchall_arrow().to_pylist()
             cur.execute(f"SELECT group_id, group_name, description FROM `{CATALOG}`.`{SCHEMA}`.gov_entitlements LIMIT 50")
             groups = cur.fetchall_arrow().to_pylist()

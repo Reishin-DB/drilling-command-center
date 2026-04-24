@@ -20,7 +20,7 @@ const TABS = [
 
 export default function App() {
   const [active, setActive]         = useState('overview')
-  const [activeWell, setActiveWell] = useState('OSDU-WB-1')
+  const [activeWell, setActiveWell] = useState('BAKER-001')
 
   const openWell = (wellId: string, tab: string = '3d') => {
     setActiveWell(wellId)
