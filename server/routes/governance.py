@@ -124,7 +124,7 @@ async def uc_lineage_chain():
                 "examples": ["SELECT ON SCHEMA → poc_users", "USE CATALOG → SP b4297c02…", "tag: legal.not-export"],
             },
             {
-                "step": "Drilling Command Center",
+                "step": "Subsurface Intelligence",
                 "title": "Persona-filtered view",
                 "detail": "The app applies the allowed_fields / row_filter bound to the logged-in persona. SP falls back to OBO.",
                 "examples": ["operator: full", "analyst: no PII", "external: status IN (gold, corrected) only"],

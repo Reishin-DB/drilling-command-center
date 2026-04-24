@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
             await seed_data(conn)
             await seed_osdu_wells(conn)
             await seed_wti_prices(conn)
-        print("Drilling Command Center DB initialised.")
+        print("Subsurface Intelligence DB initialised.")
     else:
         print("Running without Lakebase (demo mode).")
     yield
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Drilling Command Center — Powered by Databricks",
+    title="Subsurface Intelligence — Powered by Databricks",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -40,6 +40,7 @@ from server.routes.advisor   import router as advisor_router
 from server.routes.economics  import router as economics_router
 from server.routes.governance import router as governance_router
 from server.routes.genie      import router as genie_router
+from server.routes.subsurface import router as subsurface_router
 
 app.include_router(wells_router,      prefix="/api")
 app.include_router(logs_router,       prefix="/api")
@@ -49,6 +50,7 @@ app.include_router(advisor_router,    prefix="/api")
 app.include_router(economics_router,  prefix="/api")
 app.include_router(governance_router, prefix="/api")
 app.include_router(genie_router,      prefix="/api")
+app.include_router(subsurface_router, prefix="/api")
 
 # Serve React SPA
 frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")

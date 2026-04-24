@@ -7,12 +7,14 @@ import AdvisorTab    from './components/AdvisorTab'
 import DataFlowTab   from './components/DataFlowTab'
 import EconomicsTab  from './components/EconomicsTab'
 import GovernanceTab from './components/GovernanceTab'
-import OverviewTab   from './components/OverviewTab'
-import GenieSidebar  from './components/GenieSidebar'
+import OverviewTab     from './components/OverviewTab'
+import ThreeDViewerTab from './components/ThreeDViewerTab'
+import GenieSidebar    from './components/GenieSidebar'
 
 const TABS = [
   { id: 'overview',   label: '🛰️ Overview' },
   { id: 'wells',      label: '🛢️ Wells' },
+  { id: '3d',         label: '🌐 3D Viewer' },
   { id: 'viewer',     label: '📊 Log Viewer' },
   { id: 'qc',         label: '🔍 QC' },
   { id: 'economics',  label: '💰 Economics' },
@@ -44,7 +46,7 @@ export default function App() {
           <span style={{ fontSize: 22 }}>🛢️</span>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-              Drilling Command Center
+              Subsurface Intelligence
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
               OSDU · Unity Catalog · Genie · Foundation Models
@@ -86,6 +88,7 @@ export default function App() {
       <main style={{ padding: '20px 24px', maxWidth: 1800, margin: '0 auto' }}>
         {active === 'overview'   && <OverviewTab   onOpenWell={openWell} />}
         {active === 'wells'      && <WellsTab      activeWell={activeWell} onOpenWell={openWell} />}
+        {active === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'viewer'     && <LogViewerTab  wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'qc'         && <QCTab         wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'economics'  && <EconomicsTab  wellId={activeWell} />}

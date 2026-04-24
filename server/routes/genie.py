@@ -114,5 +114,5 @@ async def space_info():
     return {
         "space_id": GENIE_SPACE_ID,
         "url": f"https://adb-4173618801742158.18.azuredatabricks.net/genie/rooms/{GENIE_SPACE_ID}",
-        "name": "Drilling Command Center — OSDU",
+        "name": "Subsurface Intelligence — OSDU",
     }
