@@ -75,11 +75,11 @@ const PIPELINE_EDGES: EdgeDef[] = [
   { from: 'las',     to: 'bronze',   label: 'Auto Loader',  color: '#27AE60' },
   { from: 'bronze',  to: 'silver',   label: 'DLT clean',    color: '#CD6116' },
   { from: 'silver',  to: 'gold',     label: 'ML derive',    color: '#8E9AAF' },
-  { from: 'gold',    to: 'lakebase', label: 'Reverse ETL',  color: '#F39C12' },
+  { from: 'gold',    to: 'duckdb', label: 'Reverse ETL',  color: '#F39C12' },
 ]
 
 const APP_EDGES: EdgeDef[] = [
-  { from: 'lakebase', to: 'fastapi', label: 'asyncpg',     color: '#2980B9' },
+  { from: 'duckdb', to: 'fastapi', label: 'asyncpg',     color: '#2980B9' },
   { from: 'fastapi',  to: 'ui',      label: 'JSON REST',   color: '#9B59B6' },
   { from: 'ui',       to: 'user',    label: 'browser',     color: '#16A085' },
   { from: 'fastapi',  to: 'claude',  label: 'FMAPI',       color: '#8E44AD' },
@@ -106,7 +106,7 @@ function arrowPath(e: EdgeDef): string {
   }
 
   // lakebase → fastapi (down then left)
-  if (e.from === 'lakebase' && e.to === 'fastapi') {
+  if (e.from === 'duckdb' && e.to === 'fastapi') {
     const sx = cx(a), sy = a.y + a.h
     const ex = b.x + b.w, ey = cy(b)
     const midY = sy + 40

@@ -94,7 +94,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
               const { x, y } = project(w.lat!, w.lon!)
               const color = w.critical_count > 0 ? 'var(--red)' : w.status === 'gold' ? 'var(--green)' : 'var(--amber)'
               return (
-                <g key={w.well_id} style={{ cursor: 'pointer' }} onClick={() => onOpenWell(w.well_id, 'twin')}>
+                <g key={w.well_id} style={{ cursor: 'pointer' }} onClick={() => onOpenWell(w.well_id, 'viewer')}>
                   <circle cx={x} cy={y} r="6" fill={color} opacity="0.25" />
                   <circle cx={x} cy={y} r="3.5" fill={color}>
                     <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
@@ -135,7 +135,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
       </div>
 
       {/* Well list with drill-in */}
-      <Panel title="Fleet status" subtitle="Click a row to launch the Digital Twin">
+      <Panel title="Fleet status" subtitle="Click a row to open the Log Viewer">
         <div style={{ overflow: 'auto', maxHeight: 420 }}>
           <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)' }}>
@@ -149,7 +149,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
               {wells.map(w => {
                 const isOsdu = w.well_id.startsWith('OSDU-')
                 return (
-                  <tr key={w.well_id} onClick={() => onOpenWell(w.well_id, 'twin')}
+                  <tr key={w.well_id} onClick={() => onOpenWell(w.well_id, 'viewer')}
                       style={{ cursor: 'pointer', borderBottom: '1px solid var(--border-dim)' }}>
                     <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: 'var(--blue)' }}>{w.well_id}</td>
                     <td style={{ padding: '7px 10px' }}>{w.well_name}</td>

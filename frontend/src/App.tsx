@@ -7,14 +7,12 @@ import AdvisorTab    from './components/AdvisorTab'
 import DataFlowTab   from './components/DataFlowTab'
 import EconomicsTab  from './components/EconomicsTab'
 import GovernanceTab from './components/GovernanceTab'
-import DigitalTwinTab from './components/DigitalTwinTab'
 import OverviewTab   from './components/OverviewTab'
 import GenieSidebar  from './components/GenieSidebar'
 
 const TABS = [
   { id: 'overview',   label: '🛰️ Overview' },
   { id: 'wells',      label: '🛢️ Wells' },
-  { id: 'twin',       label: '🧬 Digital Twin' },
   { id: 'viewer',     label: '📊 Log Viewer' },
   { id: 'qc',         label: '🔍 QC' },
   { id: 'economics',  label: '💰 Economics' },
@@ -88,7 +86,6 @@ export default function App() {
       <main style={{ padding: '20px 24px', maxWidth: 1800, margin: '0 auto' }}>
         {active === 'overview'   && <OverviewTab   onOpenWell={openWell} />}
         {active === 'wells'      && <WellsTab      activeWell={activeWell} onOpenWell={openWell} />}
-        {active === 'twin'       && <DigitalTwinTab wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'viewer'     && <LogViewerTab  wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'qc'         && <QCTab         wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'economics'  && <EconomicsTab  wellId={activeWell} />}
