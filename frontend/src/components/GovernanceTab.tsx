@@ -24,24 +24,30 @@ interface Chain {
   chain: { step: string; title: string; detail: string; examples: string[] }[]
 }
 
+interface Co2Row { country_name: string; country_code: string; year: number; co2_kt: number }
+interface Co2Resp { installed: boolean; source?: string; year?: number; rows: Co2Row[]; error?: string }
+
 export default function GovernanceTab() {
   const [personas, setPersonas]       = useState<Persona[]>([])
   const [active, setActive]           = useState('operator')
   const [view, setView]               = useState<PersonaView | null>(null)
   const [legal, setLegal]             = useState<any>(null)
   const [chain, setChain]             = useState<Chain | null>(null)
+  const [co2, setCo2]                 = useState<Co2Resp | null>(null)
   const [loading, setLoading]         = useState(true)
 
   useEffect(() => {
     ;(async () => {
-      const [p, c, t] = await Promise.all([
+      const [p, c, t, co] = await Promise.all([
         fetch('/api/governance/personas').then(r => r.json()),
         fetch('/api/governance/uc_chain').then(r => r.json()),
         fetch('/api/governance/legal_tags').then(r => r.json()),
+        fetch('/api/governance/co2').then(r => r.json()),
       ])
       setPersonas(p)
       setChain(c)
       setLegal(t)
+      setCo2(co)
       setLoading(false)
     })()
   }, [])
@@ -183,6 +189,51 @@ export default function GovernanceTab() {
           )}
         </Panel>
       </div>
+
+      {/* ESG / CO2 panel */}
+      <Panel
+        title="ESG · CO₂ emissions"
+        subtitle={
+          co2?.installed
+            ? `Top emitters · ${co2.year} · live from ${co2.source}`
+            : co2?.error
+              ? `Marketplace not wired: ${co2.error.slice(0, 80)}`
+              : 'World Bank Open Data via Databricks Marketplace'
+        }
+      >
+        {co2?.installed && co2.rows.length > 0 ? (
+          <div>
+            {(() => {
+              const max = Math.max(...co2.rows.map(r => r.co2_kt || 0))
+              return co2.rows.map(r => {
+                const pct = max ? ((r.co2_kt || 0) / max) * 100 : 0
+                return (
+                  <div key={r.country_code} style={{ display: 'grid', gridTemplateColumns: '180px 1fr 110px', gap: 10, alignItems: 'center', padding: '4px 0', fontSize: 11 }}>
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{r.country_code}</span>{' '}
+                      {r.country_name}
+                    </span>
+                    <div style={{ background: 'var(--bg-panel)', height: 8, borderRadius: 2, position: 'relative' }}>
+                      <div style={{ background: 'linear-gradient(90deg, var(--green), var(--amber), var(--red))', width: `${pct}%`, height: '100%', borderRadius: 2 }} />
+                    </div>
+                    <span style={{ textAlign: 'right', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                      {((r.co2_kt || 0) / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })} Mt
+                    </span>
+                  </div>
+                )
+              })
+            })()}
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
+              CO₂ emissions in kilotons, World Bank indicator EN.ATM.CO2E.KT. Same Unity Catalog governance plane as
+              the OSDU data — grants, tags, and column masks apply uniformly.
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            CO₂ data isn't wired yet. Install the World Bank CO₂ Marketplace listing and grant the app SP SELECT.
+          </div>
+        )}
+      </Panel>
     </div>
   )
 }

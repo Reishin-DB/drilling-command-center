@@ -106,6 +106,47 @@ async def legal_tags():
         return {"source": f"{CATALOG}.{SCHEMA}", "legal_tags": [], "entitlement_groups": [], "error": str(e)}
 
 
+@router.get("/governance/co2")
+async def co2_emissions(top: int = 12):
+    """ESG layer — country CO2 emissions from the Rearc/World Bank Marketplace share."""
+    cat    = os.getenv("WB_CO2_CATALOG", "rearc_co2_emissions_kt_world_bank_open_data")
+    schema = os.getenv("WB_CO2_SCHEMA",  "fs_world_bank_data_weekly")
+    table  = os.getenv("WB_CO2_TABLE",   "co2_emissions")
+    fqn = f"`{cat}`.`{schema}`.`{table}`"
+
+    try:
+        from databricks import sql
+        from databricks.sdk.core import Config
+        cfg = Config()
+        host = (os.getenv("DATABRICKS_HOST") or cfg.host or "").replace("https://", "").rstrip("/")
+        with sql.connect(
+            server_hostname=host,
+            http_path=f"/sql/1.0/warehouses/{WAREHOUSE_ID}",
+            credentials_provider=lambda: cfg.authenticate,
+        ) as c, c.cursor() as cur:
+            # Latest available year
+            cur.execute(f"SELECT MAX(date) AS y FROM {fqn} WHERE amount_value IS NOT NULL")
+            year = cur.fetchall()[0][0]
+            cur.execute(f"""
+                SELECT country_name, country_code, date AS year, amount_value AS co2_kt
+                FROM {fqn}
+                WHERE date = {year} AND amount_value IS NOT NULL
+                  AND country_code IN ('USA','CHN','RUS','IND','SAU','GBR','NOR','ARE','BRA','IRQ','VEN','CAN','MEX','NGA','DZA')
+                ORDER BY amount_value DESC
+                LIMIT {int(top)}
+            """)
+            cols = [d[0] for d in cur.description]
+            rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+            return {
+                "installed": True,
+                "source": f"{cat}.{schema}.{table}",
+                "year": year,
+                "rows": rows,
+            }
+    except Exception as e:
+        return {"installed": False, "error": str(e), "rows": []}
+
+
 @router.get("/governance/uc_chain")
 async def uc_lineage_chain():
     """Static summary of the governance chain for the demo."""

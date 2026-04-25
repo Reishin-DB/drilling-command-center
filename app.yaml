@@ -8,13 +8,15 @@ command:
   - "--port"
   - "8000"
 
+resources:
+  - name: database
+    description: "Lakebase Postgres for drilling journal + alerts"
+    database:
+      instance_name: drilling-cc-db
+      database_name: drilling_cc
+      permission: CAN_CONNECT_AND_CREATE
+
 env:
-  - name: PGHOST
-    value: "ep-delicate-lake-eb6jcns3.database.southcentralus.azuredatabricks.net"
-  - name: PGPORT
-    value: "5432"
-  - name: PGDATABASE
-    value: "databricks_postgres"
   - name: LAKEBASE_INSTANCE
     value: "drilling-cc-db"
   - name: ADME_CATALOG

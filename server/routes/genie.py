@@ -1,5 +1,6 @@
-"""Genie conversation proxy. Uses the app SP (or user OBO via Databricks SDK)
-to talk to the OSDU-backed Genie space."""
+"""Genie Conversation API proxy."""
+from __future__ import annotations
+
 import asyncio
 import os
 import time
@@ -16,87 +17,121 @@ class GenieReq(BaseModel):
     conversation_id: str | None = None
 
 
-def _sdk():
+def _client():
     from databricks.sdk import WorkspaceClient
     return WorkspaceClient()
 
 
+def _msg_id_of(obj) -> str | None:
+    """SDK shape varies between start_conversation (flat .message_id) and
+    create_message (returns a GenieMessage with .id)."""
+    for attr in ("message_id", "id"):
+        v = getattr(obj, attr, None)
+        if v:
+            return str(v)
+    if isinstance(obj, dict):
+        return obj.get("message_id") or obj.get("id")
+    return None
+
+
+def _conv_id_of(obj, fallback: str | None) -> str | None:
+    v = getattr(obj, "conversation_id", None)
+    if v:
+        return str(v)
+    if isinstance(obj, dict):
+        return obj.get("conversation_id") or fallback
+    return fallback
+
+
 def _ask_sync(question: str, conversation_id: str | None):
-    w = _sdk()
+    w = _client()
     g = w.genie
+
     if conversation_id:
-        msg = g.create_message(
+        resp = g.create_message(
             space_id=GENIE_SPACE_ID,
             conversation_id=conversation_id,
             content=question,
         )
-        conv_id = conversation_id
+        conv_id = _conv_id_of(resp, conversation_id)
     else:
-        started = g.start_conversation(
+        resp = g.start_conversation(
             space_id=GENIE_SPACE_ID,
             content=question,
         )
-        msg = started.message
-        conv_id = started.conversation_id
+        conv_id = _conv_id_of(resp, None)
+
+    msg_id = _msg_id_of(resp)
+    if not conv_id or not msg_id:
+        raise RuntimeError(f"Genie did not return ids: conv={conv_id} msg={msg_id} obj={resp!r}")
 
     # Poll for completion
-    msg_id = msg.id if hasattr(msg, "id") else msg["id"]
-    for _ in range(40):  # up to ~40s
+    final = None
+    for _ in range(60):
         m = g.get_message(
             space_id=GENIE_SPACE_ID,
             conversation_id=conv_id,
             message_id=msg_id,
         )
-        status = getattr(m, "status", None)
-        if status and str(status).upper().endswith("COMPLETED"):
-            break
-        if status and str(status).upper().endswith("FAILED"):
+        final = m
+        status = str(getattr(m, "status", "") or "").upper()
+        if "COMPLETED" in status or "FAILED" in status or "CANCELLED" in status:
             break
         time.sleep(1)
 
-    return _shape(conv_id, msg_id, m)
+    return _shape(conv_id, msg_id, final, w)
 
 
-def _shape(conv_id, msg_id, m):
-    # Extract text answer + any SQL/result attachments
+def _shape(conv_id, msg_id, m, w):
     text = ""
     sql = None
-    rows = []
-    cols = []
-    for att in (m.attachments or []):
-        if hasattr(att, "text") and att.text:
-            payload = att.text
-            c = getattr(payload, "content", None) or (payload.get("content") if isinstance(payload, dict) else None)
+    rows: list = []
+    cols: list[str] = []
+    if m is None:
+        return {"conversation_id": conv_id, "message_id": msg_id, "text": "(no response)", "sql": None, "columns": [], "rows": []}
+
+    # Sometimes the message itself has top-level content
+    top_content = getattr(m, "content", None)
+    if top_content and isinstance(top_content, str):
+        text = top_content
+
+    for att in (getattr(m, "attachments", None) or []):
+        # Text attachment (free-form answer)
+        att_text = getattr(att, "text", None)
+        if att_text:
+            c = getattr(att_text, "content", None)
             if c:
                 text = c
-        if hasattr(att, "query") and att.query:
-            q = att.query
-            sql = getattr(q, "query", None) or (q.get("query") if isinstance(q, dict) else None)
-            res = None
+
+        # SQL query attachment
+        att_query = getattr(att, "query", None)
+        if att_query:
+            sql = getattr(att_query, "query", None) or sql
             try:
-                from databricks.sdk import WorkspaceClient
-                w = WorkspaceClient()
                 res = w.genie.get_message_query_result(
                     space_id=GENIE_SPACE_ID,
                     conversation_id=conv_id,
                     message_id=msg_id,
                 )
+                sr = getattr(res, "statement_response", None)
+                if sr:
+                    manifest = getattr(sr, "manifest", None)
+                    schema = getattr(manifest, "schema", None) if manifest else None
+                    if schema:
+                        cols = [c.name for c in (getattr(schema, "columns", None) or [])]
+                    result = getattr(sr, "result", None)
+                    data = getattr(result, "data_array", None) if result else None
+                    rows = data or []
             except Exception as e:
                 print(f"Genie query result fetch failed: {e}")
-            if res and getattr(res, "statement_response", None):
-                sr = res.statement_response
-                schema = getattr(sr.manifest, "schema", None)
-                if schema:
-                    cols = [c.name for c in schema.columns]
-                data = getattr(sr.result, "data_array", None) if sr.result else None
-                rows = data or []
+
     return {
         "conversation_id": conv_id,
-        "message_id": msg_id,
-        "text": text,
-        "sql": sql,
-        "columns": cols,
-        "rows": rows[:200],
+        "message_id":      msg_id,
+        "text":            text or "(Genie returned no text)",
+        "sql":             sql,
+        "columns":         cols,
+        "rows":            rows[:200],
     }
 
 
@@ -105,7 +140,8 @@ async def ask(req: GenieReq):
     try:
         return await asyncio.to_thread(_ask_sync, req.question, req.conversation_id)
     except Exception as e:
-        print(f"Genie error: {e}")
+        import traceback
+        print(f"Genie error: {e}\n{traceback.format_exc()[-600:]}")
         return {"error": str(e)}
 
 

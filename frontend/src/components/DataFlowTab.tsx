@@ -16,24 +16,35 @@ interface EdgeDef { from: string; to: string; label: string; color?: string; das
 const SOURCES: NodeDef[] = [
   {
     id: 'adme', label: 'ADME / OSDU', sub: 'opendes partition',
-    x: 60, y: 60, w: 150, h: 62,
+    x: 60, y: 60, w: 140, h: 60,
     color: '#27AE60', badge: 'SOURCE',
     detail: [
-      'Live cloud OSDU instance (sandbox)',
-      'Managed Identity authentication',
+      'Live cloud OSDU (sandbox)',
+      'Managed Identity auth',
       'Wellbore, reservoir, rock_and_fluid',
-      'Entitlement groups + legal tags',
+      'Entitlements + legal tags',
     ],
   },
   {
-    id: 'fred', label: 'FRED WTI', sub: 'public market',
-    x: 60, y: 160, w: 150, h: 62,
+    id: 'fred', label: 'FRED WTI', sub: 'Marketplace · Δ-Sharing',
+    x: 60, y: 140, w: 140, h: 60,
     color: '#27AE60', badge: 'SOURCE',
     detail: [
-      'Daily WTI crude spot (DCOILWTICO)',
-      'Pulled at app startup',
-      'Synthetic fallback if egress blocked',
-      '784-day rolling window',
+      'Daily WTI crude (DCOILWTICO)',
+      'Installed from Databricks Marketplace',
+      'Delta Sharing → catalog `fred_wti`',
+      'Synthetic fallback if not installed',
+    ],
+  },
+  {
+    id: 'wbco2', label: 'World Bank CO₂', sub: 'Marketplace · Δ-Sharing',
+    x: 60, y: 220, w: 140, h: 60,
+    color: '#27AE60', badge: 'SOURCE',
+    detail: [
+      'Country-level CO₂ emissions (kt)',
+      'Installed from Databricks Marketplace',
+      'Delta Sharing → catalog `wb_co2`',
+      'Drives ESG widget on Governance tab',
     ],
   },
 ]
@@ -42,10 +53,10 @@ const SOURCES: NodeDef[] = [
 const MEDALLION: NodeDef[] = [
   {
     id: 'bronze', label: 'Bronze', sub: 'raw ingest',
-    x: 300, y: 60, w: 130, h: 62,
+    x: 290, y: 60, w: 130, h: 60,
     color: '#CD6116', badge: 'BRONZE',
     detail: [
-      'bronze_wellbore · bronze_reservoir · bronze_rock_and_fluid',
+      'bronze_wellbore · _reservoir · _rock_and_fluid',
       'Auto Loader (cloudFiles)',
       'Schema inference + evolution',
       'Raw OSDU record preservation',
@@ -53,18 +64,18 @@ const MEDALLION: NodeDef[] = [
   },
   {
     id: 'silver', label: 'Silver', sub: 'cleaned',
-    x: 480, y: 60, w: 130, h: 62,
+    x: 460, y: 60, w: 130, h: 60,
     color: '#8E9AAF', badge: 'SILVER',
     detail: [
-      'silver_wellbore · silver_reservoir · silver_rock_and_fluid',
-      'Type casting + dedup',
+      'silver_wellbore · _reservoir · _rock_and_fluid',
+      'Type cast + dedup',
       'Extension properties normalized',
       'Silver payload as structured JSON',
     ],
   },
   {
-    id: 'gold', label: 'Gold · Search', sub: 'wellbore_search_source',
-    x: 660, y: 60, w: 150, h: 62,
+    id: 'gold', label: 'Gold · search', sub: 'wellbore_search_source',
+    x: 630, y: 60, w: 150, h: 60,
     color: '#F39C12', badge: 'GOLD',
     detail: [
       'Delta table with CDF',
@@ -74,13 +85,23 @@ const MEDALLION: NodeDef[] = [
     ],
   },
   {
-    id: 'gov_checkpoints', label: 'gov_* tables', sub: 'legal + entitlements',
-    x: 480, y: 160, w: 130, h: 62,
+    id: 'gov_tables', label: 'gov_* tables', sub: 'legal + entitlements',
+    x: 460, y: 150, w: 130, h: 60,
     color: '#8E9AAF', badge: 'SILVER',
     detail: [
-      'gov_legal_tags · gov_entitlements · gov_record_acl_mirror',
+      'gov_legal_tags · _entitlements · _record_acl_mirror',
       'Sync from OSDU entitlement service',
       'Drives the Governance tab',
+    ],
+  },
+  {
+    id: 'mkt_catalogs', label: 'Marketplace catalogs', sub: 'fred_wti · wb_co2',
+    x: 290, y: 220, w: 150, h: 60,
+    color: '#F39C12', badge: 'SHARED',
+    detail: [
+      'Delta-shared catalogs auto-created on install',
+      'Read by SQL warehouse / serving routes',
+      'Same UC governance plane (grants apply)',
     ],
   },
 ]
@@ -89,45 +110,45 @@ const MEDALLION: NodeDef[] = [
 const SERVING: NodeDef[] = [
   {
     id: 'vs', label: 'Vector Search', sub: 'subsurface-vs',
-    x: 300, y: 280, w: 160, h: 62,
+    x: 290, y: 320, w: 150, h: 60,
     color: '#4dabf7', badge: 'VS',
     detail: [
       'Δ-sync index on wellbore_search_source',
       'databricks-gte-large-en embeddings',
       'Semantic well similarity',
-      'Powers "similar wells" in 3D viewer + Agent',
+      'Powers similar-wells in 3D viewer + Agent',
     ],
   },
   {
     id: 'uc_fn', label: 'UC Functions', sub: 'Python in catalog',
-    x: 480, y: 280, w: 160, h: 62,
+    x: 460, y: 320, w: 150, h: 60,
     color: '#b37feb', badge: 'UC FN',
     detail: [
-      'calculate_npv10(capex, opex, rate, decline, wti, years)',
-      'calculate_break_even(capex, opex, rate, decline)',
-      'forecast_decline_curve(peak, decline, b, years)',
-      'EXECUTE grants to app SP',
+      'calculate_npv10()',
+      'calculate_break_even()',
+      'forecast_decline_curve()',
+      'EXECUTE granted to app SP',
     ],
   },
   {
-    id: 'genie', label: 'Genie Space', sub: 'Drilling Command Center',
-    x: 660, y: 280, w: 160, h: 62,
+    id: 'genie', label: 'Genie Space', sub: 'Subsurface Intelligence',
+    x: 630, y: 320, w: 150, h: 60,
     color: '#00E5FF', badge: 'GENIE',
     detail: [
-      'space_id 01f13f7f8e20...',
-      'Natural language → SQL over 5 OSDU tables',
-      'Conversation API (start + message + poll)',
-      'Floating sidebar launcher in every tab',
+      'space_id 01f13f7f8e20…',
+      'NL → SQL over 5 OSDU tables',
+      'Conversation API (start + msg + poll)',
+      'Floating sidebar in every tab',
     ],
   },
   {
     id: 'fmapi', label: 'Claude Sonnet 4.5', sub: 'Foundation Model API',
-    x: 840, y: 280, w: 160, h: 62,
+    x: 800, y: 320, w: 160, h: 60,
     color: '#9254de', badge: 'LLM',
     detail: [
-      'databricks-claude-sonnet-4-5 serving endpoint',
-      'Tool-calling (OpenAI-compatible schema)',
-      'Agent orchestrates VS + UC Fn + context',
+      'databricks-claude-sonnet-4-5 endpoint',
+      'Tool-calling (OpenAI-compatible)',
+      'Agent orchestrates VS + UC Fn',
       'Trace surfaced inline per call',
     ],
   },
@@ -136,30 +157,41 @@ const SERVING: NodeDef[] = [
 // ─── Row 4: App ────────────────────────────────────────────────────────────
 const APPL: NodeDef[] = [
   {
-    id: 'duckdb', label: 'DuckDB (in-app)', sub: 'OLAP embedded',
-    x: 300, y: 420, w: 160, h: 62,
+    id: 'duckdb', label: 'DuckDB · in-app', sub: 'OLAP cache',
+    x: 290, y: 440, w: 140, h: 60,
     color: '#2980B9', badge: 'CACHE',
     detail: [
-      'Seed on startup (OSDU → DuckDB)',
+      'Seeded on startup from OSDU',
       'Postgres-dialect shim over asyncpg API',
-      'Routes query locally — no warehouse round-trip',
-      'No persistence across app restart',
+      'Sub-ms reads — no warehouse round-trip',
+      'No persistence across restart',
+    ],
+  },
+  {
+    id: 'lakebase', label: 'Lakebase · PG', sub: 'drilling_cc',
+    x: 290, y: 520, w: 140, h: 60,
+    color: '#16A085', badge: 'PG',
+    detail: [
+      'Bound via Databricks Apps `database` resource',
+      'Tables: dcc.journal · dcc.alerts',
+      'OBO auth — SP gets PG role automatically',
+      'Persistent — survives app restarts',
     ],
   },
   {
     id: 'fastapi', label: 'FastAPI', sub: 'Python · uvicorn',
-    x: 480, y: 420, w: 160, h: 62,
+    x: 460, y: 480, w: 150, h: 60,
     color: '#16A085', badge: 'API',
     detail: [
-      '/api/subsurface/scene · similar · /wells · /logs',
-      '/api/economics · /governance · /genie · /agent',
+      '/api/subsurface · /economics · /governance',
+      '/api/genie · /agent · /journal',
       'OBO via X-Forwarded-Access-Token',
-      'Deployed as Databricks App on Azure',
+      'Deployed as a Databricks App on Azure',
     ],
   },
   {
     id: 'agent', label: 'Expert Agent', sub: 'tool-calling loop',
-    x: 660, y: 420, w: 160, h: 62,
+    x: 630, y: 480, w: 150, h: 60,
     color: '#ffa940', badge: 'AGENT',
     detail: [
       'Claude + 5 tools',
@@ -170,13 +202,13 @@ const APPL: NodeDef[] = [
   },
   {
     id: 'react', label: 'React UI', sub: 'Vite + TypeScript',
-    x: 840, y: 420, w: 160, h: 62,
+    x: 800, y: 480, w: 160, h: 60,
     color: '#73d13d', badge: 'UI',
     detail: [
-      'Dark theme, inherited + evolved from las-viewer',
-      '7 tabs + floating Genie + 3D SVG subsurface',
-      'Recharts for economics/timeseries',
-      'Built to static assets, served by FastAPI',
+      'Dark theme, 7 tabs + floating Genie',
+      'Recharts + SVG 3D Petrel-style viewer',
+      'Operator journal writes to Lakebase',
+      'Built static, served by FastAPI',
     ],
   },
 ]
@@ -184,41 +216,35 @@ const APPL: NodeDef[] = [
 // ─── User ──────────────────────────────────────────────────────────────────
 const USER: NodeDef = {
   id: 'user', label: 'You', sub: 'SA / petrotech user',
-  x: 1040, y: 60, w: 120, h: 62,
+  x: 1010, y: 60, w: 130, h: 60,
   color: '#2C3E50', badge: 'USER',
   detail: [
     'OBO identity forwarded to app',
     'Persona toggle drives UC row/column masks',
     'Launches Expert Agent + Genie queries',
-    'Clicks drill down into 3D / Log Viewer',
+    'Adds journal entries that persist in Lakebase',
   ],
 }
 
 // ─── Edges ─────────────────────────────────────────────────────────────────
 const EDGES: EdgeDef[] = [
-  // Sources → Bronze
-  { from: 'adme',    to: 'bronze',  label: 'connector',  color: '#27AE60' },
-  { from: 'fred',    to: 'duckdb',  label: 'httpx / fallback',  color: '#27AE60', dashed: true },
-  // Medallion
-  { from: 'bronze',  to: 'silver',  label: 'DLT clean',  color: '#CD6116' },
-  { from: 'silver',  to: 'gold',    label: 'text union', color: '#8E9AAF' },
-  // Silver → gov
-  { from: 'silver',  to: 'gov_checkpoints', label: 'gov split', color: '#8E9AAF', dashed: true },
-  // Gold → Vector Search
-  { from: 'gold',    to: 'vs',      label: 'Δ-sync · gte-large', color: '#F39C12' },
-  // Vector Search / UC Fn / Genie → Agent
-  { from: 'vs',      to: 'agent',   label: 'similarity',         color: '#4dabf7', dashed: true },
-  { from: 'uc_fn',   to: 'agent',   label: 'EXECUTE',            color: '#b37feb', dashed: true },
-  { from: 'genie',   to: 'fastapi', label: 'Conversation API',   color: '#00E5FF', dashed: true },
-  // FMAPI ↔ Agent
-  { from: 'fmapi',   to: 'agent',   label: 'tool-calls',         color: '#9254de' },
-  // DB → FastAPI
-  { from: 'duckdb',  to: 'fastapi', label: 'async queries',      color: '#2980B9' },
-  // Agent → FastAPI → React
-  { from: 'agent',   to: 'react',   label: 'answer + trace',     color: '#ffa940', dashed: true },
-  { from: 'fastapi', to: 'react',   label: 'JSON REST',          color: '#16A085' },
-  // React → User
-  { from: 'react',   to: 'user',    label: 'browser',            color: '#73d13d' },
+  { from: 'adme',         to: 'bronze',       label: 'connector',          color: '#27AE60' },
+  { from: 'fred',         to: 'mkt_catalogs', label: 'marketplace install', color: '#27AE60' },
+  { from: 'wbco2',        to: 'mkt_catalogs', label: 'marketplace install', color: '#27AE60' },
+  { from: 'bronze',       to: 'silver',       label: 'DLT clean',          color: '#CD6116' },
+  { from: 'silver',       to: 'gold',         label: 'text union',         color: '#8E9AAF' },
+  { from: 'silver',       to: 'gov_tables',   label: 'gov split',          color: '#8E9AAF', dashed: true },
+  { from: 'gold',         to: 'vs',           label: 'Δ-sync · gte-large', color: '#F39C12' },
+  { from: 'mkt_catalogs', to: 'uc_fn',        label: 'price + ESG read',   color: '#F39C12', dashed: true },
+  { from: 'vs',           to: 'agent',        label: 'similarity',         color: '#4dabf7', dashed: true },
+  { from: 'uc_fn',        to: 'agent',        label: 'EXECUTE',            color: '#b37feb', dashed: true },
+  { from: 'genie',        to: 'fastapi',      label: 'Conversation API',   color: '#00E5FF', dashed: true },
+  { from: 'fmapi',        to: 'agent',        label: 'tool-calls',         color: '#9254de' },
+  { from: 'duckdb',       to: 'fastapi',      label: 'fast reads',         color: '#2980B9' },
+  { from: 'lakebase',     to: 'fastapi',      label: 'journal/alerts',     color: '#16A085' },
+  { from: 'agent',        to: 'react',        label: 'answer + trace',     color: '#ffa940', dashed: true },
+  { from: 'fastapi',      to: 'react',        label: 'JSON REST',          color: '#16A085' },
+  { from: 'react',        to: 'user',         label: 'browser',            color: '#73d13d' },
 ]
 
 const ALL_NODES: NodeDef[] = [...SOURCES, ...MEDALLION, ...SERVING, ...APPL, USER]
@@ -227,18 +253,16 @@ const nodeById = (id: string) => ALL_NODES.find(n => n.id === id)
 function arrowPath(e: EdgeDef): string {
   const a = nodeById(e.from); const b = nodeById(e.to)
   if (!a || !b) return ''
-  const ax = a.x + a.w / 2, ay = a.y + a.h / 2
-  const bx = b.x + b.w / 2, by = b.y + b.h / 2
-
-  // Horizontal same-row edge
+  const ay = a.y + a.h / 2
+  const by = b.y + b.h / 2
   if (Math.abs(ay - by) < 10) {
     return `M${a.x + a.w},${ay} L${b.x},${by}`
   }
-  // Vertical arrow (same column)
+  const ax = a.x + a.w / 2
+  const bx = b.x + b.w / 2
   if (Math.abs(ax - bx) < 10) {
     return `M${ax},${a.y + a.h} L${bx},${b.y}`
   }
-  // Corner route: horizontal then vertical
   const midX = (a.x + a.w + b.x) / 2
   return `M${a.x + a.w},${ay} L${midX},${ay} L${midX},${by} L${b.x},${by}`
 }
@@ -261,19 +285,18 @@ export default function DataFlowTab() {
           </div>
         </div>
 
-        <svg viewBox="0 0 1200 520" style={{ width: '100%', background: 'var(--bg-primary)', borderRadius: 6 }}>
+        <svg viewBox="0 0 1180 600" style={{ width: '100%', background: 'var(--bg-primary)', borderRadius: 6 }}>
           {/* Layer labels */}
           <text x="12" y="32"  fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SOURCES</text>
-          <text x="12" y="130" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">(external)</text>
-          <text x="230" y="32" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">MEDALLION · Delta · Unity Catalog</text>
-          <text x="230" y="252" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SERVING · AI</text>
-          <text x="230" y="392" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">APPLICATION</text>
+          <text x="220" y="32" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">MEDALLION · Delta · Unity Catalog</text>
+          <text x="220" y="306" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SERVING · AI</text>
+          <text x="220" y="426" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">APPLICATION</text>
 
           {/* Unity Catalog governance boundary */}
-          <rect x="270" y="40" width="570" height="320" fill="none" stroke="#F39C12" strokeWidth="1"
-                strokeDasharray="6 4" rx="10" opacity="0.8" />
-          <text x="560" y="37" textAnchor="middle" fill="#F39C12" fontSize="11" fontWeight="600" fontFamily="monospace">
-            Unity Catalog · governance · tags · row filters · masks
+          <rect x="270" y="40" width="540" height="360" fill="none" stroke="#F39C12" strokeWidth="1"
+                strokeDasharray="6 4" rx="10" opacity="0.85" />
+          <text x="540" y="37" textAnchor="middle" fill="#F39C12" fontSize="11" fontWeight="600" fontFamily="monospace">
+            Unity Catalog · governance · tags · row filters · masks · UC Functions · Vector Search
           </text>
 
           <defs>
@@ -282,7 +305,6 @@ export default function DataFlowTab() {
             </marker>
           </defs>
 
-          {/* Edges */}
           {EDGES.map((e, i) => {
             const d = arrowPath(e)
             const col = e.color || '#6b7280'
@@ -292,14 +314,13 @@ export default function DataFlowTab() {
                       strokeDasharray={e.dashed ? '5 4' : 'none'}
                       markerEnd="url(#dfArrow)" opacity="0.85" />
                 <text fontSize="9" fill={col} fontFamily="monospace">
-                  <textPath href={`#label-path-${i}`} startOffset="40%" textAnchor="middle">{e.label}</textPath>
+                  <textPath href={`#label-path-${i}`} startOffset="42%" textAnchor="middle">{e.label}</textPath>
                 </text>
                 <path id={`label-path-${i}`} d={d} fill="none" stroke="none" />
               </g>
             )
           })}
 
-          {/* Nodes */}
           {ALL_NODES.map(n => (
             <g key={n.id} style={{ cursor: 'pointer' }} onClick={() => setSelected(n.id)}>
               <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="6"
@@ -307,21 +328,20 @@ export default function DataFlowTab() {
                     strokeWidth={selected === n.id ? 2 : 1.2} />
               {n.badge && (
                 <>
-                  <rect x={n.x + 8} y={n.y + 6} width="48" height="15" rx="3" fill={n.color} opacity="0.25" />
-                  <text x={n.x + 32} y={n.y + 17} textAnchor="middle" fill={n.color} fontSize="9"
+                  <rect x={n.x + 8} y={n.y + 6} width="58" height="14" rx="3" fill={n.color} opacity="0.25" />
+                  <text x={n.x + 37} y={n.y + 16} textAnchor="middle" fill={n.color} fontSize="9"
                         fontFamily="monospace" fontWeight="700">{n.badge}</text>
                 </>
               )}
-              <text x={n.x + n.w / 2} y={n.y + 40} textAnchor="middle" fill="var(--text-primary)"
-                    fontSize="13" fontWeight="600">{n.label}</text>
-              <text x={n.x + n.w / 2} y={n.y + 54} textAnchor="middle" fill="var(--text-muted)"
-                    fontSize="10" fontFamily="monospace">{n.sub}</text>
+              <text x={n.x + n.w / 2} y={n.y + 38} textAnchor="middle" fill="var(--text-primary)"
+                    fontSize="12" fontWeight="600">{n.label}</text>
+              <text x={n.x + n.w / 2} y={n.y + 51} textAnchor="middle" fill="var(--text-muted)"
+                    fontSize="9" fontFamily="monospace">{n.sub}</text>
             </g>
           ))}
         </svg>
       </div>
 
-      {/* Detail panel */}
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border)',
         borderRadius: 8, padding: 16,
@@ -352,14 +372,14 @@ export default function DataFlowTab() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
-                { h: '1 · Ingest',     c: 'OSDU → Bronze via connector. FRED crude via HTTP. Everything lands in Delta, governed by Unity Catalog.', col: '#27AE60' },
-                { h: '2 · Transform',  c: 'DLT cleans Bronze → Silver. Silver joins into a Gold search table with CDF for Vector Search syncing.', col: '#CD6116' },
-                { h: '3 · Serve',      c: 'Vector Search indexes the Gold text; UC Functions expose NPV, break-even, decline forecasts; Genie owns NL→SQL.', col: '#4dabf7' },
-                { h: '4 · Reason',     c: 'The Expert Agent (Claude Sonnet 4.5) orchestrates tools — VS + UC Fn + context — and returns an answer with trace.', col: '#9254de' },
-                { h: 'Governance',     c: 'UC row filters + column masks apply on lat/lon and drilling_result depending on persona group membership.', col: '#F39C12' },
-                { h: 'OBO auth',       c: 'Databricks Apps forwards X-Forwarded-Access-Token. SQL queries, Vector Search, and Genie run as the user, not the app SP.', col: '#2980B9' },
-                { h: 'Cache',          c: 'DuckDB in-process caches seeded OSDU + synthetic economics for sub-ms reads. No Lakebase dependency.', col: '#16A085' },
-                { h: 'UI',             c: 'React 18 + Recharts + SVG 3D. Dark theme. Built once, served static from FastAPI. Floating Genie on every tab.', col: '#73d13d' },
+                { h: '1 · Ingest',       c: 'OSDU lands in Bronze via connector. FRED + WB CO₂ arrive as Delta-Shared catalogs from Marketplace.', col: '#27AE60' },
+                { h: '2 · Transform',    c: 'DLT cleans Bronze → Silver. Silver joins into a Gold search table with CDF for Vector Search syncing.', col: '#CD6116' },
+                { h: '3 · Serve',        c: 'Vector Search indexes Gold; UC Functions expose NPV / break-even / decline; Genie owns NL→SQL over OSDU.', col: '#4dabf7' },
+                { h: '4 · Reason',       c: 'Expert Agent (Claude Sonnet 4.5) orchestrates tools — VS + UC Fn + context — and returns answers with trace.', col: '#9254de' },
+                { h: 'Persistence',      c: 'DuckDB caches reads in-process for sub-ms responses. Lakebase Postgres holds the journal + alerts that need to outlive the app.', col: '#16A085' },
+                { h: 'Governance',       c: 'Unity Catalog row filters + column masks gate lat/lon and drilling_result by persona group membership — same plane covers Marketplace data.', col: '#F39C12' },
+                { h: 'OBO auth',         c: 'Databricks Apps forwards X-Forwarded-Access-Token. SQL, Vector Search, Genie, and Lakebase all run as the user, not the app SP.', col: '#2980B9' },
+                { h: 'UI',               c: 'React 18 + Recharts + SVG 3D. 7 tabs + floating Genie. Built static, served by FastAPI. Operator journal writes flow back to Lakebase.', col: '#73d13d' },
               ].map(c => (
                 <div key={c.h} style={{
                   background: 'var(--bg-panel)', border: '1px solid var(--border)',

@@ -13,6 +13,47 @@ import random
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILWTICO"
 
 
+def _fetch_fred_marketplace(years_back: int) -> list[tuple[datetime.date, float]]:
+    """Pull WTI from the Marketplace-installed FRED Delta share if present."""
+    import os
+    try:
+        from databricks import sql
+        from databricks.sdk.core import Config
+    except Exception:
+        return []
+    cat = os.getenv("FRED_CATALOG", "fred_wti")
+    cfg = Config()
+    host = (os.getenv("DATABRICKS_HOST") or cfg.host or "").replace("https://", "").rstrip("/")
+    wh = os.getenv("DATABRICKS_WAREHOUSE_ID", "186af4be97756033")
+    cutoff = (datetime.date.today() - datetime.timedelta(days=365 * years_back)).isoformat()
+    try:
+        with sql.connect(
+            server_hostname=host,
+            http_path=f"/sql/1.0/warehouses/{wh}",
+            credentials_provider=lambda: cfg.authenticate,
+        ) as c, c.cursor() as cur:
+            cur.execute(
+                f"SELECT DATE, DCOILWTICO FROM `{cat}`.fs_fred.fred_DCOILWTICO "
+                f"WHERE DATE >= DATE '{cutoff}' AND DCOILWTICO IS NOT NULL ORDER BY DATE"
+            )
+            rows = cur.fetchall_arrow().to_pylist()
+    except Exception as e:
+        print(f"FRED Marketplace query failed: {e}")
+        return []
+    out: list[tuple[datetime.date, float]] = []
+    for r in rows:
+        d = r.get("DATE")
+        p = r.get("DCOILWTICO")
+        if d is None or p is None:
+            continue
+        try:
+            dd = d if isinstance(d, datetime.date) else datetime.date.fromisoformat(str(d))
+            out.append((dd, float(p)))
+        except Exception:
+            continue
+    return out
+
+
 def _fetch_fred(years_back: int) -> list[tuple[datetime.date, float]]:
     try:
         import httpx
@@ -72,10 +113,15 @@ def _synthetic_series(years_back: int) -> list[tuple[datetime.date, float]]:
 
 
 def fetch_wti_prices(years_back: int = 3) -> list[tuple[datetime.date, float]]:
-    """Return [(date, price_usd), ...] for the last N years."""
+    """Return [(date, price_usd), ...] for the last N years.
+    Priority: Marketplace FRED share → public CSV → synthetic fallback."""
+    rows = _fetch_fred_marketplace(years_back)
+    if rows:
+        print(f"WTI: Marketplace FRED share returned {len(rows)} rows")
+        return rows
     rows = _fetch_fred(years_back)
     if rows:
-        print(f"WTI: FRED returned {len(rows)} rows")
+        print(f"WTI: FRED public CSV returned {len(rows)} rows")
         return rows
     rows = _synthetic_series(years_back)
     print(f"WTI: using synthetic fallback ({len(rows)} rows)")

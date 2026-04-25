@@ -34,15 +34,18 @@ except Exception:
 
 SYSTEM = """You are the Subsurface Intelligence Expert Agent — a senior upstream O&G petrotech analyst backed by Databricks tools.
 
-You have these tools available:
-- get_well_context: load formation, QC, anomaly, economics for a specific well_id from local DuckDB.
-- search_similar_wells: semantic Vector Search over live OSDU wellbore metadata; use to find analog wells.
+Tools available:
+- get_well_context(well_id): load formation, QC, anomaly, economics for a single well from local DuckDB.
+- search_similar_wells(query_text, k): semantic Vector Search over OSDU wellbore metadata; find analog wells.
+- query_genie(question): ask Databricks Genie a natural-language question — Genie writes the SQL over live OSDU tables and returns rows. Use for aggregations, top-N, cross-well lookups.
 - calculate_npv: Unity Catalog Function, NPV₁₀ in $M given capex, opex, rate, decline, wti, years.
 - calculate_break_even: UC Function, break-even WTI $/bbl.
 - forecast_decline_curve: UC Function, Arps decline forecast, returns [year, rate_bopd] pairs.
 
 Rules:
 - Use tools whenever a user question needs data you don't have in the message.
+- Prefer query_genie for any question that smells like SQL ("how many", "top N", "average X by Y").
+- Prefer get_well_context when the user names a specific well_id and needs depth/QC details.
 - Always cite the specific well_id / values you used.
 - Keep answers crisp. Lead with the recommendation, then supporting numbers.
 - If a tool errors, report it and fall back to reasoning from what you have.
@@ -126,6 +129,26 @@ TOOLS = [
                     "years":          {"type": "integer", "default": 10},
                 },
                 "required": ["peak_rate_bopd", "decline_pct_yr"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "query_genie",
+            "description": (
+                "Ask Databricks Genie a natural-language question over the live OSDU tables "
+                "(silver_wellbore, silver_reservoir, silver_rock_and_fluid, gov_legal_tags, gov_entitlements). "
+                "Genie writes the SQL and returns rows. Use this for cross-well aggregations, top-N lookups, "
+                "filtered counts, or anything that needs a SQL query. Don't use for single-well context "
+                "(use get_well_context) or for semantic similarity (use search_similar_wells)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string", "description": "natural-language question"},
+                },
+                "required": ["question"],
             },
         },
     },
@@ -255,6 +278,38 @@ async def tool_forecast_decline(peak_rate_bopd, decline_pct_yr, b_factor=0.5, ye
         return f"forecast_decline error: {e}"
 
 
+async def tool_query_genie(question: str) -> str:
+    """Proxy to Genie Conversation API. Returns formatted SQL + result rows for the agent."""
+    try:
+        from .genie import _ask_sync
+        result = await asyncio.to_thread(_ask_sync, question, None)
+    except Exception as e:
+        return f"Genie error: {e}"
+    if isinstance(result, dict) and result.get("error"):
+        return f"Genie error: {result['error']}"
+
+    parts = []
+    sql = result.get("sql") if isinstance(result, dict) else None
+    if sql:
+        parts.append(f"GENERATED SQL:\n{sql}")
+    cols = result.get("columns") if isinstance(result, dict) else None
+    rows = result.get("rows") if isinstance(result, dict) else None
+    if rows:
+        if cols:
+            parts.append("RESULT (top 20 rows):")
+            parts.append("  " + " | ".join(str(c) for c in cols))
+            for r in rows[:20]:
+                parts.append("  " + " | ".join("" if v is None else str(v) for v in r))
+            if len(rows) > 20:
+                parts.append(f"  … {len(rows) - 20} more rows truncated")
+        else:
+            parts.append(f"RESULT: {rows[:20]}")
+    text = result.get("text") if isinstance(result, dict) else None
+    if text and text not in ("(Genie returned no text)", ""):
+        parts.append(f"GENIE COMMENTARY: {text}")
+    return "\n".join(parts) if parts else "(Genie returned no answer)"
+
+
 TOOL_IMPL = {
     "get_well_context":     lambda a: tool_get_well_context(a.get("well_id")),
     "search_similar_wells": lambda a: tool_search_similar_wells(a.get("query_text", ""), a.get("k", 5)),
@@ -267,6 +322,7 @@ TOOL_IMPL = {
     "forecast_decline_curve": lambda a: tool_forecast_decline(
         a.get("peak_rate_bopd"), a.get("decline_pct_yr"),
         a.get("b_factor", 0.5), a.get("years", 10)),
+    "query_genie":          lambda a: tool_query_genie(a.get("question", "")),
 }
 
 
@@ -280,26 +336,36 @@ class ChatReq(BaseModel):
 
 
 def _openai_call(messages: list, tools: list) -> Any:
-    """Call Databricks-hosted Claude via OpenAI-compatible API."""
+    """Call Databricks-hosted Claude via the OpenAI-compatible chat endpoint.
+    Use the SDK's API client so auth (OBO or SP) is handled correctly."""
     from databricks.sdk import WorkspaceClient
     w = WorkspaceClient()
-    # Use raw HTTP since serving_endpoints.query typed signature doesn't map clean to tools
-    import urllib.request
-    import urllib.parse
-    host = (os.getenv("DATABRICKS_HOST") or w.config.host or "").rstrip("/")
-    token = w.config.authenticate().get("Authorization", "").replace("Bearer ", "")
-    url = f"{host}/serving-endpoints/{MODEL_ENDPOINT}/invocations"
-    body = json.dumps({
-        "messages": messages,
-        "tools":    tools,
-        "max_tokens": 1024,
+    # The SDK exposes serving_endpoints.query, but tool-calling needs the full
+    # OpenAI-shape body. We POST through the SDK's authenticated http client to
+    # /serving-endpoints/<name>/invocations so auth + retries are reused.
+    body = {
+        "messages":    messages,
+        "tools":       tools,
+        "max_tokens":  1024,
         "temperature": 0.2,
-    }).encode()
-    req = urllib.request.Request(url, data=body, headers={
-        "Authorization": f"Bearer {token}",
-        "Content-Type":  "application/json",
-    })
-    with urllib.request.urlopen(req, timeout=45) as resp:
+    }
+    api = w.api_client
+    # Cross-version SDK: prefer api_client.do, fall back to direct request
+    if hasattr(api, "do"):
+        return api.do(
+            "POST",
+            f"/serving-endpoints/{MODEL_ENDPOINT}/invocations",
+            body=body,
+        )
+    import urllib.request, urllib.parse  # noqa
+    host = (w.config.host or "").rstrip("/")
+    if not host.startswith("http"):
+        host = "https://" + host
+    headers = dict(w.config.authenticate())
+    headers["Content-Type"] = "application/json"
+    url = f"{host}/serving-endpoints/{MODEL_ENDPOINT}/invocations"
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers)
+    with urllib.request.urlopen(req, timeout=60) as resp:
         return json.loads(resp.read())
 
 
