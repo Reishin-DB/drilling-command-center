@@ -7,61 +7,97 @@ interface Msg {
   columns?: string[]
   rows?: any[][]
   error?: string
+  cached?: boolean
 }
 
 const SAMPLE_QUESTIONS = [
-  'How many wellbores per platform?',
-  'Top 5 reservoirs by OOIP',
-  'Average permeability by formation',
-  'Surface lat/lon of producers',
-  'Most-used entitlement groups',
+  'Which operator wells are in the money at current WTI?',
+  'Show each well with its NPV and ADME analog',
+  '30-day WTI average vs latest spot',
+  'Wells with NPT > 30h in the last 30 days',
+  'Average porosity by formation in the operator fleet',
 ]
 
 export default function GenieSidebar() {
-  const [open, setOpen] = useState(false)
-  const [q, setQ] = useState('')
-  const [msgs, setMsgs] = useState<Msg[]>([])
-  const [conv, setConv] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [open, setOpen]     = useState(false)
+  const [q, setQ]           = useState('')
+  const [msgs, setMsgs]     = useState<Msg[]>([])
+  const [conv, setConv]     = useState<string | null>(null)
+  const [loading, setLoad]  = useState(false)
+  const [stage, setStage]   = useState<{ msg: string; elapsed_ms: number } | null>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight })
-  }, [msgs, loading])
+  }, [msgs, loading, stage])
 
   async function ask(text: string) {
     if (!text.trim() || loading) return
     setMsgs(m => [...m, { role: 'user', text }])
     setQ('')
-    setLoading(true)
+    setLoad(true); setStage({ msg: 'Connecting', elapsed_ms: 0 })
+
+    const ac = new AbortController(); abortRef.current = ac
     try {
-      const res = await fetch('/api/genie/ask', {
+      const resp = await fetch('/api/genie/ask_stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, conversation_id: conv }),
-      }).then(r => r.json())
-      if (res.error) {
-        setMsgs(m => [...m, { role: 'genie', error: res.error }])
-      } else {
-        setConv(res.conversation_id || conv)
-        setMsgs(m => [...m, {
-          role: 'genie',
-          text: res.text,
-          sql: res.sql,
-          columns: res.columns,
-          rows: res.rows,
-        }])
+        body:   JSON.stringify({ question: text, conversation_id: conv }),
+        signal: ac.signal,
+      })
+      if (!resp.body) throw new Error('no body')
+      const reader = resp.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        let nl: number
+        while ((nl = buf.indexOf('\n\n')) >= 0) {
+          const chunk = buf.slice(0, nl); buf = buf.slice(nl + 2)
+          let ev = 'message', dataStr = ''
+          for (const line of chunk.split('\n')) {
+            if (line.startsWith('event:')) ev = line.slice(6).trim()
+            else if (line.startsWith('data:')) dataStr += line.slice(5).trim()
+          }
+          if (!dataStr) continue
+          let data: any
+          try { data = JSON.parse(dataStr) } catch { continue }
+          if (ev === 'status') {
+            setStage({ msg: data.msg || 'Working', elapsed_ms: data.elapsed_ms || 0 })
+          } else if (ev === 'answer') {
+            if (data.error) {
+              setMsgs(m => [...m, { role: 'genie', error: data.error }])
+            } else {
+              setConv(data.conversation_id || conv)
+              setMsgs(m => [...m, {
+                role: 'genie',
+                text: data.text, sql: data.sql,
+                columns: data.columns, rows: data.rows,
+                cached: !!data._cached,
+              }])
+            }
+          } else if (ev === 'done') {
+            // no-op; loop will exit on stream close
+          }
+        }
       }
     } catch (e: any) {
-      setMsgs(m => [...m, { role: 'genie', error: String(e) }])
+      if (e.name !== 'AbortError') setMsgs(m => [...m, { role: 'genie', error: String(e.message || e) }])
     } finally {
-      setLoading(false)
+      setLoad(false); setStage(null); abortRef.current = null
     }
+  }
+
+  function cancel() {
+    abortRef.current?.abort()
+    setLoad(false); setStage(null)
   }
 
   return (
     <>
-      {/* Floating launcher */}
       <button onClick={() => setOpen(!open)} style={{
         position: 'fixed', bottom: 20, right: 20, zIndex: 50,
         width: 52, height: 52, borderRadius: 26,
@@ -76,7 +112,7 @@ export default function GenieSidebar() {
       {open && (
         <div style={{
           position: 'fixed', bottom: 84, right: 20, zIndex: 49,
-          width: 420, height: 560,
+          width: 440, height: 580,
           background: 'var(--bg-card)',
           border: '1px solid var(--border)',
           borderRadius: 12,
@@ -87,25 +123,30 @@ export default function GenieSidebar() {
           <div style={{
             padding: '12px 16px', borderBottom: '1px solid var(--border)',
             background: 'var(--bg-panel)',
+            display: 'flex', alignItems: 'center', gap: 10,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 18 }}>✨</span>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>Genie · OSDU</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                  Natural language over 5 ADME tables
-                </div>
+            <span style={{ fontSize: 18 }}>✨</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>Genie · ADME Live</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                Operator wells · WTI market · ADME analog data
               </div>
             </div>
+            {loading && (
+              <button onClick={cancel} style={{
+                background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)',
+                borderRadius: 6, padding: '3px 10px', fontSize: 11, cursor: 'pointer',
+              }}>Cancel</button>
+            )}
           </div>
 
           {/* Body */}
           <div ref={bodyRef} style={{
             flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10,
           }}>
-            {msgs.length === 0 && (
+            {msgs.length === 0 && !loading && (
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                <div style={{ marginBottom: 10 }}>Ask anything about OSDU wellbore, reservoir, rock-and-fluid or governance data. Examples:</div>
+                <div style={{ marginBottom: 10 }}>Ask anything about ADME wellbore, reservoir, rock-and-fluid or governance data. Examples:</div>
                 {SAMPLE_QUESTIONS.map(s => (
                   <button key={s} onClick={() => ask(s)} style={{
                     display: 'block', width: '100%', textAlign: 'left', marginBottom: 6,
@@ -116,12 +157,22 @@ export default function GenieSidebar() {
                 ))}
               </div>
             )}
-            {msgs.map((m, i) => (
-              <MsgBubble key={i} m={m} />
-            ))}
-            {loading && (
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                <span style={{ color: 'var(--teal)' }}>✨ Genie is thinking</span>…
+            {msgs.map((m, i) => <MsgBubble key={i} m={m} />)}
+            {loading && stage && (
+              <div style={{
+                background: 'var(--bg-panel)', border: '1px solid var(--border)',
+                borderRadius: 10, padding: '8px 12px', fontSize: 11, color: 'var(--text-secondary)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{
+                  display: 'inline-block', width: 8, height: 8, borderRadius: 4,
+                  background: 'var(--teal)', animation: 'genie-pulse 1.1s infinite',
+                }} />
+                <span style={{ color: 'var(--teal)', fontWeight: 600 }}>{stage.msg}</span>
+                <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 10 }}>
+                  {(stage.elapsed_ms / 1000).toFixed(1)}s
+                </span>
+                <style>{`@keyframes genie-pulse { 0%,100% { opacity:.35 } 50% { opacity:1 } }`}</style>
               </div>
             )}
           </div>
@@ -132,11 +183,12 @@ export default function GenieSidebar() {
           }}>
             <input
               value={q} onChange={e => setQ(e.target.value)}
-              placeholder="Ask a question…"
+              placeholder={loading ? 'Genie is working…' : 'Ask a question…'}
               disabled={loading}
               style={{
                 flex: 1, background: 'var(--bg-panel)', border: '1px solid var(--border)',
                 borderRadius: 6, padding: '8px 10px', fontSize: 12, color: 'var(--text-primary)',
+                opacity: loading ? 0.6 : 1,
               }}
             />
             <button type="submit" disabled={loading || !q.trim()} style={{

@@ -9,7 +9,7 @@ async def get_logs(
     well_id: str,
     depth_min: float = Query(default=None),
     depth_max: float = Query(default=None),
-    thin: int = Query(default=1, description="Thinning factor: 1=all, 2=every 2nd, etc."),
+    thin: int = Query(default=4, description="Thinning factor: 1=all, 4=every 4th. Default 4 for fast first paint."),
 ):
     # Determine depth range
     if depth_min is None or depth_max is None:

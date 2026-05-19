@@ -41,29 +41,34 @@ def _args(params: Iterable[Any]) -> list:
 
 
 class _DuckStore:
-    """Thread-safe wrapper around a single DuckDB connection."""
+    """Wrapper around a DuckDB connection. Reads use per-call cursors so they
+    can run concurrently from FastAPI worker threads (DuckDB supports concurrent
+    cursors on a single connection for SELECTs). Writes still serialize through
+    a lock so the seed/journal path stays correct."""
 
     def __init__(self) -> None:
         path = os.environ.get("DCC_DB_PATH", ":memory:")
         self._conn = duckdb.connect(path)
-        self._lock = threading.Lock()
+        self._write_lock = threading.Lock()
 
     def execute(self, sql: str, params: tuple = ()) -> None:
         sql = _rewrite_sql(sql)
-        with self._lock:
+        with self._write_lock:
             self._conn.execute(sql, _args(params))
 
     def executemany(self, sql: str, seq_of_params) -> None:
         sql = _rewrite_sql(sql)
-        with self._lock:
+        with self._write_lock:
             self._conn.executemany(sql, [_args(p) for p in seq_of_params])
 
     def fetch(self, sql: str, params: tuple = ()) -> list[dict]:
         sql = _rewrite_sql(sql)
-        with self._lock:
-            cur = self._conn.execute(sql, _args(params))
-            cols = [d[0] for d in cur.description] if cur.description else []
-            rows = cur.fetchall()
+        # Per-call cursor — no global lock for reads. Multiple FastAPI workers
+        # can hit DuckDB simultaneously without queueing.
+        cur = self._conn.cursor()
+        cur.execute(sql, _args(params))
+        cols = [d[0] for d in cur.description] if cur.description else []
+        rows = cur.fetchall()
         return [dict(zip(cols, r)) for r in rows]
 
     def fetchrow(self, sql: str, params: tuple = ()) -> dict | None:
@@ -72,7 +77,7 @@ class _DuckStore:
 
     def executescript(self, sql: str) -> None:
         sql = _rewrite_sql(sql)
-        with self._lock:
+        with self._write_lock:
             for stmt in _split_ddl(sql):
                 if stmt.strip():
                     self._conn.execute(stmt)

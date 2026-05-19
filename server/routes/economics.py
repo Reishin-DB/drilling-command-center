@@ -1,13 +1,29 @@
 """Economics endpoints — combines OSDU wells with live WTI prices to compute NPV/IRR."""
+import time
 from fastapi import APIRouter
 from ..db import db
 
 router = APIRouter()
 
+# Cache aggregates for 15s — Overview + Economics tabs both hit these endpoints.
+_CACHE: dict[str, tuple[float, object]] = {}
+_TTL_S = 120
+
+def _cache_get(key):
+    e = _CACHE.get(key)
+    if e and time.time() - e[0] < _TTL_S:
+        return e[1]
+    return None
+
+def _cache_set(key, val):
+    _CACHE[key] = (time.time(), val)
+
 
 @router.get("/economics/summary")
 async def economics_summary():
     """Per-well economics joined with current WTI price."""
+    cached = _cache_get("summary")
+    if cached: return cached
     latest_price = await db.fetchrow(
         "SELECT price_date, price_usd FROM las.wti_prices ORDER BY price_date DESC LIMIT 1"
     )
@@ -48,7 +64,7 @@ async def economics_summary():
             "margin_per_bbl":  round(wti_now - be, 2),
         })
 
-    return {
+    out = {
         "wti_spot": wti_now,
         "wti_date": wti_date,
         "total_capex_musd": round(sum(w["capex_musd"] for w in enriched), 1),
@@ -56,18 +72,24 @@ async def economics_summary():
         "total_co2_tonnes_yr": round(sum(w["co2_tonnes_yr"] for w in enriched)),
         "wells": enriched,
     }
+    _cache_set("summary", out)
+    return out
 
 
 @router.get("/economics/prices")
 async def price_history():
+    cached = _cache_get("prices")
+    if cached: return cached
     rows = await db.fetch(
         "SELECT price_date, price_usd FROM las.wti_prices ORDER BY price_date"
     )
-    return [
+    out = [
         {"date": r["price_date"].isoformat() if r.get("price_date") else None,
          "price": float(r["price_usd"])}
         for r in rows
     ]
+    _cache_set("prices", out)
+    return out
 
 
 @router.get("/economics/{well_id}/curve")

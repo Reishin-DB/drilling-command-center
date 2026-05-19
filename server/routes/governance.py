@@ -1,5 +1,6 @@
 """Governance endpoints: personas, legal tags, persona-filtered well views."""
 import os
+import time
 from fastapi import APIRouter
 from ..db import db
 
@@ -8,6 +9,22 @@ router = APIRouter()
 CATALOG = os.getenv("ADME_CATALOG", "adme_adb_sbx_scus_dbx_ws_1")
 SCHEMA  = os.getenv("ADME_SCHEMA", "adme_client_demo")
 WAREHOUSE_ID = os.getenv("DATABRICKS_WAREHOUSE_ID", "186af4be97756033")
+
+# Process-local cache for slow UC/marketplace queries. Warehouse cold-start
+# + 2 queries can take 5-10s; legal-tags/audit/co2 only change on a slow cadence,
+# so 10 min is fine and survives multi-tab demos. The startup warmup +
+# periodic refresh keep the cache hot.
+_CACHE: dict[str, tuple[float, dict]] = {}
+_CACHE_TTL_S = 600
+
+def _cache_get(key: str):
+    e = _CACHE.get(key)
+    if e and time.time() - e[0] < _CACHE_TTL_S:
+        return e[1]
+    return None
+
+def _cache_set(key: str, value: dict):
+    _CACHE[key] = (time.time(), value)
 
 
 @router.get("/governance/personas")
@@ -80,7 +97,10 @@ async def persona_view(persona: str):
 
 @router.get("/governance/legal_tags")
 async def legal_tags():
-    """OSDU legal tags — live from Unity Catalog."""
+    """ADME legal tags + entitlement groups — live from Unity Catalog (cached 60s)."""
+    cached = _cache_get("legal_tags")
+    if cached:
+        return cached
     try:
         from databricks import sql
         from databricks.sdk.core import Config
@@ -95,12 +115,14 @@ async def legal_tags():
             rows = cur.fetchall_arrow().to_pylist()
             cur.execute(f"SELECT group_id, group_name, description FROM `{CATALOG}`.`{SCHEMA}`.gov_entitlements LIMIT 50")
             groups = cur.fetchall_arrow().to_pylist()
-        return {
+        out = {
             "source": f"{CATALOG}.{SCHEMA}",
             "legal_tags": rows,
             "entitlement_groups": groups[:15],
             "total_groups": len(groups),
         }
+        _cache_set("legal_tags", out)
+        return out
     except Exception as e:
         print(f"legal_tags fetch error: {e}")
         return {"source": f"{CATALOG}.{SCHEMA}", "legal_tags": [], "entitlement_groups": [], "error": str(e)}
@@ -108,7 +130,10 @@ async def legal_tags():
 
 @router.get("/governance/co2")
 async def co2_emissions(top: int = 12):
-    """ESG layer — country CO2 emissions from the Rearc/World Bank Marketplace share."""
+    """ESG layer — country CO2 emissions from the Rearc/World Bank Marketplace share (cached 60s)."""
+    cached = _cache_get(f"co2:{top}")
+    if cached:
+        return cached
     cat    = os.getenv("WB_CO2_CATALOG", "rearc_co2_emissions_kt_world_bank_open_data")
     schema = os.getenv("WB_CO2_SCHEMA",  "fs_world_bank_data_weekly")
     table  = os.getenv("WB_CO2_TABLE",   "co2_emissions")
@@ -137,12 +162,14 @@ async def co2_emissions(top: int = 12):
             """)
             cols = [d[0] for d in cur.description]
             rows = [dict(zip(cols, r)) for r in cur.fetchall()]
-            return {
+            out = {
                 "installed": True,
                 "source": f"{cat}.{schema}.{table}",
                 "year": year,
                 "rows": rows,
             }
+            _cache_set(f"co2:{top}", out)
+            return out
     except Exception as e:
         return {"installed": False, "error": str(e), "rows": []}
 
@@ -153,9 +180,9 @@ async def uc_lineage_chain():
     return {
         "chain": [
             {
-                "step": "OSDU",
+                "step": "ADME",
                 "title": "Source legal tag",
-                "detail": "Records tagged in OSDU with purposes, export-control flags and data partitions.",
+                "detail": "Records tagged in ADME with purposes, export-control flags and data partitions.",
                 "examples": ["not-export-controlled", "oil-gas-wellbore", "opendes-public"],
             },
             {
@@ -172,3 +199,68 @@ async def uc_lineage_chain():
             },
         ],
     }
+
+
+@router.get("/governance/audit")
+async def audit_events(limit: int = 12):
+    """Recent access events. Tries system.access.audit; falls back to synthetic."""
+    cached = _cache_get(f"audit:{limit}")
+    if cached:
+        return cached
+    try:
+        from databricks import sql
+        from databricks.sdk.core import Config
+        cfg = Config()
+        host = (os.getenv("DATABRICKS_HOST") or cfg.host or "").replace("https://", "").rstrip("/")
+        with sql.connect(
+            server_hostname=host,
+            http_path=f"/sql/1.0/warehouses/{WAREHOUSE_ID}",
+            credentials_provider=lambda: cfg.authenticate,
+        ) as c, c.cursor() as cur:
+            cur.execute(f"""
+                SELECT event_time, user_identity.email AS actor, action_name AS action,
+                       service_name AS service, response.status_code AS status
+                FROM system.access.audit
+                WHERE event_date >= current_date() - INTERVAL 1 DAY
+                  AND service_name IN ('unityCatalog','sqlServerlessExecution','databrickssql','apps')
+                ORDER BY event_time DESC LIMIT {int(limit)}
+            """)
+            cols = [d[0] for d in cur.description]
+            rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+            for r in rows:
+                if hasattr(r.get("event_time"), "isoformat"):
+                    r["event_time"] = r["event_time"].isoformat()
+            out = {"source": "system.access.audit", "events": rows, "synthetic": False}
+            _cache_set(f"audit:{limit}", out)
+            return out
+    except Exception as e:
+        # Fallback: deterministic synthetic events that still tell a real governance story
+        import datetime as _dt
+        now = _dt.datetime.utcnow()
+        seeds = [
+            ("operator@energy.com",   "getTable",   "unityCatalog",          200, "adme_osdu.bronze_wellbore"),
+            ("analyst@energy.com",    "queryStart", "databrickssql",         200, "wellbore_search_source"),
+            ("external@partner.com",  "queryStart", "databrickssql",         403, "row filter: status IN ('gold','corrected')"),
+            ("operator@energy.com",   "updateRow",  "apps",                  200, "journal entry · BAKER-001"),
+            ("svc-app@databricks",    "getTable",   "unityCatalog",          200, "gov_legal_tags"),
+            ("analyst@energy.com",    "queryStart", "databrickssql",         200, "lat/lon column masked"),
+            ("external@partner.com",  "getTable",   "unityCatalog",          403, "ADME legal-tag denied: export-controlled"),
+            ("operator@energy.com",   "getTable",   "unityCatalog",          200, "silver_wellbore"),
+            ("svc-app@databricks",    "getModel",   "modelServing",          200, "claude-3-5-sonnet (expert agent)"),
+            ("analyst@energy.com",    "getTable",   "unityCatalog",          200, "wellbore_search_source"),
+            ("operator@energy.com",   "queryStart", "databrickssql",         200, "geomechanics_curves"),
+            ("external@partner.com",  "getTable",   "unityCatalog",          200, "wellbore_search_source"),
+        ]
+        events = []
+        for i, (actor, action, service, status, target) in enumerate(seeds[:limit]):
+            events.append({
+                "event_time": (now - _dt.timedelta(minutes=2 + i * 7)).isoformat() + "Z",
+                "actor": actor,
+                "action": action,
+                "service": service,
+                "status": status,
+                "target": target,
+            })
+        out = {"source": "synthetic", "events": events, "synthetic": True, "note": str(e)[:120]}
+        _cache_set(f"audit:{limit}", out)
+        return out

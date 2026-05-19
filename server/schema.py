@@ -156,6 +156,45 @@ CREATE TABLE IF NOT EXISTS las.wti_prices (
     source          VARCHAR(32) DEFAULT 'FRED'
 );
 
+CREATE TABLE IF NOT EXISTS las.drilling_operations (
+    well_id                 VARCHAR(64) PRIMARY KEY,
+    rig_name                VARCHAR(64),
+    rig_contractor          VARCHAR(64),
+    rig_status              VARCHAR(32),
+    days_on_well            INTEGER,
+    npt_hours_last_30d      DOUBLE PRECISION,
+    casing_strings_set      INTEGER,
+    drilling_phase          VARCHAR(32),
+    current_md_ft           DOUBLE PRECISION,
+    rop_ft_per_hr           DOUBLE PRECISION,
+    mud_weight_ppg          DOUBLE PRECISION,
+    last_incident_date      DATE,
+    last_incident_severity  VARCHAR(16),
+    last_incident_desc      VARCHAR(256),
+    supply_chain_status     VARCHAR(32),
+    days_to_next_casing     INTEGER,
+    esp_health_pct          INTEGER,
+    mud_pump_health_pct     INTEGER,
+    updated_ts              TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS las.reservoir_simulated (
+    well_id                 VARCHAR(64) PRIMARY KEY,
+    formation_name          VARCHAR(64),
+    avg_porosity_frac       DOUBLE PRECISION,
+    avg_permeability_md     DOUBLE PRECISION,
+    avg_oil_saturation      DOUBLE PRECISION,
+    avg_water_saturation    DOUBLE PRECISION,
+    net_pay_ft              DOUBLE PRECISION,
+    original_oil_in_place_mmbbl DOUBLE PRECISION,
+    initial_pressure_psi    DOUBLE PRECISION,
+    reservoir_temp_f        DOUBLE PRECISION,
+    reservoir_depth_ft      DOUBLE PRECISION,
+    analog_well_id          VARCHAR(64),
+    analog_field            VARCHAR(64),
+    updated_ts              TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS las.drilling_journal (
     entry_id        BIGINT PRIMARY KEY DEFAULT nextval('las.seq_journal'),
     well_id         VARCHAR(64),
@@ -646,14 +685,117 @@ async def seed_data(conn):
             *p
         )
 
-    print(f"LAS seed data inserted: {len(_WELLS)} wells, {len(_RECIPES)} recipes, {len(personas)} personas.")
+    # ── Simulated drilling operations (rig, NPT, supply chain) for NA fleet ────
+    drilling_ops = [
+        # well_id,        rig,                contractor,    status,       days, npt_30d, csg, phase,     md,    rop, mud,  inc_date,    sev,        incident, supply,   next_csg, esp, pump
+        ("BAKER-001",     "Patterson 314",    "Patterson",   "drilling",     42, 36.5,    3, "production", 9450, 18.4, 9.6, "2026-04-22","minor",    "Hole pack-off at 8120 ft, cleared in 4 hr", "on schedule",     6,  91, 88),
+        ("BAKER-002",     "Patterson 207",    "Patterson",   "drilling",     58, 72.1,    3, "production", 9780, 14.1, 9.8, "2026-05-11","moderate", "Lost circulation in Brushy Basin shale",  "casing delayed", 12,  85, 82),
+        ("CONOCO-7H",     "Helmerich H&P 412","H&P",         "logging",      71, 28.0,    4, "evaluation", 9800, 0.0, 10.2, "2026-03-30","minor",    "Twist-off recovered with overshot",        "on schedule",     0,  93, 90),
+        ("MARATHON-15X",  "Independence 88",  "Independence","spud",          5,  2.5,    1, "surface",     940, 96.2, 8.8, None,         None,       None,                                       "on schedule",     3,  95, 96),
+        ("SHELL-3D",      "Nabors B-12",      "Nabors",      "completion",  108,  6.0,    4, "completion",10000,  0.0, 9.4, "2026-02-14","minor",    "Cement bond log re-run on lateral",        "on schedule",     0,  98, 95),
+        ("PIONEER-22S",   "Patterson 119",    "Patterson",   "drilling",     34, 41.8,    2, "intermediate",6200,16.7, 10.0,"2026-05-02","major",    "BHA failed at 5840 ft; tripped out clean", "BHA delayed",     8,  74, 78),
+    ]
+    for r in drilling_ops:
+        inc_date = None
+        try:
+            inc_date = datetime.date.fromisoformat(r[11]) if r[11] else None
+        except Exception:
+            pass
+        await conn.execute(
+            "INSERT INTO las.drilling_operations "
+            "(well_id, rig_name, rig_contractor, rig_status, days_on_well, npt_hours_last_30d, "
+            " casing_strings_set, drilling_phase, current_md_ft, rop_ft_per_hr, mud_weight_ppg, "
+            " last_incident_date, last_incident_severity, last_incident_desc, supply_chain_status, "
+            " days_to_next_casing, esp_health_pct, mud_pump_health_pct) "
+            "VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) "
+            "ON CONFLICT (well_id) DO UPDATE SET "
+            "rig_status=EXCLUDED.rig_status, days_on_well=EXCLUDED.days_on_well, "
+            "npt_hours_last_30d=EXCLUDED.npt_hours_last_30d, current_md_ft=EXCLUDED.current_md_ft, "
+            "rop_ft_per_hr=EXCLUDED.rop_ft_per_hr, mud_weight_ppg=EXCLUDED.mud_weight_ppg, "
+            "last_incident_date=EXCLUDED.last_incident_date, last_incident_desc=EXCLUDED.last_incident_desc, "
+            "supply_chain_status=EXCLUDED.supply_chain_status, esp_health_pct=EXCLUDED.esp_health_pct",
+            r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
+            inc_date, r[12], r[13], r[14], r[15], r[16], r[17],
+        )
+
+    # ── Simulated reservoir metrics for NA wells, with ADME analog references ──
+    # Each NA well is paired with an ADME analog (Norwegian Continental Shelf,
+    # Blocks 15/9 and 34/10) based on formation/reservoir similarity. The
+    # petrophysics values are simulated to match the analog's profile so the
+    # Supervisor's Petrophysics specialist has clean UC-shape data to reason over.
+    reservoir_sim = [
+        # well_id,         formation,                phi,   k_md, So,   Sw,   net_pay, OOIP, P_psi, T_F, depth_ft, analog,        analog_field
+        ("BAKER-001",     "Mancos / Westwater",      0.182, 145.0, 0.74, 0.22, 78,  18.4, 3200, 168, 9450, "15/9-F-1 A",   "Block 15/9"),
+        ("BAKER-002",     "Mancos / Brushy Basin",   0.155, 88.0,  0.71, 0.25, 62,  14.2, 3260, 172, 9780, "15/9-F-14",    "Block 15/9"),
+        ("CONOCO-7H",     "Lewis Shale / Almond",    0.142, 22.0,  0.66, 0.30, 95,  21.3, 4150, 184, 9800, "34/10-A-1 H",  "Block 34/10"),
+        ("MARATHON-15X",  "Wolfcamp A",              0.084, 0.18,  0.78, 0.20, 110, 28.0, 4900, 192, 9800, "34/10-7",      "Block 34/10"),
+        ("SHELL-3D",      "Woodbine / Tuscaloosa",   0.215, 320.0, 0.82, 0.16, 65,  32.5, 4400, 198, 10000,"15/9-F-11",    "Block 15/9"),
+        ("PIONEER-22S",   "Edwards Lime",            0.108, 2.8,   0.70, 0.27, 84,  19.7, 4250, 188, 9800, "34/10-B-1 H",  "Block 34/10"),
+    ]
+    for r in reservoir_sim:
+        await conn.execute(
+            "INSERT INTO las.reservoir_simulated "
+            "(well_id, formation_name, avg_porosity_frac, avg_permeability_md, avg_oil_saturation, "
+            " avg_water_saturation, net_pay_ft, original_oil_in_place_mmbbl, initial_pressure_psi, "
+            " reservoir_temp_f, reservoir_depth_ft, analog_well_id, analog_field) "
+            "VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) "
+            "ON CONFLICT (well_id) DO UPDATE SET "
+            "avg_porosity_frac=EXCLUDED.avg_porosity_frac, avg_permeability_md=EXCLUDED.avg_permeability_md, "
+            "avg_oil_saturation=EXCLUDED.avg_oil_saturation, analog_well_id=EXCLUDED.analog_well_id",
+            *r,
+        )
+
+    # ── Operator economics (was previously seeded inside seed_osdu_wells, but
+    # that now runs as a background task — moving here so Economics tab is
+    # populated immediately at startup) ─────────────────────────────────────────
+    operator_econ = [
+        # well_id,        capex,opex, peak, decl, BE, NPV10, IRR, payback, CO2
+        ("BAKER-001",     58.0, 4.1, 1800, 18, 42, 28.4, 32.0, 2.8, 2100),
+        ("BAKER-002",     52.0, 3.8, 1500, 20, 48, 14.2, 19.0, 3.8, 1900),
+        ("CONOCO-7H",     72.0, 5.2, 3200, 28, 52, 42.1, 38.0, 2.2, 3400),
+        ("MARATHON-15X",  48.0, 3.5, 1200, 25, 58,  8.6, 14.0, 4.5, 1700),
+        ("SHELL-3D",      65.0, 4.8, 2100, 15, 38, 55.8, 44.0, 2.1, 2400),
+        ("PIONEER-22S",   44.0, 3.2, 1400, 22, 51, 11.2, 17.0, 4.2, 1800),
+    ]
+    for (wid, capex, opex, rate, decl, be, npv, irr, pb, co2) in operator_econ:
+        await conn.execute(
+            "INSERT INTO las.well_economics (well_id, capex_musd, opex_musd_yr, peak_rate_bopd, "
+            "decline_pct_yr, wti_break_even, npv10_musd, irr_pct, payback_years, co2_tonnes_yr) "
+            "VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (well_id) DO UPDATE SET "
+            "capex_musd=EXCLUDED.capex_musd, opex_musd_yr=EXCLUDED.opex_musd_yr, "
+            "peak_rate_bopd=EXCLUDED.peak_rate_bopd, decline_pct_yr=EXCLUDED.decline_pct_yr, "
+            "wti_break_even=EXCLUDED.wti_break_even, npv10_musd=EXCLUDED.npv10_musd, "
+            "irr_pct=EXCLUDED.irr_pct, payback_years=EXCLUDED.payback_years, "
+            "co2_tonnes_yr=EXCLUDED.co2_tonnes_yr",
+            wid, capex, opex, rate, decl, be, npv, irr, pb, co2,
+        )
+
+    # ── Seed a minimal WTI price history so the Economics tab has something
+    # to render before the (slow) FRED Marketplace fetch finishes in the
+    # background. Generates 120 days of synthetic prices ~$78 ± $5. ─────────────
+    import math, random
+    rng = random.Random(20260518)
+    today = datetime.date.today()
+    for i in range(120, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        p = 78 + 4 * math.sin(i / 7.0) + 2 * math.cos(i / 21.0) + (rng.random() - 0.5) * 4
+        p = max(45.0, min(120.0, round(p, 2)))
+        await conn.execute(
+            "INSERT INTO las.wti_prices (price_date, price_usd, source) "
+            "VALUES ($1, $2, 'synthetic-bootstrap') ON CONFLICT (price_date) DO NOTHING",
+            d, p,
+        )
+
+    print(f"LAS seed data inserted: {len(_WELLS)} wells, {len(_RECIPES)} recipes, {len(personas)} personas, "
+          f"{len(drilling_ops)} drilling ops, {len(reservoir_sim)} reservoir sims, "
+          f"{len(operator_econ)} economics, 121 WTI bootstrap prices.")
 
 
 async def seed_osdu_wells(conn):
     """Append OSDU-sourced wells to las.wells (idempotent). Falls back silently
     if OSDU catalog is unreachable — app still renders with hardcoded wells."""
     try:
-        from .osdu_seed import fetch_osdu_wells
+        from .osdu_live import fetch_osdu_wells
     except Exception as e:
         print(f"OSDU seeder import failed: {e}")
         return
@@ -738,23 +880,8 @@ async def seed_osdu_wells(conn):
         inserted += 1
 
     print(f"OSDU wells seeded: {inserted}")
-
-    # Seed economics for hardcoded wells (so Economics tab has data on all 16)
-    hardcoded_econ = [
-        ("BAKER-001",    58.0, 4.1, 1800, 18, 42, 28.4, 32.0, 2.8,  2100),
-        ("BAKER-002",    52.0, 3.8, 1500, 20, 48, 14.2, 19.0, 3.8,  1900),
-        ("CONOCO-7H",    72.0, 5.2, 3200, 28, 52, 42.1, 38.0, 2.2,  3400),
-        ("MARATHON-15X", 48.0, 3.5, 1200, 25, 58,  8.6, 14.0, 4.5,  1700),
-        ("SHELL-3D",     65.0, 4.8, 2100, 15, 38, 55.8, 44.0, 2.1,  2400),
-        ("PIONEER-22S",  44.0, 3.2, 1400, 22, 51, 11.2, 17.0, 4.2,  1800),
-    ]
-    for (wid, capex, opex, rate, decl, be, npv, irr, pb, co2) in hardcoded_econ:
-        await conn.execute(
-            "INSERT INTO las.well_economics (well_id, capex_musd, opex_musd_yr, peak_rate_bopd, "
-            "decline_pct_yr, wti_break_even, npv10_musd, irr_pct, payback_years, co2_tonnes_yr) "
-            "VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING",
-            wid, capex, opex, rate, decl, be, npv, irr, pb, co2,
-        )
+    # NA operator economics is seeded in seed_data() at startup (so the
+    # Economics tab is populated immediately, not after this background task).
 
 
 async def seed_wti_prices(conn):

@@ -74,14 +74,15 @@ const MEDALLION: NodeDef[] = [
     ],
   },
   {
-    id: 'gold', label: 'Gold · search', sub: 'wellbore_search_source',
-    x: 630, y: 60, w: 150, h: 60,
+    id: 'gold', label: 'Gold tables', sub: 'wellbore · reservoir · rock_and_fluid',
+    x: 630, y: 60, w: 170, h: 60,
     color: '#F39C12', badge: 'GOLD',
     detail: [
-      'Delta table with CDF',
-      'Pre-joined text column for embedding',
-      'Row filter (external_partner_filter)',
-      'Column masks on lat/lon',
+      'wellbore_search_source · gold_reservoir · gold_rock_and_fluid',
+      'JSON silver_payload extracted into flat columns',
+      'wellbore_search_source has pre-joined text for embedding',
+      'Row filter (external_partner_filter) + column masks on lat/lon',
+      'Powers Genie NL→SQL and Vector Search index',
     ],
   },
   {
@@ -116,7 +117,7 @@ const SERVING: NodeDef[] = [
       'Δ-sync index on wellbore_search_source',
       'databricks-gte-large-en embeddings',
       'Semantic well similarity',
-      'Powers similar-wells in 3D viewer + Agent',
+      'Powers similar-wells in 3D viewer + Supervisor analogs',
     ],
   },
   {
@@ -131,14 +132,15 @@ const SERVING: NodeDef[] = [
     ],
   },
   {
-    id: 'genie', label: 'Genie Space', sub: 'Subsurface Intelligence',
+    id: 'genie', label: 'Genie Space', sub: 'Drilling Command Center — ADME Live',
     x: 630, y: 320, w: 150, h: 60,
     color: '#00E5FF', badge: 'GENIE',
     detail: [
       'space_id 01f13f7f8e20…',
-      'NL → SQL over 5 OSDU tables',
+      'NL → SQL over 4 flat OSDU tables (wellbore_search, gold_reservoir,',
+      '  gold_rock_and_fluid, gov_legal_tags) · ADME blocks 15/9 + 34/10',
       'Conversation API (start + msg + poll)',
-      'Floating sidebar in every tab',
+      'Floating sidebar + called by the Decision Supervisor',
     ],
   },
   {
@@ -148,7 +150,7 @@ const SERVING: NodeDef[] = [
     detail: [
       'databricks-claude-sonnet-4-5 endpoint',
       'Tool-calling (OpenAI-compatible)',
-      'Agent orchestrates VS + UC Fn',
+      'Supervisor synthesises across all 5 specialists',
       'Trace surfaced inline per call',
     ],
   },
@@ -184,29 +186,32 @@ const APPL: NodeDef[] = [
     color: '#16A085', badge: 'API',
     detail: [
       '/api/subsurface · /economics · /governance',
-      '/api/genie · /agent · /journal',
+      '/api/genie · /supervisor (SSE) · /wells · /logs',
       'OBO via X-Forwarded-Access-Token',
       'Deployed as a Databricks App on Azure',
     ],
   },
   {
-    id: 'agent', label: 'Expert Agent', sub: 'tool-calling loop',
-    x: 630, y: 480, w: 150, h: 60,
-    color: '#ffa940', badge: 'AGENT',
+    id: 'supervisor', label: 'Subsurface Supervisor', sub: 'multi-agent · 5 specialists',
+    x: 630, y: 480, w: 170, h: 60,
+    color: '#00E5FF', badge: 'MAS',
     detail: [
-      'Claude + 5 tools',
-      'Per-call latency trace returned to UI',
-      'Fallback gracefully on tool errors',
-      'Context injected from active_well_id',
+      'Fans out 5 specialists in parallel via asyncio.gather',
+      'analogs (Vector Search) · petrophysics (FM API · Claude 4.5)',
+      'economics (UC Functions · NPV / break-even)',
+      'regulatory (ADME legal tags) · drilling ops (Lakebase)',
+      'Streams results to UI as Server-Sent Events',
+      'Synthesises final recommendation with Claude 4.5',
     ],
   },
   {
     id: 'react', label: 'React UI', sub: 'Vite + TypeScript',
-    x: 800, y: 480, w: 160, h: 60,
+    x: 820, y: 480, w: 160, h: 60,
     color: '#73d13d', badge: 'UI',
     detail: [
-      'Dark theme, 7 tabs + floating Genie',
+      'Dark theme, 8 tabs + floating Genie',
       'Recharts + SVG 3D Petrel-style viewer',
+      'Real US states map (react-simple-maps) for fleet',
       'Operator journal writes to Lakebase',
       'Built static, served by FastAPI',
     ],
@@ -221,7 +226,7 @@ const USER: NodeDef = {
   detail: [
     'OBO identity forwarded to app',
     'Persona toggle drives UC row/column masks',
-    'Launches Expert Agent + Genie queries',
+    'Launches Subsurface Supervisor + Genie queries',
     'Adds journal entries that persist in Lakebase',
   ],
 }
@@ -236,13 +241,15 @@ const EDGES: EdgeDef[] = [
   { from: 'silver',       to: 'gov_tables',   label: 'gov split',          color: '#8E9AAF', dashed: true },
   { from: 'gold',         to: 'vs',           label: 'Δ-sync · gte-large', color: '#F39C12' },
   { from: 'mkt_catalogs', to: 'uc_fn',        label: 'price + ESG read',   color: '#F39C12', dashed: true },
-  { from: 'vs',           to: 'agent',        label: 'similarity',         color: '#4dabf7', dashed: true },
-  { from: 'uc_fn',        to: 'agent',        label: 'EXECUTE',            color: '#b37feb', dashed: true },
   { from: 'genie',        to: 'fastapi',      label: 'Conversation API',   color: '#00E5FF', dashed: true },
-  { from: 'fmapi',        to: 'agent',        label: 'tool-calls',         color: '#9254de' },
   { from: 'duckdb',       to: 'fastapi',      label: 'fast reads',         color: '#2980B9' },
-  { from: 'lakebase',     to: 'fastapi',      label: 'journal/alerts',     color: '#16A085' },
-  { from: 'agent',        to: 'react',        label: 'answer + trace',     color: '#ffa940', dashed: true },
+  { from: 'lakebase',     to: 'fastapi',      label: 'ops/journal',        color: '#16A085' },
+  { from: 'supervisor',   to: 'vs',           label: 'analogs',            color: '#00E5FF', dashed: true },
+  { from: 'supervisor',   to: 'uc_fn',        label: 'NPV / BE',           color: '#00E5FF', dashed: true },
+  { from: 'supervisor',   to: 'genie',        label: 'ops NL→SQL',         color: '#00E5FF', dashed: true },
+  { from: 'supervisor',   to: 'fmapi',        label: 'synthesise',         color: '#00E5FF', dashed: true },
+  { from: 'supervisor',   to: 'gov_tables',   label: 'legal-tag gate',     color: '#00E5FF', dashed: true },
+  { from: 'supervisor',   to: 'react',        label: 'SSE stream',         color: '#00E5FF' },
   { from: 'fastapi',      to: 'react',        label: 'JSON REST',          color: '#16A085' },
   { from: 'react',        to: 'user',         label: 'browser',            color: '#73d13d' },
 ]
@@ -285,19 +292,19 @@ export default function DataFlowTab() {
           </div>
         </div>
 
-        <svg viewBox="0 0 1180 600" style={{ width: '100%', background: 'var(--bg-primary)', borderRadius: 6 }}>
-          {/* Layer labels */}
-          <text x="12" y="32"  fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SOURCES</text>
-          <text x="220" y="32" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">MEDALLION · Delta · Unity Catalog</text>
+        <svg viewBox="0 0 1200 660" style={{ width: '100%', background: 'var(--bg-primary)', borderRadius: 6 }}>
+          {/* Layer labels — placed at the top, above the orange UC banner */}
+          <text x="12"  y="18" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SOURCES</text>
+          <text x="220" y="18" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">MEDALLION · Delta</text>
           <text x="220" y="306" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SERVING · AI</text>
-          <text x="220" y="426" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">APPLICATION</text>
+          <text x="220" y="426" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">APPLICATION · orchestration</text>
 
-          {/* Unity Catalog governance boundary */}
-          <rect x="270" y="40" width="540" height="360" fill="none" stroke="#F39C12" strokeWidth="1"
-                strokeDasharray="6 4" rx="10" opacity="0.85" />
-          <text x="540" y="37" textAnchor="middle" fill="#F39C12" fontSize="11" fontWeight="600" fontFamily="monospace">
+          {/* Unity Catalog governance boundary — banner sits BELOW the row labels */}
+          <text x="550" y="42" textAnchor="middle" fill="#F39C12" fontSize="11" fontWeight="600" fontFamily="monospace">
             Unity Catalog · governance · tags · row filters · masks · UC Functions · Vector Search
           </text>
+          <rect x="270" y="50" width="560" height="370" fill="none" stroke="#F39C12" strokeWidth="1"
+                strokeDasharray="6 4" rx="10" opacity="0.85" />
 
           <defs>
             <marker id="dfArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
@@ -372,14 +379,13 @@ export default function DataFlowTab() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
-                { h: '1 · Ingest',       c: 'OSDU lands in Bronze via connector. FRED + WB CO₂ arrive as Delta-Shared catalogs from Marketplace.', col: '#27AE60' },
-                { h: '2 · Transform',    c: 'DLT cleans Bronze → Silver. Silver joins into a Gold search table with CDF for Vector Search syncing.', col: '#CD6116' },
-                { h: '3 · Serve',        c: 'Vector Search indexes Gold; UC Functions expose NPV / break-even / decline; Genie owns NL→SQL over OSDU.', col: '#4dabf7' },
-                { h: '4 · Reason',       c: 'Expert Agent (Claude Sonnet 4.5) orchestrates tools — VS + UC Fn + context — and returns answers with trace.', col: '#9254de' },
+                { h: '1 · Ingest',       c: 'ADME/OSDU lands in Bronze via connector. FRED + WB CO₂ arrive as Delta-Shared catalogs from Marketplace.', col: '#27AE60' },
+                { h: '2 · Transform',    c: 'DLT cleans Bronze → Silver. JSON silver_payload is exploded into 3 flat Gold tables (wellbore, reservoir, rock_and_fluid).', col: '#CD6116' },
+                { h: '3 · Serve',        c: 'Vector Search indexes wellbore_search_source; UC Functions expose NPV / break-even / decline; Genie owns NL→SQL over the gold OSDU tables.', col: '#4dabf7' },
+                { h: '4 · Multi-agent',  c: 'Subsurface Supervisor fans out 5 specialists in parallel (Vector Search · FM API · UC Functions · ADME legal tags · Lakebase drilling ops), streams results via SSE, then Claude 4.5 synthesises a recommendation.', col: '#00E5FF' },
                 { h: 'Persistence',      c: 'DuckDB caches reads in-process for sub-ms responses. Lakebase Postgres holds the journal + alerts that need to outlive the app.', col: '#16A085' },
                 { h: 'Governance',       c: 'Unity Catalog row filters + column masks gate lat/lon and drilling_result by persona group membership — same plane covers Marketplace data.', col: '#F39C12' },
                 { h: 'OBO auth',         c: 'Databricks Apps forwards X-Forwarded-Access-Token. SQL, Vector Search, Genie, and Lakebase all run as the user, not the app SP.', col: '#2980B9' },
-                { h: 'UI',               c: 'React 18 + Recharts + SVG 3D. 7 tabs + floating Genie. Built static, served by FastAPI. Operator journal writes flow back to Lakebase.', col: '#73d13d' },
               ].map(c => (
                 <div key={c.h} style={{
                   background: 'var(--bg-panel)', border: '1px solid var(--border)',

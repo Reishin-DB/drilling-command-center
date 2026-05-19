@@ -3,10 +3,11 @@ import OverviewTab      from './components/OverviewTab'
 import ThreeDViewerTab  from './components/ThreeDViewerTab'
 import EconomicsTab     from './components/EconomicsTab'
 import GovernanceTab    from './components/GovernanceTab'
-import ExpertAgentTab   from './components/ExpertAgentTab'
+import GenieTab         from './components/GenieTab'
 import LogViewerTab     from './components/LogViewerTab'
 import DataFlowTab      from './components/DataFlowTab'
 import GenieSidebar     from './components/GenieSidebar'
+import SupervisorTab    from './components/SupervisorTab'
 
 const TABS = [
   { id: 'overview',   label: '🛰️ Overview' },
@@ -14,7 +15,8 @@ const TABS = [
   { id: 'viewer',     label: '📊 Log Viewer' },
   { id: 'economics',  label: '💰 Economics' },
   { id: 'governance', label: '🛡️ Governance' },
-  { id: 'agent',      label: '🤖 Expert Agent' },
+  { id: 'genie',      label: '✨ Genie' },
+  { id: 'supervisor', label: '🧠 Subsurface Supervisor' },
   { id: 'dataflow',   label: '🔀 Data Flow' },
 ]
 
@@ -61,20 +63,37 @@ export default function App() {
           ))}
         </nav>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            Active:&nbsp;
-            <span style={{ color: 'var(--blue)', fontWeight: 600, fontFamily: 'monospace' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'var(--green-dim)', color: 'var(--green)',
+            border: '1px solid var(--green)', borderRadius: 20,
+            padding: '3px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+          }}>
+            <span style={{
+              width: 7, height: 7, borderRadius: 4, background: 'var(--green)',
+              animation: 'hdr-pulse 1.4s infinite',
+            }} />
+            LIVE · ADME
+          </span>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'var(--bg-panel)', border: '1px solid var(--border)',
+            borderRadius: 6, padding: '3px 10px',
+          }}>
+            <span style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>active well</span>
+            <span style={{ color: 'var(--blue)', fontWeight: 700, fontFamily: 'monospace', fontSize: 11 }}>
               {activeWell}
             </span>
           </div>
           <span style={{
-            background: 'var(--green-dim)', color: 'var(--green)',
-            border: '1px solid var(--green)', borderRadius: 20,
-            padding: '2px 10px', fontSize: 10, fontWeight: 600, letterSpacing: '0.04em',
+            background: 'var(--bg-panel)', color: 'var(--text-muted)',
+            border: '1px solid var(--border)', borderRadius: 20,
+            padding: '2px 10px', fontSize: 10, fontFamily: 'monospace',
           }}>
-            ◈ adme_client_demo · Delta + OSDU
+            adme_client_demo
           </span>
+          <style>{`@keyframes hdr-pulse { 0%,100% { opacity:.4 } 50% { opacity:1 } }`}</style>
         </div>
       </header>
 
@@ -84,7 +103,8 @@ export default function App() {
         {active === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'economics'  && <EconomicsTab    wellId={activeWell} />}
         {active === 'governance' && <GovernanceTab />}
-        {active === 'agent'      && <ExpertAgentTab  wellId={activeWell} onWellChange={setActiveWell} />}
+        {active === 'genie'      && <GenieTab />}
+        {active === 'supervisor' && <SupervisorTab />}
         {active === 'dataflow'   && <DataFlowTab />}
       </main>
       <GenieSidebar />

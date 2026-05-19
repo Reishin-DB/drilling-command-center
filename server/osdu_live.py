@@ -1,6 +1,6 @@
-"""Pull well/reservoir/rock data from the OSDU catalog (adme_client_demo) and
-return records ready for las.* seed. Uses databricks-sql-connector with the
-app SP's default credentials."""
+"""Read live OSDU well/reservoir/rock data from the UC silver tables hydrated
+by the ADME connector pipeline (adme_adb_sbx_scus_dbx_ws_1.adme_client_demo).
+Uses databricks-sql-connector with the app SP's default credentials."""
 from __future__ import annotations
 
 import os
@@ -71,7 +71,7 @@ def fetch_osdu_wells() -> list[dict[str, Any]]:
             "well_type": "deviated",
             "status": "gold" if (r.get("result") or "").lower() == "producer" else "corrected",
             "quality_score": 85 if (r.get("result") or "").lower() == "producer" else 70,
-            "notes": f"OSDU live · purpose={r.get('purpose')} · reservoir={r.get('reservoir_zone')} · result={r.get('result')}",
+            "notes": f"ADME live · purpose={r.get('purpose')} · reservoir={r.get('reservoir_zone')} · result={r.get('result')}",
             "purpose": r.get("purpose"),
             "reservoir_zone": r.get("reservoir_zone"),
             "drilling_result": r.get("result"),

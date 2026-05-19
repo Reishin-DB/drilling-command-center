@@ -1,11 +1,81 @@
+import time
 from fastapi import APIRouter
 from ..db import db
 
 router = APIRouter()
 
+# Small in-process cache. /api/wells is hit by Overview, Governance KPI strip,
+# Supervisor tab, and the Genie/Expert flows — caching for 10s collapses the
+# duplicate work without making the demo feel stale.
+_WELLS_CACHE: tuple[float, list] | None = None
+_WELLS_TTL_S = 60
+
+
+@router.get("/wells/alerts")
+async def fleet_alerts():
+    """Surface drilling-ops issues for the Overview alerts ticker.
+    Pulls from las.drilling_operations and emits a sorted feed of NPT
+    spikes, BHA-health degradations, incidents, and supply-chain delays."""
+    rows = await db.fetch(
+        "SELECT d_op.well_id, w.well_name, w.basin, d_op.rig_name, d_op.drilling_phase, "
+        "       d_op.npt_hours_last_30d, d_op.esp_health_pct, d_op.mud_pump_health_pct, "
+        "       d_op.last_incident_severity, d_op.last_incident_desc, d_op.last_incident_date, "
+        "       d_op.supply_chain_status, d_op.days_to_next_casing "
+        "FROM las.drilling_operations d_op "
+        "LEFT JOIN las.wells w ON w.well_id = d_op.well_id"
+    )
+    alerts = []
+    for r in rows:
+        wid = r["well_id"]
+        wname = r.get("well_name") or wid
+        npt = float(r.get("npt_hours_last_30d") or 0)
+        esp = int(r.get("esp_health_pct") or 100)
+        pump = int(r.get("mud_pump_health_pct") or 100)
+        sev_inc = (r.get("last_incident_severity") or "").lower()
+        sup = (r.get("supply_chain_status") or "").lower()
+        if npt > 60:
+            alerts.append({"well_id": wid, "well_name": wname, "severity": "critical",
+                           "kind": "NPT", "msg": f"NPT {npt:.0f}h in last 30d — schedule risk",
+                           "ts": r.get("last_incident_date")})
+        elif npt > 30:
+            alerts.append({"well_id": wid, "well_name": wname, "severity": "warn",
+                           "kind": "NPT", "msg": f"NPT {npt:.0f}h trending elevated",
+                           "ts": r.get("last_incident_date")})
+        if esp < 80:
+            alerts.append({"well_id": wid, "well_name": wname, "severity": "warn",
+                           "kind": "BHA", "msg": f"ESP health {esp}% — workover candidate",
+                           "ts": r.get("last_incident_date")})
+        if pump < 80:
+            alerts.append({"well_id": wid, "well_name": wname, "severity": "warn",
+                           "kind": "BHA", "msg": f"Mud pump health {pump}% — service window",
+                           "ts": r.get("last_incident_date")})
+        if sev_inc in ("major", "critical"):
+            alerts.append({"well_id": wid, "well_name": wname,
+                           "severity": "critical" if sev_inc == "critical" else "warn",
+                           "kind": "Incident",
+                           "msg": r.get("last_incident_desc") or "Incident reported",
+                           "ts": r.get("last_incident_date")})
+        if "delayed" in sup:
+            alerts.append({"well_id": wid, "well_name": wname, "severity": "warn",
+                           "kind": "Supply",
+                           "msg": f"Supply chain · {r.get('supply_chain_status')}",
+                           "ts": r.get("last_incident_date")})
+    # critical first, then by date desc
+    sev_rank = {"critical": 0, "warn": 1, "info": 2}
+    alerts.sort(key=lambda a: (sev_rank.get(a["severity"], 9),
+                               -(a["ts"].toordinal() if hasattr(a.get("ts"), "toordinal") else 0)))
+    # serialise dates
+    for a in alerts:
+        ts = a.get("ts")
+        a["ts"] = ts.isoformat() if hasattr(ts, "isoformat") else None
+    return {"count": len(alerts), "alerts": alerts[:12]}
+
 
 @router.get("/wells")
 async def list_wells():
+    global _WELLS_CACHE
+    if _WELLS_CACHE and time.time() - _WELLS_CACHE[0] < _WELLS_TTL_S:
+        return _WELLS_CACHE[1]
     wells = await db.fetch(
         "SELECT w.well_id, w.well_name, w.field_name, w.basin, w.county, w.state, "
         "w.api_number, w.lat, w.lon, w.kb_elevation_ft, w.total_depth_ft, "
@@ -21,7 +91,9 @@ async def list_wells():
         ") a ON a.well_id = w.well_id "
         "ORDER BY w.quality_score DESC"
     )
-    return [_fmt_well(w) for w in wells]
+    formatted = [_fmt_well(w) for w in wells]
+    _WELLS_CACHE = (time.time(), formatted)
+    return formatted
 
 
 @router.get("/wells/{well_id}")
