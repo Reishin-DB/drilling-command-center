@@ -8,8 +8,10 @@ import LogViewerTab     from './components/LogViewerTab'
 import DataFlowTab      from './components/DataFlowTab'
 import GenieSidebar     from './components/GenieSidebar'
 import SupervisorTab    from './components/SupervisorTab'
+import DemoGuideTab     from './components/DemoGuideTab'
 
 const TABS = [
+  { id: 'demo',       label: '▶ Demo Guide' },
   { id: 'overview',   label: '🛰️ Overview' },
   { id: '3d',         label: '🌐 3D Viewer' },
   { id: 'viewer',     label: '📊 Log Viewer' },
@@ -21,7 +23,7 @@ const TABS = [
 ]
 
 export default function App() {
-  const [active, setActive]         = useState('overview')
+  const [active, setActive]         = useState('demo')
   const [activeWell, setActiveWell] = useState('BAKER-001')
 
   const openWell = (wellId: string, tab: string = '3d') => {
@@ -98,6 +100,7 @@ export default function App() {
       </header>
 
       <main style={{ padding: '20px 24px', maxWidth: 1800, margin: '0 auto' }}>
+        {active === 'demo'       && <DemoGuideTab    onNavigate={setActive} />}
         {active === 'overview'   && <OverviewTab     onOpenWell={openWell} />}
         {active === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}

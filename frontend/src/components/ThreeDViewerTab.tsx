@@ -106,7 +106,28 @@ function project(x: number, y: number, z: number, yaw: number, pitch: number, zo
   const ry1 = y * cp - rz1 * sp
   const rz2 = y * sp + rz1 * cp
   const persp = 1200 / Math.max(1200 + rz2, 300)
-  return [CX + rx1 * zoom * persp, CY + ry1 * zoom * persp, rz2]
+  // SVG y grows downward; negate so world-up (y toward 0) renders up and depth (neg y) renders down
+  return [CX + rx1 * zoom * persp, CY - ry1 * zoom * persp, rz2]
+}
+
+// ─────────── Petrel-style structural framework (mock geology) ───────────────
+// Well trajectories stay real (from OSDU). The stratigraphy below — horizons,
+// folds, and a normal fault — is a modeled framework so the subsurface reads
+// like a Petrel structural model instead of a bare box.
+interface Horizon { name: string; color: string; reservoir?: boolean }
+const HORIZONS: Horizon[] = [
+  { name: 'Datum',              color: '#5f6f86' },
+  { name: 'Upper Shale',       color: '#47566b' },
+  { name: 'Sand A',            color: '#c39a58' },
+  { name: 'Reservoir · Sand B', color: '#cf6a37', reservoir: true },
+  { name: 'Lower Carbonate',   color: '#7f97b4' },
+]
+function shade(hex: string, k: number): string {
+  const m = hex.replace('#', '')
+  const r = Math.round(Math.min(255, Math.max(0, parseInt(m.slice(0, 2), 16) * k)))
+  const g = Math.round(Math.min(255, Math.max(0, parseInt(m.slice(2, 4), 16) * k)))
+  const b = Math.round(Math.min(255, Math.max(0, parseInt(m.slice(4, 6), 16) * k)))
+  return `rgb(${r},${g},${b})`
 }
 
 // ─────────── Component ─────────────────────────────────────────────────────
@@ -119,6 +140,7 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
   const [pitch, setPitch] = useState(0.35)
   const [zoom, setZoom]   = useState(0.9)
   const [prop, setProp]   = useState<PropKey>('ooip')
+  const [showGeo, setShowGeo] = useState(true)
   const [hover, setHover] = useState<string | null>(null)
   const [similar, setSimilar] = useState<Similar[]>([])
   const dragRef = useRef<{ x: number; y: number } | null>(null)
@@ -187,6 +209,126 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
       const d = project(BOX, 0, g, yaw, pitch, zoom)
       out.push({ z: (c[2] + d[2]) / 2 - 4000, render: () =>
         <line key={`sgz${g}`} x1={c[0]} y1={c[1]} x2={d[0]} y2={d[1]} stroke="#1a2030" strokeWidth="0.4" opacity="0.6" /> })
+    }
+
+    // ── Petrel-style structural framework — layered walls + fault ─────────────
+    // The stratigraphy is drawn as folded/faulted colored bands on the two BACK
+    // walls of the model box (a cross-section), so wells drill through the
+    // interior without being occluded. Layers follow horizonY (dip + fold +
+    // fault throw). Back-face culling keeps only the walls behind the wells.
+    if (showGeo) {
+      // Frame the geology to the actual well + reservoir footprint (Petrel-style model bounds).
+      let xmn = Infinity, xmx = -Infinity, zmn = Infinity, zmx = -Infinity, ymn = 0
+      scene.wells.forEach(w => {
+        const [sx, sz] = wellSurface(w)
+        w.trajectory.forEach(([x, y, z]) => {
+          const X = (sx + x) * FT_TO_UNIT, Z = (sz + z) * FT_TO_UNIT, Y = y * FT_TO_UNIT
+          if (X < xmn) xmn = X; if (X > xmx) xmx = X
+          if (Z < zmn) zmn = Z; if (Z > zmx) zmx = Z
+          if (Y < ymn) ymn = Y
+        })
+      })
+      scene.reservoirs.forEach(r => {
+        const hx = r.extent_ft * FT_TO_UNIT / 2
+        const cx = r.cx_ft * FT_TO_UNIT, cz = r.cz_ft * FT_TO_UNIT, cy = -r.depth_ft * FT_TO_UNIT
+        if (cx - hx < xmn) xmn = cx - hx; if (cx + hx > xmx) xmx = cx + hx
+        if (cz - hx < zmn) zmn = cz - hx; if (cz + hx > zmx) zmx = cz + hx
+        if (cy < ymn) ymn = cy
+      })
+      if (!isFinite(xmn)) { xmn = -400; xmx = 400; zmn = -400; zmx = 400; ymn = -460 }
+
+      const padX = (xmx - xmn) * 0.16 + 50, padZ = (zmx - zmn) * 0.16 + 50
+      let gx0 = xmn - padX, gx1 = xmx + padX, gz0 = zmn - padZ, gz1 = zmx + padZ
+      const gcx = (gx0 + gx1) / 2, gcz = (gz0 + gz1) / 2
+      const depth = Math.max(240, -ymn * 1.02)          // positive depth of the model
+      // Keep the model cube-ish (Petrel look): cap horizontal span so layers never flatten to pancakes.
+      const maxSpan = depth * 3
+      if (gx1 - gx0 > maxSpan) { gx0 = gcx - maxSpan / 2; gx1 = gcx + maxSpan / 2 }
+      if (gz1 - gz0 > maxSpan) { gz0 = gcz - maxSpan / 2; gz1 = gcz + maxSpan / 2 }
+      const spanX = Math.max(1, gx1 - gx0), spanZ = Math.max(1, gz1 - gz0)
+      const faultX = gcx + spanX * 0.10                  // fault trace
+      const throwY = depth * 0.09                        // normal-fault throw
+
+      // structural surface at a given depth-fraction of the model
+      const surfY = (frac: number, x: number, z: number): number => {
+        const base = -frac * depth
+        const dip  = -((x - gcx) / spanX) * depth * 0.16
+        const fold = Math.sin((x - gcx) / spanX * Math.PI * 1.3)
+                   * Math.cos((z - gcz) / spanZ * Math.PI * 1.1) * depth * 0.06
+        const fault = x > faultX ? -throwY : 0
+        return base + dip + fold + fault
+      }
+
+      // 5 horizons → 5 layer intervals (last to basement). Reservoir = Sand B (index 3).
+      const HFRAC = [0.10, 0.27, 0.43, 0.59, 0.77]
+      const layers = HORIZONS.map((h, i) => ({
+        topF: HFRAC[i], botF: i < HFRAC.length - 1 ? HFRAC[i + 1] : 0.95,
+        color: h.color, reservoir: h.reservoir,
+      }))
+      const centerRz = project(gcx, -depth * 0.4, gcz, yaw, pitch, zoom)[2]
+
+      type Wall = { fixed: 'x' | 'z'; val: number }
+      const walls: Wall[] = [
+        { fixed: 'x', val: gx0 }, { fixed: 'x', val: gx1 },
+        { fixed: 'z', val: gz0 }, { fixed: 'z', val: gz1 },
+      ]
+      const NSEG = 12
+      walls.forEach((wall, wi) => {
+        // Back-face cull: skip walls nearer the camera than the model centre (they'd occlude wells).
+        const wc = wall.fixed === 'x'
+          ? project(wall.val, -depth * 0.4, gcz, yaw, pitch, zoom)
+          : project(gcx, -depth * 0.4, wall.val, yaw, pitch, zoom)
+        if (wc[2] <= centerRz) return
+
+        const lo = wall.fixed === 'x' ? gz0 : gx0
+        const hi = wall.fixed === 'x' ? gz1 : gx1
+        for (let s = 0; s < NSEG; s++) {
+          const a0 = lo + (s / NSEG) * (hi - lo)
+          const a1 = lo + ((s + 1) / NSEG) * (hi - lo)
+          const p0 = wall.fixed === 'x' ? { x: wall.val, z: a0 } : { x: a0, z: wall.val }
+          const p1 = wall.fixed === 'x' ? { x: wall.val, z: a1 } : { x: a1, z: wall.val }
+          if (wall.fixed === 'z' && a0 < faultX && a1 > faultX) continue  // leave the fault break
+
+          layers.forEach((L, li) => {
+            const c: [number, number, number][] = [
+              [p0.x, surfY(L.topF, p0.x, p0.z), p0.z],
+              [p1.x, surfY(L.topF, p1.x, p1.z), p1.z],
+              [p1.x, surfY(L.botF, p1.x, p1.z), p1.z],
+              [p0.x, surfY(L.botF, p0.x, p0.z), p0.z],
+            ]
+            const proj = c.map(p => project(p[0], p[1], p[2], yaw, pitch, zoom))
+            const zMean = proj.reduce((acc, p) => acc + p[2], 0) / 4
+            const poly = proj.map(p => `${p[0]},${p[1]}`).join(' ')
+            const litK = 0.9 + (s % 2 ? 0.07 : -0.05) + (wall.fixed === 'x' ? 0.06 : -0.04)
+            const fill = shade(L.color, Math.max(0.62, Math.min(1.2, litK)))
+            const key = `wall-${wi}-${s}-${li}`
+            out.push({
+              z: zMean - 60,
+              render: () => (
+                <polygon key={key} points={poly} fill={fill}
+                         opacity={L.reservoir ? 0.95 : 0.85}
+                         stroke="#0a1420" strokeWidth="0.3" />
+              ),
+            })
+          })
+        }
+      })
+
+      // Fault plane — translucent surface at the fault trace, behind the wells.
+      const faultFace: [number, number, number][] = [
+        [faultX, -depth * 0.05, gz0], [faultX, -depth * 0.05, gz1],
+        [faultX, -depth * 0.95, gz1], [faultX, -depth * 0.95, gz0],
+      ]
+      const fp = faultFace.map(p => project(p[0], p[1], p[2], yaw, pitch, zoom))
+      const fPoly = fp.map(p => `${p[0]},${p[1]}`).join(' ')
+      const fz = fp.reduce((s, p) => s + p[2], 0) / 4
+      out.push({
+        z: fz - 30,
+        render: () => (
+          <polygon key="fault-plane" points={fPoly} fill="#e0533a" opacity="0.15"
+                   stroke="#e0533a" strokeWidth="1.1" strokeDasharray="5 3" style={{ pointerEvents: 'none' }} />
+        ),
+      })
     }
 
     // Reservoirs as faceted grid cells (Petrel-style)
@@ -388,7 +530,7 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
     // Painter's algorithm
     out.sort((a, b) => a.z - b.z)
     return out
-  }, [scene, yaw, pitch, zoom, prop, wellId, hover, similar])
+  }, [scene, yaw, pitch, zoom, prop, showGeo, wellId, hover, similar])
 
   function onMouseDown(e: React.MouseEvent) { dragRef.current = { x: e.clientX, y: e.clientY } }
   function onMouseMove(e: React.MouseEvent) {
@@ -432,6 +574,13 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
                 borderRadius: 4, cursor: 'pointer',
               }}>{PROP_COLORSCALES[k].label}</button>
             ))}
+            <button onClick={() => setShowGeo(g => !g)} style={{
+              padding: '3px 10px', fontSize: 11,
+              background: showGeo ? 'var(--amber-dim, rgba(243,156,18,0.15))' : 'var(--bg-panel)',
+              color: showGeo ? '#F39C12' : 'var(--text-muted)',
+              border: `1px solid ${showGeo ? '#F39C12' : 'var(--border)'}`,
+              borderRadius: 4, cursor: 'pointer',
+            }}>Geology</button>
             <button onClick={() => { setYaw(0.6); setPitch(0.35); setZoom(0.9) }} style={{
               padding: '3px 10px', fontSize: 11,
               background: 'var(--bg-panel)', color: 'var(--text-muted)',
@@ -475,6 +624,24 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
               </g>
             ))}
           </g>
+
+          {/* Stratigraphy legend (Petrel-style) */}
+          {showGeo && (
+            <g transform={`translate(16, ${H - 132})`}>
+              <text x="0" y="-6" fill="#b0b6c8" fontSize="10" fontFamily="monospace" fontWeight="600">Stratigraphy</text>
+              {HORIZONS.map((h, i) => (
+                <g key={`leg-${i}`} transform={`translate(0, ${i * 17})`}>
+                  <rect x="0" y="0" width="12" height="12" rx="2" fill={h.color} stroke="#0a1420" strokeWidth="0.5" />
+                  <text x="18" y="10" fill={h.reservoir ? '#f0a060' : '#9aa2b4'} fontSize="9.5"
+                        fontFamily="monospace" fontWeight={h.reservoir ? 700 : 400}>{h.name}</text>
+                </g>
+              ))}
+              <g transform={`translate(0, ${HORIZONS.length * 17 + 2})`}>
+                <line x1="0" y1="6" x2="12" y2="6" stroke="#e0533a" strokeWidth="1.5" strokeDasharray="4 2" />
+                <text x="18" y="10" fill="#e0533a" fontSize="9.5" fontFamily="monospace">Normal fault</text>
+              </g>
+            </g>
+          )}
 
           {/* Axis cube */}
           <g transform={`translate(${W - 70}, ${H - 70})`}>
@@ -573,11 +740,11 @@ function AxisCube({ yaw, pitch }: { yaw: number; pitch: number }) {
     const rz = x * sx + z * cx
     const cp = Math.cos(pitch), sp = Math.sin(pitch)
     const ry = y * cp - rz * sp
-    return [rx * 25, ry * 25]
+    return [rx * 25, -ry * 25]
   }
   const n = proj(0, 0, -1); const s = proj(0, 0, 1)
   const e = proj(1, 0, 0); const w = proj(-1, 0, 0)
-  const up = proj(0, -1, 0); const dn = proj(0, 1, 0)
+  const up = proj(0, 1, 0); const dn = proj(0, -1, 0)
   return (
     <g>
       <circle cx="0" cy="0" r="28" fill="#0d0e11" stroke="#2a2e3a" opacity="0.95" />

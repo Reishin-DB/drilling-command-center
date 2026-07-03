@@ -400,6 +400,94 @@ export default function DataFlowTab() {
           </>
         )}
       </div>
+
+      <OntologyView />
+    </div>
+  )
+}
+
+// ─── Genie Ontology (context graph shown at the bottom of this tab) ──────────
+interface OntCol { name: string; pk?: boolean; fk?: string }
+interface OntEntity { table: string; group: string; cols: OntCol[] }
+const ONT_GROUP_COLOR: Record<string, string> = {
+  HUB: '#4dabf7', ECONOMICS: '#27AE60', REFERENCE: '#F39C12', GOVERNANCE: '#f97316',
+}
+const ONT_ENTITIES: OntEntity[] = [
+  { table: 'operator_wells', group: 'HUB', cols: [
+    { name: 'well_id', pk: true }, { name: 'basin' }, { name: 'lat / lon' }, { name: 'npv10_musd' },
+    { name: 'wti_break_even' }, { name: 'rop_ft_per_hr' }, { name: 'npt_hours_last_30d' } ] },
+  { table: 'operator_economics_live', group: 'ECONOMICS', cols: [
+    { name: 'well_id', fk: 'operator_wells' }, { name: 'wti_spot' }, { name: 'margin_per_bbl' }, { name: 'economics_state' } ] },
+  { table: 'gold_reservoir', group: 'REFERENCE', cols: [
+    { name: 'reservoir_key', pk: true }, { name: 'field' }, { name: 'formation' }, { name: 'ooip_mm_sm3' } ] },
+  { table: 'gold_rock_and_fluid', group: 'REFERENCE', cols: [
+    { name: 'sample_key', pk: true }, { name: 'wellbore_id' }, { name: 'porosity_frac' }, { name: 'permeability_md' } ] },
+  { table: 'gov_legal_tags', group: 'GOVERNANCE', cols: [
+    { name: 'legal_tag_name' }, { name: 'is_valid' }, { name: 'data_partition_id' } ] },
+  { table: 'gov_entitlements', group: 'GOVERNANCE', cols: [
+    { name: 'group_id' }, { name: 'group_name' }, { name: 'data_partition_id' } ] },
+]
+const ONT_METRICS = [
+  { name: 'mv_well_economics', desc: 'NPV, IRR, breakeven, margin by basin/state/field' },
+  { name: 'mv_drilling_ops', desc: 'ROP, NPT, mud weight, health by rig/phase' },
+]
+const ONT_FUNCTIONS = [
+  { name: 'f_well_profile(well_id)', desc: 'Identity, economics, operations for one well' },
+  { name: 'f_high_npt_wells(min_hours)', desc: 'Wells losing time to NPT' },
+  { name: 'f_subeconomic_wells()', desc: 'Wells with breakeven above current WTI' },
+]
+
+function OntologyView() {
+  return (
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: 16 }}>
+      <div style={{ marginBottom: 4 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>Genie Ontology · the context graph</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          The governed semantic layer Genie reads to answer with confidence: entities and relationships,
+          canonical metric definitions, and certified functions. It improves as new questions are added.
+        </div>
+      </div>
+      <div style={{ maxHeight: 440, overflowY: 'auto', marginTop: 12, paddingRight: 4 }}>
+        <div style={{ fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 8px' }}>Entities &amp; relationships</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
+          {ONT_ENTITIES.map(e => (
+            <div key={e.table} style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: ONT_GROUP_COLOR[e.group] }} />
+                <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>{e.table}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 9, color: ONT_GROUP_COLOR[e.group], fontWeight: 700 }}>{e.group}</span>
+              </div>
+              <div style={{ padding: '6px 10px' }}>
+                {e.cols.map(c => (
+                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'monospace', color: 'var(--text-secondary)', padding: '2px 0' }}>
+                    <span>{c.name}</span>
+                    {c.pk && <span style={{ fontSize: 8.5, color: '#F39C12', border: '1px solid #F39C1255', borderRadius: 3, padding: '0 4px' }}>PK</span>}
+                    {c.fk && <span style={{ fontSize: 10, color: '#4dabf7' }}>→ {c.fk}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Metric views · canonical definitions</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 }}>
+          {ONT_METRICS.map(m => (
+            <div key={m.name} style={{ background: 'var(--bg-panel)', border: '1px solid #27AE6044', borderLeft: '3px solid #27AE60', borderRadius: 4, padding: '8px 12px' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: '#27AE60' }}>{m.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{m.desc}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Certified functions · trusted answers</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 }}>
+          {ONT_FUNCTIONS.map(f => (
+            <div key={f.name} style={{ background: 'var(--bg-panel)', border: '1px solid #4dabf744', borderLeft: '3px solid #4dabf7', borderRadius: 4, padding: '8px 12px' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: 11.5, fontWeight: 700, color: '#4dabf7' }}>{f.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

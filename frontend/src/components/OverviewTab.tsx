@@ -338,7 +338,82 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
           </table>
         </div>
       </Panel>
+
+      <SpatialSQLPanel />
     </div>
+  )
+}
+
+// ── Spatial SQL · GA — real H3 + ST_ queries over operator_wells ────────────
+interface SpatialResult { key: string; title: string; description: string; sql: string; rows: any[]; error: string | null }
+function SpatialSQLPanel() {
+  const [results, setResults] = useState<SpatialResult[]>([])
+  const [fns, setFns] = useState<string[]>([])
+  const [active, setActive] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState('')
+
+  useEffect(() => {
+    fetch('/api/geospatial/spatial-sql').then(r => r.json()).then(d => {
+      if (d.error) { setErr(d.error); return }
+      setResults(d.results || []); setFns(d.functions || [])
+      setActive((d.results || [])[0]?.key || '')
+    }).catch(e => setErr(String(e))).finally(() => setLoading(false))
+  }, [])
+
+  const cur = results.find(r => r.key === active)
+  const cols = cur && cur.rows.length ? Object.keys(cur.rows[0]) : []
+
+  return (
+    <Panel title="Spatial SQL · GA" subtitle="Real Databricks H3 + ST_ spatial functions over the live OSDU well set">
+      {loading && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Running spatial queries…</div>}
+      {err && <div style={{ fontSize: 12, color: 'var(--red)' }}>{err}</div>}
+      {!loading && !err && (
+        <>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+            {results.map(r => (
+              <button key={r.key} onClick={() => setActive(r.key)} style={{
+                fontSize: 11, padding: '4px 10px', borderRadius: 4, cursor: 'pointer',
+                background: active === r.key ? 'var(--blue-dim)' : 'var(--bg-panel)',
+                color: active === r.key ? 'var(--blue)' : 'var(--text-muted)',
+                border: `1px solid ${active === r.key ? 'var(--blue)' : 'var(--border)'}`,
+              }}>{r.title}</button>
+            ))}
+          </div>
+          {cur && (
+            <>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{cur.description}</div>
+              <pre style={{
+                fontFamily: 'monospace', fontSize: 10.5, color: 'var(--text-secondary)', background: 'var(--bg-panel)',
+                border: '1px solid var(--border)', borderRadius: 6, padding: '8px 10px', margin: 0,
+                whiteSpace: 'pre-wrap', maxHeight: 120, overflowY: 'auto',
+              }}>{cur.sql}</pre>
+              {cur.error ? (
+                <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 8 }}>{cur.error}</div>
+              ) : (
+                <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: 8 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                    <thead><tr>{cols.map(c => (
+                      <th key={c} style={{ textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600, padding: '3px 6px', borderBottom: '1px solid var(--border)', fontFamily: 'monospace' }}>{c}</th>
+                    ))}</tr></thead>
+                    <tbody>
+                      {cur.rows.slice(0, 12).map((row, i) => (
+                        <tr key={i}>{cols.map(c => (
+                          <td key={c} style={{ color: 'var(--text-secondary)', padding: '3px 6px', fontFamily: 'monospace' }}>{String(row[c])}</td>
+                        ))}</tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+          {fns.length > 0 && (
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10, fontFamily: 'monospace' }}>functions: {fns.join(' · ')}</div>
+          )}
+        </>
+      )}
+    </Panel>
   )
 }
 

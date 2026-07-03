@@ -43,6 +43,22 @@ VS_ENDPOINT    = os.getenv("VS_ENDPOINT", "subsurface-vs")
 VS_INDEX       = os.getenv("VS_INDEX",    f"{CATALOG}.{SCHEMA}.wellbore_vs_index")
 MODEL_ENDPOINT = os.getenv("AGENT_MODEL", "databricks-claude-sonnet-4-5")
 
+# Runtime-selectable model (Control · Cost · Choice picker on the Governance tab).
+# Defaults to AGENT_MODEL; POST /api/model changes which serving endpoint the
+# Supervisor calls, no redeploy. Governed by the same OAuth token + AI Gateway.
+_CURRENT_MODEL = MODEL_ENDPOINT
+AVAILABLE_MODELS = [
+    "databricks-claude-sonnet-4-5",
+    "databricks-claude-opus-4-8",
+    "databricks-claude-haiku-4-5",
+    "databricks-gpt-oss-120b",
+    "databricks-llama-4-maverick",
+    "databricks-qwen35-122b-a10b",
+]
+
+def _current_model() -> str:
+    return _CURRENT_MODEL
+
 
 def _sql_conn():
     from databricks import sql
@@ -68,14 +84,14 @@ def _openai_call(messages: list, tools: list) -> Any:
     }
     api = w.api_client
     if hasattr(api, "do"):
-        return api.do("POST", f"/serving-endpoints/{MODEL_ENDPOINT}/invocations", body=body)
+        return api.do("POST", f"/serving-endpoints/{_current_model()}/invocations", body=body)
     import urllib.request
     host = (w.config.host or "").rstrip("/")
     if not host.startswith("http"):
         host = "https://" + host
     headers = dict(w.config.authenticate())
     headers["Content-Type"] = "application/json"
-    url = f"{host}/serving-endpoints/{MODEL_ENDPOINT}/invocations"
+    url = f"{host}/serving-endpoints/{_current_model()}/invocations"
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers)
     with urllib.request.urlopen(req, timeout=60) as resp:
         return json.loads(resp.read())
@@ -236,7 +252,14 @@ def _claude_text(system: str, user: str, max_tokens: int = 700) -> str:
     # _openai_call accepts (messages, tools); pass empty tools list and read content
     resp = _openai_call(body["messages"], [])
     try:
-        return resp["choices"][0]["message"].get("content", "") or ""
+        c = resp["choices"][0]["message"].get("content", "")
+        # Coerce to string. Open models (GPT-OSS, etc.) can return content as a list of
+        # parts or an object; a non-string blanks the React UI, so normalize here.
+        if isinstance(c, str):
+            return c
+        if isinstance(c, list):
+            return "".join(p if isinstance(p, str) else (p.get("text", "") if isinstance(p, dict) else str(p)) for p in c).strip()
+        return str(c) if c else ""
     except Exception:
         return json.dumps(resp)[:600]
 
@@ -587,6 +610,7 @@ async def decide(req: DecideReq):
             "total_ms": _ms(t0),
             "well_id": req.well_id,
             "well_name": well.get("well_name"),
+            "model": _current_model(),
         }
         # Persist the most recent decision for the Overview "last decision" widget
         _LAST_DECISION.update({
@@ -617,3 +641,20 @@ async def info():
             {"id": "operations",   "name": "Drilling Operations",         "feature": "Lakebase · drilling_operations", "endpoint": "las.drilling_operations", "desc": "Rig, NPT, supply-chain, casing status, BHA health from the operator's Lakebase ops feed."},
         ],
     }
+
+
+# ── Control · Cost · Choice — runtime model selection ────────────────────────
+class ModelPick(BaseModel):
+    model: str
+
+@router.get("/model")
+async def get_model():
+    return {"model": _current_model(), "default": MODEL_ENDPOINT, "available": AVAILABLE_MODELS}
+
+@router.post("/model")
+async def set_model(pick: ModelPick):
+    global _CURRENT_MODEL
+    if pick.model in AVAILABLE_MODELS:
+        _CURRENT_MODEL = pick.model
+        return {"model": _CURRENT_MODEL, "ok": True}
+    return {"model": _current_model(), "ok": False, "error": "unknown model"}

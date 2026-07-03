@@ -113,6 +113,7 @@ from server.routes.governance import router as governance_router
 from server.routes.genie      import router as genie_router
 from server.routes.subsurface import router as subsurface_router
 from server.routes.supervisor import router as supervisor_router
+from server.routes.geospatial import router as geospatial_router
 
 app.include_router(wells_router,      prefix="/api")
 app.include_router(logs_router,       prefix="/api")
@@ -121,6 +122,7 @@ app.include_router(governance_router, prefix="/api")
 app.include_router(genie_router,      prefix="/api")
 app.include_router(subsurface_router, prefix="/api")
 app.include_router(supervisor_router, prefix="/api")
+app.include_router(geospatial_router, prefix="/api")
 
 # Serve React SPA
 frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")
@@ -131,7 +133,12 @@ if os.path.exists(frontend_dist):
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        # index.html must never be cached, or browsers keep loading a stale bundle
+        # reference after a redeploy. Hashed /assets can cache forever.
+        return FileResponse(
+            os.path.join(frontend_dist, "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )
 else:
     @app.get("/")
     async def root():

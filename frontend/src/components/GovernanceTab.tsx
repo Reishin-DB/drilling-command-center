@@ -148,6 +148,8 @@ export default function GovernanceTab() {
         ) : <Skeleton lines={3} />}
       </Panel>
 
+      <ControlCostChoice />
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16 }}>
         <Panel title="Persona" subtitle="Switch persona to see enforcement">
           {personas ? (
@@ -401,6 +403,111 @@ function Td({ v, trunc }: { v: any; trunc?: number }) {
     <td style={{ padding: '5px 8px', color: redacted ? 'var(--red)' : 'var(--text-primary)', fontStyle: redacted ? 'italic' : 'normal' }}>
       {val}
     </td>
+  )
+}
+
+// Real Foundation Model endpoints available in the workspace (databricks-* served entities).
+const MODEL_CHOICES = [
+  { id: 'databricks-claude-sonnet-4-5', label: 'Claude Sonnet 4.5', note: 'balanced · current default', family: 'Anthropic' },
+  { id: 'databricks-claude-opus-4-8',   label: 'Claude Opus 4.8',   note: 'deepest reasoning',          family: 'Anthropic' },
+  { id: 'databricks-claude-haiku-4-5',  label: 'Claude Haiku 4.5',  note: 'fastest · cheapest',         family: 'Anthropic' },
+  { id: 'databricks-gpt-oss-120b',      label: 'GPT-OSS 120B',      note: 'open weights',               family: 'Open' },
+  { id: 'databricks-llama-4-maverick',  label: 'Llama 4 Maverick',  note: 'open weights',               family: 'Open' },
+  { id: 'databricks-qwen35-122b-a10b',  label: 'Qwen 3.5 122B',     note: 'open weights',               family: 'Open' },
+]
+
+function ControlCostChoice() {
+  const [model, setModel] = useState('databricks-claude-sonnet-4-5')
+  const [saving, setSaving] = useState(false)
+  const col = { control: '#E74C3C', cost: '#F39C12', choice: '#4dabf7' }
+
+  useEffect(() => {
+    fetch('/api/model').then(r => r.json()).then(d => { if (d.model) setModel(d.model) }).catch(() => {})
+  }, [])
+
+  function pick(m: string) {
+    const prev = model
+    setModel(m); setSaving(true)
+    fetch('/api/model', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: m }) })
+      .then(r => r.json()).then(d => { if (!d.ok) setModel(prev) })
+      .catch(() => setModel(prev))
+      .finally(() => setSaving(false))
+  }
+  return (
+    <Panel title="Control · Cost · Choice — the open platform for Data + AI"
+           subtitle="Governance, spend visibility, and model freedom for every agent and user. The Supervisor and Genie call a governed endpoint behind Mosaic AI Gateway — swap the model without touching code.">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.1fr', gap: 12 }}>
+
+        {/* CONTROL */}
+        <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.control}`, borderRadius: 4, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color: col.control, letterSpacing: '0.04em', marginBottom: 8 }}>CONTROL</div>
+          <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+            <li>Safety + PII guardrails on every prompt &amp; response</li>
+            <li>Agents run as the user (OBO) — not a privileged SP</li>
+            <li>UC row filters + column masks apply to AI answers too</li>
+            <li>Full lineage + audit of every table an agent reads</li>
+          </ul>
+          <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {['safety', 'pii_detection', 'OBO', 'UC lineage'].map(t => (
+              <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'var(--bg-card)', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{t}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* COST */}
+        <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.cost}`, borderRadius: 4, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color: col.cost, letterSpacing: '0.04em', marginBottom: 8 }}>COST</div>
+          {[
+            ['Rate limit', '50 QPM · 100K TPM'],
+            ['Pricing', 'pay-per-token · no idle GPU'],
+            ['Usage tracking', 'per user + per app'],
+            ['Budget alerts', 'on spend thresholds'],
+          ].map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, padding: '3px 0', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{k}</span>
+              <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{v}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+            Enforced + metered by Mosaic AI Gateway. Same plane governs the SQL warehouse spend.
+          </div>
+        </div>
+
+        {/* CHOICE */}
+        <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.choice}`, borderRadius: 4, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color: col.choice, letterSpacing: '0.04em', marginBottom: 4 }}>CHOICE</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 8 }}>Pick the model — the Gateway routes to it, no code change:</div>
+          <div style={{ display: 'grid', gap: 4, maxHeight: 168, overflowY: 'auto' }}>
+            {MODEL_CHOICES.map(m => {
+              const active = m.id === model
+              return (
+                <button key={m.id} onClick={() => pick(m.id)} disabled={saving} style={{
+                  textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                  background: active ? 'var(--blue-dim)' : 'var(--bg-card)',
+                  border: `1px solid ${active ? col.choice : 'var(--border)'}`, borderRadius: 4, padding: '5px 9px',
+                }}>
+                  <span style={{ width: 7, height: 7, borderRadius: 4, background: active ? col.choice : 'var(--text-muted)', flexShrink: 0 }} />
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: active ? col.choice : 'var(--text-primary)' }}>{m.label}</span>
+                    <span style={{ display: 'block', fontSize: 9.5, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{m.id} · {m.note}</span>
+                  </span>
+                  <span style={{ fontSize: 8.5, color: m.family === 'Open' ? '#27AE60' : '#9254de', fontWeight: 700 }}>{m.family}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+            Active: <span style={{ color: col.choice, fontFamily: 'monospace' }}>{model}</span>{saving ? ' · saving…' : ''} · the Supervisor now calls this endpoint. Anthropic + open-weight, one governed API.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, lineHeight: 1.5 }}>
+        Switch persona below and ask the Genie sidebar the same question — masked columns (lat, lon, api_number) stay
+        masked in the AI answer, because the model queries through the user's Unity Catalog grants, not a privileged
+        service account.
+      </div>
+    </Panel>
   )
 }
 

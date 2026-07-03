@@ -47,8 +47,35 @@ export default function SupervisorTab() {
   const [running, setRunning] = useState(false)
   const [status, setStatus]   = useState<Record<string, Status>>({})
   const [results, setResults] = useState<Record<string, SpecialistResult>>({})
-  const [rec, setRec]         = useState<{ text: string; total_ms: number; verdict?: string } | null>(null)
+  const [rec, setRec]         = useState<{ text: string; total_ms: number; verdict?: string; model?: string } | null>(null)
   const [err, setErr]         = useState<string | null>(null)
+  const [models, setModels]   = useState<string[]>([])
+  const [model, setModel]     = useState<string>('databricks-claude-sonnet-4-5')
+
+  useEffect(() => {
+    fetch('/api/model').then(r => r.json()).then(d => {
+      if (d.model) setModel(d.model)
+      if (Array.isArray(d.available)) setModels(d.available)
+    }).catch(() => {})
+  }, [])
+
+  function pickModel(m: string) {
+    const prev = model
+    setModel(m)
+    fetch('/api/model', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: m }) })
+      .then(r => r.json()).then(d => { if (!d.ok) setModel(prev) })
+      .catch(() => setModel(prev))
+  }
+
+  const MODEL_LABEL: Record<string, string> = {
+    'databricks-claude-sonnet-4-5': 'Claude Sonnet 4.5',
+    'databricks-claude-opus-4-8': 'Claude Opus 4.8',
+    'databricks-claude-haiku-4-5': 'Claude Haiku 4.5',
+    'databricks-gpt-oss-120b': 'GPT-OSS 120B',
+    'databricks-llama-4-maverick': 'Llama 4 Maverick',
+    'databricks-qwen35-122b-a10b': 'Qwen 3.5 122B',
+  }
+  const isOpen = (m: string) => /gpt-oss|llama|qwen|gemma/.test(m)
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -100,7 +127,7 @@ export default function SupervisorTab() {
             setResults(prev => ({ ...prev, [data.id]: data }))
             setStatus(prev => ({ ...prev, [data.id]: data.error ? 'error' : 'done' }))
           } else if (ev === 'recommendation') {
-            setRec({ text: data.text || '', total_ms: data.total_ms || 0, verdict: data.verdict })
+            setRec({ text: data.text || '', total_ms: data.total_ms || 0, verdict: data.verdict, model: data.model })
           } else if (ev === 'done') {
             // noop
           }
@@ -146,6 +173,29 @@ export default function SupervisorTab() {
           checks compliance, and <b>Drilling Operations</b> reads rig/NPT/supply chain from Lakebase.
           The supervisor synthesises a drill-or-hold recommendation with citations.
         </div>
+      </div>
+
+      {/* Control · Cost · Choice — live model picker (routes the Supervisor's FM calls) */}
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
+        padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+      }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', color: '#4dabf7' }}>CHOICE · MODEL</span>
+        <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>pick a model — the Supervisor calls it, no code change (governed by AI Gateway):</span>
+        {(models.length ? models : ['databricks-claude-sonnet-4-5']).map(m => {
+          const active = m === model
+          return (
+            <button key={m} onClick={() => pickModel(m)} title={m} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer',
+              background: active ? 'var(--blue-dim)' : 'var(--bg-panel)',
+              border: `1px solid ${active ? '#4dabf7' : 'var(--border)'}`, borderRadius: 6, padding: '4px 9px',
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: 3, background: active ? '#4dabf7' : 'var(--text-muted)' }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: active ? '#4dabf7' : 'var(--text-secondary)' }}>{MODEL_LABEL[m] || m}</span>
+              <span style={{ fontSize: 8.5, fontWeight: 700, color: isOpen(m) ? '#27AE60' : '#9254de' }}>{isOpen(m) ? 'Open' : 'Anthropic'}</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Question form */}
@@ -242,7 +292,7 @@ const VERDICT_STYLE: Record<string, { color: string; bg: string; sub: string }> 
   REVIEW:   { color: '#4dabf7', bg: 'rgba(77,171,247,0.12)', sub: 'Mixed signal · needs senior review' },
 }
 
-function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; verdict?: string } | null; running: boolean }) {
+function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; verdict?: string; model?: string } | null; running: boolean }) {
   const v = rec?.verdict || 'REVIEW'
   const style = VERDICT_STYLE[v] || VERDICT_STYLE['REVIEW']
   const hasRec = !!rec
@@ -281,6 +331,11 @@ function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; 
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
             {hasRec ? style.sub : (running ? 'awaiting specialist results' : 'submit a question to run')}
           </div>
+          {hasRec && rec?.model && (
+            <div style={{ fontSize: 10, color: '#4dabf7', marginTop: 4, fontFamily: 'monospace' }}>
+              model: {rec.model}
+            </div>
+          )}
         </div>
 
         {/* Reasoning */}
@@ -297,7 +352,7 @@ function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; 
           )}
           {hasRec && (
             <div style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-              {rec.text}
+              {typeof rec.text === 'string' ? rec.text : JSON.stringify(rec.text)}
             </div>
           )}
         </div>
@@ -342,7 +397,7 @@ function SpecialistCard({ info, status, result }: { info: SpecialistInfo; status
       }}>
         {status === 'idle'    && <span style={{ color: 'var(--text-muted)' }}>{info.desc || 'awaiting question…'}</span>}
         {status === 'running' && <Skeleton />}
-        {status === 'done'    && (result?.result || '(no output)')}
+        {status === 'done'    && (typeof result?.result === 'string' ? result.result : result?.result ? JSON.stringify(result.result) : '(no output)')}
         {status === 'error'   && <span style={{ color: 'var(--red)' }}>{result?.error || 'failed'}</span>}
       </div>
       {result?.question && status === 'done' && (
