@@ -99,6 +99,8 @@ export default function GovernanceTab() {
         <Kpi label="Wells governed"    value={wellsCount?.total ?? '…'}         sub={wellsCount ? `${wellsCount.osdu} via ADME` : 'loading…'} color="var(--green)" />
       </div>
 
+      <PersonaMaskProof />
+
       {/* Compliance badges */}
       <Panel title="Compliance posture" subtitle="Continuous controls inherited from ADME source through Unity Catalog">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -403,6 +405,84 @@ function Td({ v, trunc }: { v: any; trunc?: number }) {
     <td style={{ padding: '5px 8px', color: redacted ? 'var(--red)' : 'var(--text-primary)', fontStyle: redacted ? 'italic' : 'normal' }}>
       {val}
     </td>
+  )
+}
+
+// ── Persona masking · live side-by-side proof (S3 money shot) ────────────────
+interface MaskWell { well_id: string; well_name?: any; lat?: any; lon?: any; api_number?: any; status?: any }
+interface MaskView { label?: string; wells?: MaskWell[]; visible_count?: number; total_count?: number; redacted_count?: number }
+const MASK_COLS: { key: keyof MaskWell; label: string }[] = [
+  { key: 'well_name', label: 'well_name' },
+  { key: 'lat', label: 'lat' },
+  { key: 'lon', label: 'lon' },
+  { key: 'api_number', label: 'api_number' },
+  { key: 'status', label: 'status' },
+]
+function isRedacted(v: any) { return typeof v === 'string' && v.includes('redacted') }
+
+function PersonaMaskProof() {
+  const [op, setOp] = useState<MaskView | null>(null)
+  const [ext, setExt] = useState<MaskView | null>(null)
+  useEffect(() => {
+    fetch('/api/governance/view/operator').then(r => r.json()).then(setOp).catch(() => {})
+    fetch('/api/governance/view/external_partner').then(r => r.json()).then(setExt).catch(() => {})
+  }, [])
+
+  const opWells = (op?.wells || []).slice(0, 6)
+  const extById = new Map((ext?.wells || []).map(w => [w.well_id, w]))
+
+  const cell = (v: any) => {
+    if (v == null || v === '') return <span style={{ color: 'var(--text-muted)' }}>—</span>
+    if (isRedacted(v)) return <span style={{ color: '#E74C3C', fontWeight: 600 }}>🔒 masked</span>
+    return <span style={{ color: 'var(--text-secondary)' }}>{String(v)}</span>
+  }
+
+  const Table = ({ title, sub, color, rows, isExt }: { title: string; sub: string; color: string; rows: MaskWell[]; isExt: boolean }) => (
+    <div style={{ flex: 1, minWidth: 0, background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${color}`, borderRadius: 6, overflow: 'hidden' }}>
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ fontWeight: 700, fontSize: 12.5, color }}>{title}</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{sub}</div>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, fontFamily: 'monospace' }}>
+          <thead><tr>
+            <th style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>well_id</th>
+            {MASK_COLS.map(c => <th key={c.label} style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{c.label}</th>)}
+          </tr></thead>
+          <tbody>
+            {rows.map(opw => {
+              const w = isExt ? extById.get(opw.well_id) : opw
+              const hiddenByFilter = isExt && !w
+              return (
+                <tr key={opw.well_id} style={{ opacity: hiddenByFilter ? 0.4 : 1 }}>
+                  <td style={{ padding: '4px 8px', color: 'var(--blue)' }}>{opw.well_id}</td>
+                  {hiddenByFilter ? (
+                    <td colSpan={MASK_COLS.length} style={{ padding: '4px 8px', color: '#E74C3C' }}>⛔ row hidden by JV row-filter</td>
+                  ) : (
+                    MASK_COLS.map(c => <td key={c.label} style={{ padding: '4px 8px' }}>{cell(w?.[c.key])}</td>)
+                  )}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+
+  return (
+    <Panel title="Persona masking · live proof"
+           subtitle="The SAME query, two personas — Unity Catalog column masks + row filters. Genie and the Supervisor run as the signed-in user, so AI answers inherit exactly this.">
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <Table title="Drilling Operator" sub="allowed_fields = all · full PII" color="#27AE60" rows={opWells} isExt={false} />
+        <Table title="External Partner (JV)" sub={`lat / lon / api masked · row-filtered${ext ? ` · ${ext.redacted_count ?? 0} rows hidden` : ''}`} color="#E74C3C" rows={opWells} isExt={true} />
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
+        Left is the operator view. Right is the JV partner asking the identical question — lat, lon, and API number come back
+        masked, and rows outside their entitlement are dropped by the row filter. No app logic decides this at query time; it is
+        the Unity Catalog grant bound to the persona, and it applies to Genie's SQL and the Supervisor's tool calls the same way.
+      </div>
+    </Panel>
   )
 }
 

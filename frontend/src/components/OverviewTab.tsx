@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
-import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography, Marker, Line, Annotation, ZoomableGroup } from 'react-simple-maps'
 import statesTopo from 'us-atlas/states-10m.json'
 
 interface OverviewProps {
@@ -89,6 +89,35 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
   const verdictColor: Record<string, string> = {
     DRILL: '#27AE60', HOLD: '#F39C12', 'DE-SCOPE': '#CD6116', ABANDON: '#E74C3C', REVIEW: '#4dabf7',
   }
+
+  // Per-basin AOI footprints — tight buffered convex hull of the wells (ST_ConvexHull
+  // + ST_Buffer + ST_Area). Hugs the wells instead of covering the whole map.
+  const [showAoi, setShowAoi] = useState(true)
+  const BASIN_COLORS = ['#4dabf7', '#27AE60', '#F39C12', '#b37feb', '#22d3ee', '#e46b8b']
+  const [aoiFeat, setAoiFeat] = useState<{ basin: string; wells: number; km2: number; centroid: number[] }[]>([])
+  const [aoiGeo, setAoiGeo] = useState<any>({ type: 'FeatureCollection', features: [] })
+  useEffect(() => {
+    fetch('/api/geospatial/aoi').then(r => r.json()).then(d => {
+      const feats = (d.features || [])
+      setAoiFeat(feats)
+      setAoiGeo({
+        type: 'FeatureCollection',
+        features: feats.map((f: any, i: number) => ({
+          type: 'Feature', properties: { basin: f.basin, km2: f.km2, wells: f.wells, ci: i },
+          geometry: { type: 'Polygon', coordinates: [f.ring] },
+        })),
+      })
+    }).catch(() => {})
+  }, [])
+
+  // Well spacing — nearest offset well per well via ST_Distance.
+  const [showSpacing, setShowSpacing] = useState(false)
+  const [spacing, setSpacing] = useState<{ well_id: string; nn: string; km: number; from: number[]; to: number[] }[]>([])
+  useEffect(() => {
+    fetch('/api/geospatial/spacing').then(r => r.json()).then(d => setSpacing(d.pairs || [])).catch(() => {})
+  }, [])
+
+  const CUSHING: [number, number] = [-96.7686, 35.9848]  // WTI pricing hub
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -201,6 +230,46 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
                     ))
                   }
                 </Geographies>
+                {/* Per-basin AOI footprints — tight buffered convex hull (ST_ConvexHull + ST_Buffer) */}
+                {showAoi && aoiGeo.features.length > 0 && (
+                  <>
+                    <Geographies geography={aoiGeo as any}>
+                      {({ geographies }) =>
+                        geographies.map((geo, i) => {
+                          const c = BASIN_COLORS[((geo.properties?.ci as number) ?? i) % BASIN_COLORS.length]
+                          return (
+                            <Geography key={geo.rsmKey || i} geography={geo}
+                              style={{
+                                default: { fill: c, fillOpacity: 0.14, stroke: c, strokeWidth: 1.2, strokeDasharray: '5 3', outline: 'none' },
+                                hover:   { fill: c, fillOpacity: 0.24, stroke: c, strokeWidth: 1.4, strokeDasharray: '5 3', outline: 'none' },
+                                pressed: { fill: c, fillOpacity: 0.24, stroke: c, strokeWidth: 1.4, outline: 'none' },
+                              }} />
+                          )
+                        })
+                      }
+                    </Geographies>
+                    {aoiFeat.map((f, i) => f.centroid && (
+                      <Annotation key={`aoi-lbl-${i}`} subject={f.centroid as [number, number]} dx={0} dy={0} connectorProps={{}}>
+                        <text textAnchor="middle" fontSize={7.5} fontWeight={700} fontFamily="monospace"
+                              fill={BASIN_COLORS[i % BASIN_COLORS.length]}
+                              style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 2.4 }}>
+                          {f.basin} · {f.km2.toLocaleString()} km²
+                        </text>
+                      </Annotation>
+                    ))}
+                  </>
+                )}
+                {/* Well spacing — nearest-offset lines (ST_Distance) */}
+                {showSpacing && spacing.map((s, i) => (
+                  <Line key={`sp-${i}`} from={s.from as [number, number]} to={s.to as [number, number]}
+                        stroke="#e46b8b" strokeWidth={0.9} strokeLinecap="round" strokeDasharray="3 2" />
+                ))}
+                {/* Cushing, OK — WTI physical pricing hub (ST_Distance reference) */}
+                <Marker coordinates={CUSHING}>
+                  <rect x={-3.5} y={-3.5} width={7} height={7} transform="rotate(45)" fill="#F5D90A" stroke="#0d1117" strokeWidth={0.8} />
+                  <text x={7} y={3} fontSize={7} fontWeight={700} fill="#F5D90A" fontFamily="monospace"
+                        style={{ pointerEvents: 'none', paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 2.2 }}>Cushing · WTI hub</text>
+                </Marker>
                 {withCoord.map(w => {
                   const color = w.critical_count > 0 ? '#E74C3C' : w.status === 'gold' ? '#27AE60' : '#F39C12'
                   return (
@@ -226,7 +295,16 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
               <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#27AE60', marginRight: 6 }} />gold</div>
               <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#F39C12', marginRight: 6 }} />corrected</div>
               <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#E74C3C', marginRight: 6 }} />critical</div>
-              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)' }}>scroll to zoom · drag to pan</div>
+              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)', fontSize: 9, color: '#8794ad' }}>SPATIAL SQL (GA)</div>
+              <button onClick={() => setShowAoi(v => !v)} style={{
+                marginTop: 2, background: showAoi ? '#4dabf722' : 'transparent', color: showAoi ? '#4dabf7' : 'var(--text-muted)',
+                border: `1px solid ${showAoi ? '#4dabf7' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 9, cursor: 'pointer', textAlign: 'left',
+              }}>{showAoi ? 'Basin AOI on' : 'Basin AOI off'} · ConvexHull+Buffer</button>
+              <button onClick={() => setShowSpacing(v => !v)} style={{
+                marginTop: 2, background: showSpacing ? '#e46b8b22' : 'transparent', color: showSpacing ? '#e46b8b' : 'var(--text-muted)',
+                border: `1px solid ${showSpacing ? '#e46b8b' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 9, cursor: 'pointer', textAlign: 'left',
+              }}>{showSpacing ? 'Spacing on' : 'Spacing off'} · ST_Distance</button>
+              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)' }}>scroll to zoom · drag to pan · ◆ Cushing = WTI hub</div>
             </div>
           </div>
         </Panel>

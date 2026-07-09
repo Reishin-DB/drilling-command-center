@@ -125,12 +125,12 @@ export default function GenieTab() {
             <Row label="Market"   value="wti_prices (180-day WTI from FRED)" />
             <Row label="Analogs"  value="wellbore_search_source · gold_reservoir · gold_rock_and_fluid (ADME global blocks 15/9 + 34/10)" />
             <Row label="Govern."  value="gov_legal_tags (ADME ACL inheritance)" />
-            <a href={info?.url || 'https://adb-4173618801742158.18.azuredatabricks.net/genie/rooms/01f13f7f8e201dc3bbf806bdba354f39'}
+            <a href="https://adb-4173618801742158.18.azuredatabricks.net/genie/rooms/01f17b01027f132d8dac985615ea39ff/chats/01f17b025d5411708f33a8260edefb21?o=4173618801742158"
                target="_blank" rel="noreferrer" style={{
               marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'start',
               background: 'var(--blue-dim)', border: '1px solid var(--blue)', borderRadius: 6,
               padding: '4px 10px', fontSize: 10.5, color: 'var(--blue)', textDecoration: 'none', fontWeight: 600,
-            }}>Open Genie Space ↗</a>
+            }}>Open Genie ↗</a>
           </div>
         </Panel>
 
