@@ -40,7 +40,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     num: 1, title: 'Set the scene — the portfolio picture', tab: 'Overview', tabId: 'overview', duration: '45s',
-    talkTrack: 'This is the operator\'s drilling portfolio, live from OSDU — every well, basin, rig, and where non-productive time is piling up, governed by Unity Catalog. Scroll to the Spatial SQL · GA panel: real Databricks H3 indexing and ST_Contains basin joins over the live well set, with the queries shown.',
+    talkTrack: 'This is the operator\'s drilling portfolio — every well, basin, and rig, governed by Unity Catalog. The map opens with the geospatial layers already on: per-basin AOI footprints (ST_ConvexHull + ST_Buffer + ST_Area) and nearest-offset well-spacing lines (ST_Distance), all real Databricks Spatial SQL (GA) over operator_wells, with the queries shown in the panel.',
     pointAt: ['Fleet KPI tiles + world map by basin', 'Spatial SQL · GA panel (H3 + ST_ over operator_wells)', 'Basin AOI join via ST_Contains', 'WTI price context'],
     features: ['ADME / OSDU', 'H3 + ST_ (GA)', 'Unity Catalog'],
   },
@@ -58,15 +58,15 @@ const STEPS: Step[] = [
   },
   {
     num: 4, title: 'Ask in plain English — ontology-backed Genie', tab: 'Genie', tabId: 'genie', duration: '60s',
-    talkTrack: 'Now the payoff. Ask Genie "which wells are subeconomic at today\'s WTI" in plain English. It answers with governed SQL against the ontology — canonical metric definitions and certified functions — so the answer is correct and consistent every time, with the SQL shown.',
-    pointAt: ['Natural-language question', 'Governed SQL + result', 'Uses mv_well_economics / certified functions', 'Consistent metric definitions'],
-    features: ['Genie', 'Ontology (metric views)', 'Unity Catalog'],
+    talkTrack: 'Now the payoff. Ask Genie in plain English — "which basin has the highest total live NPV", or "what is the nearest well to BAKER-001". It answers with governed SQL over the Unity Catalog tables (operator_wells, well_economics, well_distances, gov tables), with the SQL shown. One-click sample questions are on the left, and follow-ups work because it remembers the conversation.',
+    pointAt: ['Natural-language question → governed SQL + result', 'Economics questions over well_economics', 'Spacing/distance questions over well_distances', 'Sample-question chips + conversational follow-ups'],
+    features: ['Genie', 'Unity Catalog', 'Governed NL→SQL'],
   },
   {
     num: 5, title: 'Escalate to the multi-agent Supervisor', tab: 'Subsurface Supervisor', tabId: 'supervisor', duration: '60s',
-    talkTrack: 'For a harder question the Subsurface Supervisor fans out five specialists in parallel, then synthesises one recommendation with citations. Use the CHOICE · MODEL bar to pick the model — Claude Sonnet 4.5 / Opus 4.8 or open-weight GPT-OSS / Llama / Qwen. It re-routes the Supervisor live via Mosaic AI Gateway, no code change, and the verdict shows which model ran. That is Control, Cost & Choice.',
-    pointAt: ['CHOICE · MODEL picker — Claude ↔ open models, live', 'Five specialists running in parallel', 'Synthesised recommendation + the model that produced it', 'Citations back to Vector Search / UC Functions / legal tags'],
-    features: ['Model choice (AI Gateway)', 'Foundation Model APIs', 'Vector Search'],
+    talkTrack: 'For a harder question the Subsurface Supervisor is agentic: it first PLANS which of the five specialists the question actually needs and routes to only those — the skipped ones grey out with a reason — then runs the engaged ones in parallel and synthesises one recommendation with citations. Use the CHOICE · COST · CONTROL bar to swap the model (Claude Sonnet/Opus/Haiku or open-weight GPT-OSS/Llama/Qwen) live via Mosaic AI Gateway, no code change. Each run shows its real token COST for the chosen model, and a GOVERNANCE panel with the AI Gateway guardrails + audit-log line. That is Control, Cost, Choice, and Governance in one run.',
+    pointAt: ['Orchestration Plan — engaged vs skipped specialists, with reasons', 'CHOICE · COST · CONTROL picker with $/$$/$$$ tiers', 'Per-run COST (real tokens × model rate) + GOVERNANCE panel', 'Economics specialist calling the certified UC NPV function; Analog specialist via Vector Search'],
+    features: ['Omnigent orchestration', 'Choice · Cost · Governance (AI Gateway)', 'Vector Search + UC Functions'],
   },
   {
     num: 6, title: 'Govern data AND AI', tab: 'Governance', tabId: 'governance', duration: '60s',

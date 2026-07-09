@@ -18,16 +18,16 @@ interface SpaceInfo {
 }
 
 const SAMPLE_QUESTIONS: { q: string; cat: string }[] = [
-  { q: 'Show me each operator well with its NPV and IRR, sorted by NPV',                       cat: 'operator' },
-  { q: 'Which operator wells are currently in the money at the latest WTI price?',             cat: 'operator + WTI' },
-  { q: 'What is the 30-day average WTI and how does it compare to the latest spot?',           cat: 'enterprise WTI' },
-  { q: 'For each operator well, show NPV and its ADME analog well',                            cat: 'operator + ADME' },
-  { q: 'Which wells have NPT hours above 30 in the last 30 days?',                             cat: 'drilling ops' },
-  { q: 'Show the rig contractor and drilling phase for each operator well',                    cat: 'drilling ops' },
-  { q: 'Plot WTI price over the last 90 days',                                                 cat: 'enterprise WTI' },
-  { q: 'Average porosity and permeability by formation in the operator fleet',                 cat: 'petrophysics' },
-  { q: 'Top ADME analog wells by primary reservoir',                                           cat: 'ADME analogs' },
-  { q: 'Which ADME legal tags are currently valid?',                                           cat: 'governance' },
+  { q: 'Show each well with its live NPV and IRR, sorted by NPV',                cat: 'economics' },
+  { q: 'Which basin has the highest total live NPV?',                           cat: 'economics' },
+  { q: 'List wells with a break-even WTI under $50',                            cat: 'economics' },
+  { q: 'What is the nearest well to BAKER-001 and how far?',                     cat: 'spacing' },
+  { q: 'How many wells are within 500 km of BAKER-001?',                        cat: 'spacing' },
+  { q: 'Show all wells with their basin and location',                          cat: 'wells' },
+  { q: 'Total CO2 tonnes per year across the fleet',                            cat: 'ESG' },
+  { q: 'Rank basins by average break-even WTI',                                 cat: 'economics' },
+  { q: 'Which legal tags are valid?',                                           cat: 'governance' },
+  { q: 'List the entitlement groups and what they can access',                  cat: 'governance' },
 ]
 
 export default function GenieTab() {
@@ -119,13 +119,13 @@ export default function GenieTab() {
 
       {/* Left: sample questions + space info */}
       <div style={{ display: 'grid', gap: 16, position: 'sticky', top: 12 }}>
-        <Panel title="Genie space" subtitle={info?.name || 'Drilling Command Center — ADME Live'}>
+        <Panel title="Genie space" subtitle={info?.name || 'Subsurface Command — Drilling & Economics'}>
           <div style={{ display: 'grid', gap: 6, fontSize: 11 }}>
-            <Row label="Operator" value="operator_wells · operator_economics_live (NA · 6 wells · simulated petrophysics + ops)" />
-            <Row label="Market"   value="wti_prices (180-day WTI from FRED)" />
-            <Row label="Analogs"  value="wellbore_search_source · gold_reservoir · gold_rock_and_fluid (ADME global blocks 15/9 + 34/10)" />
-            <Row label="Govern."  value="gov_legal_tags (ADME ACL inheritance)" />
-            <a href="https://adb-4173618801742158.18.azuredatabricks.net/genie/rooms/01f17b01027f132d8dac985615ea39ff/chats/01f17b025d5411708f33a8260edefb21?o=4173618801742158"
+            <Row label="Wells"    value="operator_wells (6 NA wells · basin · lat/lon)" />
+            <Row label="Economics" value="well_economics (NPV base+live · break-even · IRR · payback · CO₂)" />
+            <Row label="Spacing"  value="well_distances (pairwise km · nearest offset · within-N-km)" />
+            <Row label="Govern."  value="gov_legal_tags · gov_entitlements (legal-tag governance)" />
+            <a href={info?.url || 'https://fevm-oil-pump-monitor.cloud.databricks.com/genie/rooms/01f17bdeaeee136fbd65013d3eb40261'}
                target="_blank" rel="noreferrer" style={{
               marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'start',
               background: 'var(--blue-dim)', border: '1px solid var(--blue)', borderRadius: 6,
@@ -169,8 +169,9 @@ export default function GenieTab() {
         }}>
           {msgs.length === 0 && !loading && (
             <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '20px 0' }}>
-              Genie translates natural-language questions into SQL over the four governed ADME gold tables.
-              Pick a sample on the left or type your own. Genie remembers the conversation, so follow-ups work.
+              Genie translates natural-language questions into governed SQL over the operator's wells, economics,
+              well spacing, and legal-tag tables in Unity Catalog. Pick a sample on the left or type your own.
+              Genie remembers the conversation, so follow-ups work.
             </div>
           )}
           {msgs.map((m, i) => <MsgBubble key={i} m={m} />)}

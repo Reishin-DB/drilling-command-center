@@ -110,8 +110,9 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
     }).catch(() => {})
   }, [])
 
-  // Well spacing — nearest offset well per well via ST_Distance.
-  const [showSpacing, setShowSpacing] = useState(false)
+  // Well spacing — nearest offset well per well via ST_Distance. On by default
+  // so the geospatial (Spatial SQL GA) story is visible on load.
+  const [showSpacing, setShowSpacing] = useState(true)
   const [spacing, setSpacing] = useState<{ well_id: string; nn: string; km: number; from: number[]; to: number[] }[]>([])
   useEffect(() => {
     fetch('/api/geospatial/spacing').then(r => r.json()).then(d => setSpacing(d.pairs || [])).catch(() => {})

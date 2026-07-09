@@ -11,11 +11,11 @@ interface Msg {
 }
 
 const SAMPLE_QUESTIONS = [
-  'Which operator wells are in the money at current WTI?',
-  'Show each well with its NPV and ADME analog',
-  '30-day WTI average vs latest spot',
-  'Wells with NPT > 30h in the last 30 days',
-  'Average porosity by formation in the operator fleet',
+  'Which basin has the highest total live NPV?',
+  'What is the nearest well to BAKER-001 and how far?',
+  'List wells with a break-even WTI under $50',
+  'Total CO2 tonnes per year across the fleet',
+  'Which legal tags are valid?',
 ]
 
 export default function GenieSidebar() {

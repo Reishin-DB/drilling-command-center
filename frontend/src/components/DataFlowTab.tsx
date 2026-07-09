@@ -110,48 +110,48 @@ const MEDALLION: NodeDef[] = [
 // ─── Row 3: Serving / AI ───────────────────────────────────────────────────
 const SERVING: NodeDef[] = [
   {
-    id: 'vs', label: 'Vector Search', sub: 'subsurface-vs',
+    id: 'vs', label: 'Vector Search', sub: 'subsurface-advisor-vs-endpoint',
     x: 290, y: 320, w: 150, h: 60,
     color: '#4dabf7', badge: 'VS',
     detail: [
-      'Δ-sync index on wellbore_search_source',
+      'Δ-sync index wellbore_vs_index on wellbore_analogs (CDF)',
       'databricks-gte-large-en embeddings',
-      'Semantic well similarity',
-      'Powers similar-wells in 3D viewer + Supervisor analogs',
+      'Semantic analog-well similarity',
+      'Powers the Supervisor Analog Retriever specialist',
     ],
   },
   {
-    id: 'uc_fn', label: 'UC Functions', sub: 'Python in catalog',
+    id: 'uc_fn', label: 'UC Functions', sub: 'certified · in catalog',
     x: 460, y: 320, w: 150, h: 60,
     color: '#b37feb', badge: 'UC FN',
     detail: [
       'calculate_npv10()',
       'calculate_break_even()',
-      'forecast_decline_curve()',
-      'EXECUTE granted to app SP',
+      'f_wells_within_km() — ST_Distance table fn',
+      'EXECUTE granted to app SP; called by Economics specialist',
     ],
   },
   {
-    id: 'genie', label: 'Genie Space', sub: 'Drilling Command Center — ADME Live',
+    id: 'genie', label: 'Genie Space', sub: 'Subsurface Command — FEVM',
     x: 630, y: 320, w: 150, h: 60,
     color: '#00E5FF', badge: 'GENIE',
     detail: [
-      'space_id 01f13f7f8e20…',
-      'NL → SQL over 4 flat OSDU tables (wellbore_search, gold_reservoir,',
-      '  gold_rock_and_fluid, gov_legal_tags) · ADME blocks 15/9 + 34/10',
+      'space_id 01f17bdeaeee…',
+      'NL → SQL over operator_wells, well_economics,',
+      '  well_distances, gov_legal_tags, gov_entitlements',
       'Conversation API (start + msg + poll)',
       'Floating sidebar + called by the Decision Supervisor',
     ],
   },
   {
-    id: 'fmapi', label: 'Claude Sonnet 4.5', sub: 'Foundation Model API',
+    id: 'fmapi', label: 'Model · AI Gateway', sub: 'FM API · Choice·Cost·Governance',
     x: 800, y: 320, w: 160, h: 60,
     color: '#9254de', badge: 'LLM',
     detail: [
-      'databricks-claude-sonnet-4-5 endpoint',
-      'Tool-calling (OpenAI-compatible)',
-      'Supervisor synthesises across all 5 specialists',
-      'Trace surfaced inline per call',
+      'CHOICE: any of 6 endpoints (Claude Sonnet/Opus/Haiku + GPT-OSS/Llama/Qwen), swapped at runtime — no redeploy',
+      'COST: real per-run token spend × the model rate',
+      'GOVERNANCE: Mosaic AI Gateway — PII/safety guardrails, payload logging, rate limits, audit log',
+      'Supervisor PLANS the task, ROUTES to the relevant specialists, then SYNTHESISES the verdict',
     ],
   },
 ]
@@ -192,16 +192,15 @@ const APPL: NodeDef[] = [
     ],
   },
   {
-    id: 'supervisor', label: 'Subsurface Supervisor', sub: 'multi-agent · 5 specialists',
+    id: 'supervisor', label: 'Subsurface Supervisor', sub: 'omnigent · plans → routes → synthesises',
     x: 630, y: 480, w: 170, h: 60,
     color: '#00E5FF', badge: 'MAS',
     detail: [
-      'Fans out 5 specialists in parallel via asyncio.gather',
-      'analogs (Vector Search) · petrophysics (FM API · Claude 4.5)',
-      'economics (UC Functions · NPV / break-even)',
-      'regulatory (ADME legal tags) · drilling ops (Lakebase)',
+      'PLANNER reasons which specialists the question needs (streams a plan event); skipped ones dimmed',
+      'Engaged specialists run in parallel: analogs (Vector Search) · petrophysics (FM API)',
+      'economics (UC Functions · NPV / break-even) · regulatory (legal tags) · drilling ops (DuckDB)',
       'Streams results to UI as Server-Sent Events',
-      'Synthesises final recommendation with Claude 4.5',
+      'Synthesises the verdict, then reports per-run Cost + Governance (AI Gateway)',
     ],
   },
   {
@@ -379,13 +378,13 @@ export default function DataFlowTab() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
-                { h: '1 · Ingest',       c: 'ADME/OSDU lands in Bronze via connector. FRED + WB CO₂ arrive as Delta-Shared catalogs from Marketplace.', col: '#27AE60' },
-                { h: '2 · Transform',    c: 'DLT cleans Bronze → Silver. JSON silver_payload is exploded into 3 flat Gold tables (wellbore, reservoir, rock_and_fluid).', col: '#CD6116' },
-                { h: '3 · Serve',        c: 'Vector Search indexes wellbore_search_source; UC Functions expose NPV / break-even / decline; Genie owns NL→SQL over the gold OSDU tables.', col: '#4dabf7' },
-                { h: '4 · Multi-agent',  c: 'Subsurface Supervisor fans out 5 specialists in parallel (Vector Search · FM API · UC Functions · ADME legal tags · Lakebase drilling ops), streams results via SSE, then Claude 4.5 synthesises a recommendation.', col: '#00E5FF' },
-                { h: 'Persistence',      c: 'DuckDB caches reads in-process for sub-ms responses. Lakebase Postgres holds the journal + alerts that need to outlive the app.', col: '#16A085' },
-                { h: 'Governance',       c: 'Unity Catalog row filters + column masks gate lat/lon and drilling_result by persona group membership — same plane covers Marketplace data.', col: '#F39C12' },
-                { h: 'OBO auth',         c: 'Databricks Apps forwards X-Forwarded-Access-Token. SQL, Vector Search, Genie, and Lakebase all run as the user, not the app SP.', col: '#2980B9' },
+                { h: '1 · Ingest',       c: 'Operational data (wells, economics, drilling ops, reservoir, WTI) is generated in-process into DuckDB on startup — the app carries its own data, no external source needed.', col: '#27AE60' },
+                { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_distances, gov_legal_tags/entitlements — plus certified UC functions (NPV, break-even, f_wells_within_km).', col: '#CD6116' },
+                { h: '3 · Retrieve',     c: 'Vector Search (wellbore_vs_index, gte-large-en) does semantic analog-well matching; Genie owns NL→SQL over the UC tables for the sidebar + the Supervisor.', col: '#4dabf7' },
+                { h: '4 · Omnigent MAS', c: 'The Supervisor PLANS which specialists a question needs and ROUTES to only those (skipped ones dimmed); the engaged ones run in parallel and stream via SSE; it synthesises the verdict.', col: '#00E5FF' },
+                { h: 'Choice · Cost · Governance', c: 'Swap the model at runtime (no redeploy); each run meters real token cost × the model rate; every call is Mosaic AI Gateway governed (guardrails, rate limits) and audit-logged.', col: '#9254de' },
+                { h: 'Geospatial (GA)',  c: 'Per-basin AOI (ST_ConvexHull + ST_Buffer + ST_Area) and nearest-offset spacing (ST_Distance) on the Overview map, straight from Spatial SQL over operator_wells.', col: '#73d13d' },
+                { h: 'Governance plane', c: 'Unity Catalog grants gate every table + function to the app SP; the Governance tab shows legal tags, entitlements, and persona-masked views. OBO forwards the user token for SQL/Genie.', col: '#F39C12' },
               ].map(c => (
                 <div key={c.h} style={{
                   background: 'var(--bg-panel)', border: '1px solid var(--border)',

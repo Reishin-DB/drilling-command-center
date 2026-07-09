@@ -137,9 +137,25 @@ def _openai_call(messages: list, tools: list) -> Any:
         return r
 
 
-def _vs_search_sync(query_text: str, k: int) -> list[dict]:
+def _vs_client():
+    """Pass the app SP's OAuth creds explicitly — VectorSearchClient doesn't pick
+    them up automatically. Databricks Apps inject DATABRICKS_CLIENT_ID/SECRET."""
     from databricks.vector_search.client import VectorSearchClient
-    c = VectorSearchClient(disable_notice=True)
+    host = (os.getenv("DATABRICKS_HOST") or "").rstrip("/")
+    if host and not host.startswith("http"):
+        host = "https://" + host
+    cid = os.getenv("DATABRICKS_CLIENT_ID")
+    csec = os.getenv("DATABRICKS_CLIENT_SECRET")
+    if cid and csec:
+        return VectorSearchClient(workspace_url=host or None,
+                                  service_principal_client_id=cid,
+                                  service_principal_client_secret=csec,
+                                  disable_notice=True)
+    return VectorSearchClient(disable_notice=True)
+
+
+def _vs_search_sync(query_text: str, k: int) -> list[dict]:
+    c = _vs_client()
     idx = c.get_index(endpoint_name=VS_ENDPOINT, index_name=VS_INDEX)
     res = idx.similarity_search(
         query_text=query_text,

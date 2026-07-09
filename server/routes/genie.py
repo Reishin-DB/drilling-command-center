@@ -278,9 +278,14 @@ async def ask_stream(req: GenieReq):
 
 @router.get("/genie/space")
 async def space_info():
+    # Host is env-driven so the "Open Genie" link points at whatever workspace the
+    # app is deployed in (FEVM AWS, Azure, etc.). Defaults to the FEVM workspace.
+    host = (os.getenv("GENIE_HOST") or "https://fevm-oil-pump-monitor.cloud.databricks.com").rstrip("/")
+    if not host.startswith("http"):
+        host = "https://" + host
     return {
         "space_id": GENIE_SPACE_ID,
-        "url": f"https://adb-4173618801742158.18.azuredatabricks.net/genie/rooms/{GENIE_SPACE_ID}",
-        "name": "Drilling Command Center — ADME Live",
+        "url": f"{host}/genie/rooms/{GENIE_SPACE_ID}",
+        "name": os.getenv("GENIE_SPACE_NAME", "Subsurface Command — Drilling & Economics"),
         "cache_entries": len(_CACHE),
     }
