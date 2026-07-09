@@ -18,6 +18,8 @@ interface SpecialistResult {
   evidence?: string
   question?: string
   error?: string
+  skipped?: boolean
+  reason?: string
 }
 
 interface SupervisorInfo {
@@ -28,6 +30,12 @@ interface SupervisorInfo {
 
 interface WellOpt { well_id: string; well_name: string; basin?: string }
 
+interface RouteDecision { id: string; name: string; engage: boolean; reason: string }
+interface Plan { strategy: string; route: RouteDecision[]; model?: string; plan_ms?: number }
+interface CostInfo { model: string; calls: number; prompt_tokens: number; completion_tokens: number; in_per_m: number; out_per_m: number; usd: number }
+interface GovInfo { gateway: string; guardrails: string[]; audit: string; data: string; model_governed: string }
+interface ModelOpt { id: string; label: string; family: string; inPerM?: number; outPerM?: number; tier?: string }
+
 const PRESET_QUESTIONS: { q: string; well: string }[] = [
   { q: 'Should we drill an infill development well next to BAKER-001 in the Mancos / Westwater play?',   well: 'BAKER-001' },
   { q: 'Is PIONEER-22S worth re-fracking given current WTI and the recent BHA failure?',                  well: 'PIONEER-22S' },
@@ -35,7 +43,7 @@ const PRESET_QUESTIONS: { q: string; well: string }[] = [
   { q: 'What is the economic + ESG case to spud a Wolfcamp A development well near MARATHON-15X?',        well: 'MARATHON-15X' },
 ]
 
-type Status = 'idle' | 'running' | 'done' | 'error'
+type Status = 'idle' | 'running' | 'done' | 'error' | 'skipped'
 
 export default function SupervisorTab() {
   const [info, setInfo]       = useState<SupervisorInfo | null>(null)
@@ -47,9 +55,10 @@ export default function SupervisorTab() {
   const [running, setRunning] = useState(false)
   const [status, setStatus]   = useState<Record<string, Status>>({})
   const [results, setResults] = useState<Record<string, SpecialistResult>>({})
-  const [rec, setRec]         = useState<{ text: string; total_ms: number; verdict?: string; model?: string } | null>(null)
+  const [rec, setRec]         = useState<{ text: string; total_ms: number; verdict?: string; model?: string; cost?: CostInfo; governance?: GovInfo } | null>(null)
+  const [plan, setPlan]       = useState<Plan | null>(null)
   const [err, setErr]         = useState<string | null>(null)
-  const [models, setModels]   = useState<string[]>([])
+  const [models, setModels]   = useState<ModelOpt[]>([])
   const [model, setModel]     = useState<string>('databricks-claude-sonnet-4-5')
 
   useEffect(() => {
@@ -87,7 +96,7 @@ export default function SupervisorTab() {
 
   async function ask() {
     if (!question.trim() || running) return
-    setRunning(true); setRec(null); setErr(null); setResults({}); setRunMeta(null)
+    setRunning(true); setRec(null); setErr(null); setResults({}); setRunMeta(null); setPlan(null); setStatus({})
     const ac = new AbortController(); abortRef.current = ac
     try {
       const resp = await fetch('/api/supervisor/decide', {
@@ -117,17 +126,24 @@ export default function SupervisorTab() {
           try { data = JSON.parse(dataStr) } catch { continue }
           if (ev === 'start') {
             const init: Record<string, Status> = {}
-            for (const s of data.specialists || []) init[s.id] = 'running'
+            for (const s of data.specialists || []) init[s.id] = 'idle'
             setStatus(init)
             setRunMeta({
               well_name: data.well_name, basin: data.basin, formation: data.formation,
               analog_well_id: data.analog_well_id, analog_field: data.analog_field,
             })
+          } else if (ev === 'plan') {
+            setPlan(data as Plan)
+            setStatus(prev => {
+              const next = { ...prev }
+              for (const r of (data.route || []) as RouteDecision[]) next[r.id] = r.engage ? 'running' : 'skipped'
+              return next
+            })
           } else if (ev === 'specialist') {
             setResults(prev => ({ ...prev, [data.id]: data }))
-            setStatus(prev => ({ ...prev, [data.id]: data.error ? 'error' : 'done' }))
+            setStatus(prev => ({ ...prev, [data.id]: data.skipped ? 'skipped' : data.error ? 'error' : 'done' }))
           } else if (ev === 'recommendation') {
-            setRec({ text: data.text || '', total_ms: data.total_ms || 0, verdict: data.verdict, model: data.model })
+            setRec({ text: data.text || '', total_ms: data.total_ms || 0, verdict: data.verdict, model: data.model, cost: data.cost, governance: data.governance })
           } else if (ev === 'done') {
             // noop
           }
@@ -164,7 +180,7 @@ export default function SupervisorTab() {
           <span style={{
             fontSize: 10, fontFamily: 'monospace', padding: '2px 9px', borderRadius: 10,
             background: 'var(--blue-dim)', color: 'var(--blue)', border: '1px solid var(--blue)',
-          }}>multi-agent · 5 specialists in parallel</span>
+          }}>multi-agent · plans → routes → synthesizes</span>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
           Pick one of the operator's NA wells. Five Databricks AI services fire in parallel:
@@ -180,19 +196,21 @@ export default function SupervisorTab() {
         background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
         padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', color: '#4dabf7' }}>CHOICE · MODEL</span>
-        <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>pick a model — the Supervisor calls it, no code change (governed by AI Gateway):</span>
-        {(models.length ? models : ['databricks-claude-sonnet-4-5']).map(m => {
-          const active = m === model
+        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', color: '#4dabf7' }}>CHOICE · COST · CONTROL</span>
+        <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>pick a model — the Supervisor routes to it, no code change · governed by AI Gateway · price = $/1M tokens:</span>
+        {(models.length ? models : [{ id: 'databricks-claude-sonnet-4-5', label: 'Claude Sonnet 4.5', family: 'Anthropic', inPerM: 3, outPerM: 15, tier: '$$' }]).map(m => {
+          const active = m.id === model
+          const tierColor = m.tier === '$$$' ? '#E67E22' : m.tier === '$$' ? '#F39C12' : '#27AE60'
           return (
-            <button key={m} onClick={() => pickModel(m)} title={m} style={{
+            <button key={m.id} onClick={() => pickModel(m.id)} title={`${m.id}\n$${m.inPerM}/1M in · $${m.outPerM}/1M out`} style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer',
               background: active ? 'var(--blue-dim)' : 'var(--bg-panel)',
               border: `1px solid ${active ? '#4dabf7' : 'var(--border)'}`, borderRadius: 6, padding: '4px 9px',
             }}>
               <span style={{ width: 6, height: 6, borderRadius: 3, background: active ? '#4dabf7' : 'var(--text-muted)' }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: active ? '#4dabf7' : 'var(--text-secondary)' }}>{MODEL_LABEL[m] || m}</span>
-              <span style={{ fontSize: 8.5, fontWeight: 700, color: isOpen(m) ? '#27AE60' : '#9254de' }}>{isOpen(m) ? 'Open' : 'Anthropic'}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: active ? '#4dabf7' : 'var(--text-secondary)' }}>{m.label || MODEL_LABEL[m.id] || m.id}</span>
+              <span style={{ fontSize: 8.5, fontWeight: 700, color: m.family === 'Open' ? '#27AE60' : '#9254de' }}>{m.family || (isOpen(m.id) ? 'Open' : 'Anthropic')}</span>
+              {m.tier && <span style={{ fontSize: 9, fontWeight: 800, color: tierColor, letterSpacing: '0.5px' }}>{m.tier}</span>}
             </button>
           )
         })}
@@ -252,6 +270,41 @@ export default function SupervisorTab() {
         {err && <div style={{ marginTop: 10, color: 'var(--red)', fontSize: 11 }}>⚠ {err}</div>}
       </div>
 
+      {/* Orchestration plan — supervisor decided which agents this question needs */}
+      {plan && (
+        <div style={{
+          background: 'linear-gradient(120deg, var(--bg-card), var(--bg-panel))',
+          border: '1px solid #4dabf7', borderRadius: 10, padding: '14px 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.06em', color: '#4dabf7' }}>ORCHESTRATION PLAN</span>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>supervisor decided which agents this question needs</span>
+            {plan.plan_ms != null && <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{plan.plan_ms} ms</span>}
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: 10 }}>{plan.strategy}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--blue-dim)',
+              border: '1px solid #4dabf7', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#4dabf7',
+            }}>🧠 Supervisor</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>→</span>
+            {plan.route.map(r => (
+              <span key={r.id} title={r.reason} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                background: r.engage ? 'rgba(39,174,96,0.12)' : 'var(--bg-panel)',
+                border: `1px solid ${r.engage ? 'rgba(39,174,96,0.5)' : 'var(--border)'}`,
+                borderRadius: 8, padding: '4px 10px', fontSize: 11,
+                color: r.engage ? '#27AE60' : 'var(--text-muted)',
+                textDecoration: r.engage ? 'none' : 'line-through', opacity: r.engage ? 1 : 0.75,
+              }}>
+                {r.engage ? '✓' : '○'} {r.name}
+                {r.reason && <span style={{ fontSize: 9.5, fontWeight: 400, color: r.engage ? 'rgba(39,174,96,0.8)' : 'var(--text-muted)' }}>· {r.reason}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Specialist cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
         {specialistsRender.map(s => {
@@ -266,6 +319,43 @@ export default function SupervisorTab() {
       {/* Recommendation — giant verdict card + reasoning */}
       <VerdictCard rec={rec} running={running} />
 
+      {/* Cost + Governance — the omnigent Cost / Control story for this run */}
+      {rec && (rec.cost || rec.governance) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {rec.cost && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: '#F39C12', marginBottom: 8 }}>💰 COST · THIS RUN</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 24, fontWeight: 800, color: '#F39C12' }}>
+                  {rec.cost.usd < 0.01 ? `${(rec.cost.usd * 100).toFixed(3)}¢` : `$${rec.cost.usd.toFixed(4)}`}
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{rec.cost.calls} model call{rec.cost.calls === 1 ? '' : 's'}</span>
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.7, fontFamily: 'monospace' }}>
+                <div>in: {rec.cost.prompt_tokens.toLocaleString()} tok × ${rec.cost.in_per_m}/1M</div>
+                <div>out: {rec.cost.completion_tokens.toLocaleString()} tok × ${rec.cost.out_per_m}/1M</div>
+              </div>
+              <div style={{ fontSize: 9.5, color: 'var(--text-muted)', marginTop: 6 }}>Switch to a cheaper model above — same orchestration, lower cost per run.</div>
+            </div>
+          )}
+          {rec.governance && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: 'var(--teal)', marginBottom: 8 }}>🛡️ GOVERNANCE</div>
+              <div style={{ fontSize: 11.5, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 6 }}>{rec.governance.gateway}</div>
+              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+                {rec.governance.guardrails.map(g => (
+                  <span key={g} style={{ fontSize: 9.5, color: 'var(--teal)', background: 'var(--blue-dim)', border: '1px solid var(--border)', borderRadius: 6, padding: '2px 7px' }}>{g}</span>
+                ))}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                <div>📋 {rec.governance.audit}</div>
+                <div>🔒 {rec.governance.data}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
 
 
       {/* Architecture note */}
@@ -274,10 +364,10 @@ export default function SupervisorTab() {
       }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>How this works</div>
         <ol style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-          <li><b>Fan-out:</b> the supervisor opens five async tasks, one per Databricks AI service. They run concurrently.</li>
-          <li><b>Stream:</b> results are pushed to this UI via Server-Sent Events as each specialist completes — no waiting on the slowest.</li>
-          <li><b>Synthesise:</b> a final Claude 4.5 call on <code>{info?.model || 'databricks-claude-sonnet-4-5'}</code> takes all 5 outputs and produces the recommendation with citations.</li>
-          <li><b>Governance:</b> every read flows through Unity Catalog. Persona enforcement from the Governance tab applies here too.</li>
+          <li><b>Plan:</b> the supervisor first reasons about your question and routes to only the specialists it needs (shown in the Orchestration Plan). Skipped agents are dimmed.</li>
+          <li><b>Fan-out + stream:</b> the engaged specialists run concurrently; results stream to this UI via Server-Sent Events as each completes — no waiting on the slowest.</li>
+          <li><b>Synthesise:</b> a final call on the chosen model (<code>{model}</code>) takes the engaged outputs and produces the recommendation with citations.</li>
+          <li><b>Choice · Cost · Governance:</b> swap the model at runtime (no redeploy); the run's real token cost is metered; every call is AI-Gateway governed and audit-logged, and UC / ADME persona enforcement applies here too.</li>
         </ol>
       </div>
     </div>
@@ -368,13 +458,15 @@ function SpecialistCard({ info, status, result }: { info: SpecialistInfo; status
     running: { border: 'var(--amber)',    dot: 'var(--amber)',      label: 'running…' },
     done:    { border: 'var(--green)',    dot: 'var(--green)',      label: result?.ms ? `done · ${result.ms}ms` : 'done' },
     error:   { border: 'var(--red)',      dot: 'var(--red)',        label: 'error' },
+    skipped: { border: 'var(--border)',   dot: 'var(--text-muted)', label: 'not engaged' },
   }
   const c = colorMap[status]
+  const skipped = status === 'skipped'
   return (
     <div style={{
       background: 'var(--bg-card)', border: `1px solid ${c.border}`,
       borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', gap: 6,
-      minHeight: 230,
+      minHeight: 230, opacity: skipped ? 0.55 : 1,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{
@@ -397,6 +489,7 @@ function SpecialistCard({ info, status, result }: { info: SpecialistInfo; status
       }}>
         {status === 'idle'    && <span style={{ color: 'var(--text-muted)' }}>{info.desc || 'awaiting question…'}</span>}
         {status === 'running' && <Skeleton />}
+        {status === 'skipped' && <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{result?.reason ? `Skipped — ${result.reason}` : 'Skipped by the orchestration plan.'}</span>}
         {status === 'done'    && (typeof result?.result === 'string' ? result.result : result?.result ? JSON.stringify(result.result) : '(no output)')}
         {status === 'error'   && <span style={{ color: 'var(--red)' }}>{result?.error || 'failed'}</span>}
       </div>

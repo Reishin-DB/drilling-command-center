@@ -47,17 +47,53 @@ MODEL_ENDPOINT = os.getenv("AGENT_MODEL", "databricks-claude-sonnet-4-5")
 # Defaults to AGENT_MODEL; POST /api/model changes which serving endpoint the
 # Supervisor calls, no redeploy. Governed by the same OAuth token + AI Gateway.
 _CURRENT_MODEL = MODEL_ENDPOINT
+# Cost fields are illustrative pay-per-token rates (USD per 1M tokens) for the demo's
+# Cost pillar — they show the Choice -> Cost lever (open/small models are far cheaper).
+# tier is a coarse $/$$/$$$ badge for the picker.
 AVAILABLE_MODELS = [
-    "databricks-claude-sonnet-4-5",
-    "databricks-claude-opus-4-8",
-    "databricks-claude-haiku-4-5",
-    "databricks-gpt-oss-120b",
-    "databricks-llama-4-maverick",
-    "databricks-qwen35-122b-a10b",
+    {"id": "databricks-claude-sonnet-4-5", "label": "Claude Sonnet 4.5", "family": "Anthropic", "inPerM": 3.00,  "outPerM": 15.00, "tier": "$$"},
+    {"id": "databricks-claude-opus-4-8",   "label": "Claude Opus 4.8",   "family": "Anthropic", "inPerM": 15.00, "outPerM": 75.00, "tier": "$$$"},
+    {"id": "databricks-claude-haiku-4-5",  "label": "Claude Haiku 4.5",  "family": "Anthropic", "inPerM": 0.80,  "outPerM": 4.00,  "tier": "$"},
+    {"id": "databricks-gpt-oss-120b",      "label": "GPT-OSS 120B",      "family": "Open",      "inPerM": 0.50,  "outPerM": 1.50,  "tier": "$"},
+    {"id": "databricks-llama-4-maverick",  "label": "Llama 4 Maverick",  "family": "Open",      "inPerM": 0.60,  "outPerM": 1.80,  "tier": "$"},
+    {"id": "databricks-qwen35-122b-a10b",  "label": "Qwen 3.5 122B",     "family": "Open",      "inPerM": 0.70,  "outPerM": 2.00,  "tier": "$"},
 ]
+MODEL_IDS = [m["id"] for m in AVAILABLE_MODELS]
+MODEL_RATES = {m["id"]: (m["inPerM"], m["outPerM"]) for m in AVAILABLE_MODELS}
 
 def _current_model() -> str:
     return _CURRENT_MODEL
+
+
+# ── Per-run token accounting (Cost pillar) ───────────────────────────────────
+# Specialists call the FM in parallel threads, so guard the accumulator with a lock.
+import threading as _threading
+_usage_lock = _threading.Lock()
+_USAGE = {"prompt": 0, "completion": 0, "calls": 0}
+
+def _reset_usage() -> None:
+    with _usage_lock:
+        _USAGE.update(prompt=0, completion=0, calls=0)
+
+def _add_usage(resp: Any) -> None:
+    try:
+        u = (resp or {}).get("usage") or {}
+        with _usage_lock:
+            _USAGE["prompt"] += int(u.get("prompt_tokens", 0) or 0)
+            _USAGE["completion"] += int(u.get("completion_tokens", 0) or 0)
+            _USAGE["calls"] += 1
+    except Exception:
+        pass
+
+def _cost_for_run(model: str) -> dict:
+    in_rate, out_rate = MODEL_RATES.get(model, MODEL_RATES["databricks-claude-sonnet-4-5"])
+    with _usage_lock:
+        p, c, n = _USAGE["prompt"], _USAGE["completion"], _USAGE["calls"]
+    usd = (p / 1e6) * in_rate + (c / 1e6) * out_rate
+    return {
+        "model": model, "calls": n, "prompt_tokens": p, "completion_tokens": c,
+        "in_per_m": in_rate, "out_per_m": out_rate, "usd": round(usd, 5),
+    }
 
 
 def _sql_conn():
@@ -84,7 +120,9 @@ def _openai_call(messages: list, tools: list) -> Any:
     }
     api = w.api_client
     if hasattr(api, "do"):
-        return api.do("POST", f"/serving-endpoints/{_current_model()}/invocations", body=body)
+        r = api.do("POST", f"/serving-endpoints/{_current_model()}/invocations", body=body)
+        _add_usage(r)
+        return r
     import urllib.request
     host = (w.config.host or "").rstrip("/")
     if not host.startswith("http"):
@@ -94,7 +132,9 @@ def _openai_call(messages: list, tools: list) -> Any:
     url = f"{host}/serving-endpoints/{_current_model()}/invocations"
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers)
     with urllib.request.urlopen(req, timeout=60) as resp:
-        return json.loads(resp.read())
+        r = json.loads(resp.read())
+        _add_usage(r)
+        return r
 
 
 def _vs_search_sync(query_text: str, k: int) -> list[dict]:
@@ -509,6 +549,58 @@ def _extract_verdict(rec_text: str) -> str:
     return "REVIEW"
 
 
+# ── Planner / router — the "omnigent" orchestration step ─────────────────────
+# The supervisor reasons about the question and decides which specialists to
+# engage (decomposition + routing), instead of blindly fanning out all five.
+SPECIALIST_FN_BY_ID = {
+    "analogs":      specialist_analogs,
+    "petrophysics": specialist_petrophysics,
+    "economics":    specialist_economics,
+    "regulatory":   specialist_regulatory,
+    "operations":   specialist_operations,
+}
+SPECIALIST_CATALOG = [
+    {"id": "analogs",      "name": "Subsurface Analog Retriever", "when": "finding comparable/offset wells or analog fields for the play"},
+    {"id": "petrophysics", "name": "Petrophysics Interpreter",    "when": "rock/fluid quality — porosity, perm, saturation, net pay, reservoir risk"},
+    {"id": "economics",    "name": "Economics Evaluator",         "when": "NPV, break-even, WTI sensitivity, capex/opex, the money case"},
+    {"id": "regulatory",   "name": "Regulatory & ESG Gate",       "when": "compliance, legal tags, permits, emissions / ESG"},
+    {"id": "operations",   "name": "Drilling Operations",         "when": "rig, NPT, BHA/casing status, supply chain, execution feasibility"},
+]
+NAME_BY_ID = {s["id"]: s["name"] for s in SPECIALIST_CATALOG}
+
+PLAN_SYSTEM = (
+    "You are a multi-agent orchestrator for a drilling decision-support system. Given the user's "
+    "question about an operator well, decide which specialist agents to engage to answer it well. "
+    "Engage ONLY the relevant ones (usually 2-4, rarely all 5). Reply with STRICT JSON only, no prose:\n"
+    '{"strategy":"<one-sentence plan>","route":[{"id":"<agent id>","engage":true,"reason":"<max 8 words>"}]}\n'
+    "Include EVERY agent id in route with engage true or false."
+)
+
+def _fallback_route() -> list[dict]:
+    return [{"id": s["id"], "name": s["name"], "engage": True, "reason": "default engage"} for s in SPECIALIST_CATALOG]
+
+async def plan_route(req: "DecideReq") -> dict:
+    agent_lines = "\n".join(f"- {s['id']} ({s['name']}): engage when {s['when']}." for s in SPECIALIST_CATALOG)
+    user = f"QUESTION: {req.question}\nWell: {req.well_id} · WTI ${req.wti_price:.0f}/bbl\n\nAGENTS:\n{agent_lines}"
+    try:
+        raw = await asyncio.to_thread(_claude_text, PLAN_SYSTEM, user, 300)
+        blob = json.loads(raw[raw.index("{"): raw.rindex("}") + 1])
+        route = []
+        for s in SPECIALIST_CATALOG:
+            found = next((r for r in blob.get("route", []) if r.get("id") == s["id"]), None)
+            route.append({
+                "id": s["id"], "name": s["name"],
+                "engage": bool(found["engage"]) if found and "engage" in found else True,
+                "reason": (str(found.get("reason")) if found else "")[:60] or "relevant to question",
+            })
+        if sum(1 for r in route if r["engage"]) < 2:
+            route = _fallback_route()
+        strategy = (str(blob.get("strategy") or "")[:200]) or "Engaging the specialists relevant to this question."
+        return {"strategy": strategy, "route": route}
+    except Exception:
+        return {"strategy": "Planner model unavailable — engaging all specialists.", "route": _fallback_route()}
+
+
 # Persisted most-recent Supervisor run for the Overview "last decision" widget.
 _LAST_DECISION: dict = {}
 
@@ -552,6 +644,7 @@ async def decide(req: DecideReq):
     """Stream specialist results as SSE; final 'recommendation' event closes the run."""
     async def gen():
         t0 = time.time()
+        _reset_usage()
         # Load well context once; reuse across all specialists
         try:
             ctx = await _get_well_context(req.well_id)
@@ -578,6 +671,20 @@ async def decide(req: DecideReq):
             ],
         })
 
+        # 1) Plan — the supervisor decides which specialists this question needs.
+        plan = await plan_route(req)
+        yield _sse("plan", {"strategy": plan["strategy"], "route": plan["route"],
+                            "model": _current_model(), "plan_ms": _ms(t0)})
+
+        # 2) Emit skipped cards immediately so the UI can dim them.
+        for r in plan["route"]:
+            if not r["engage"]:
+                yield _sse("specialist", {
+                    "id": r["id"], "name": NAME_BY_ID.get(r["id"], r["id"]),
+                    "skipped": True, "reason": r["reason"],
+                    "result": f"(not engaged — {r['reason']})",
+                })
+
         queue: asyncio.Queue = asyncio.Queue()
 
         async def run_and_push(coro):
@@ -590,7 +697,9 @@ async def decide(req: DecideReq):
                     "trace": traceback.format_exc()[-300:],
                 }))
 
-        tasks = [asyncio.create_task(run_and_push(spec(req, ctx))) for spec in SPECIALISTS]
+        # 3) Run only the engaged specialists.
+        engaged_ids = [r["id"] for r in plan["route"] if r["engage"]]
+        tasks = [asyncio.create_task(run_and_push(SPECIALIST_FN_BY_ID[i](req, ctx))) for i in engaged_ids]
 
         collected: list[dict] = []
         for _ in tasks:
@@ -598,19 +707,30 @@ async def decide(req: DecideReq):
             collected.append(payload)
             yield _sse(ev, payload)
 
-        # Synthesis after all specialists land
+        # Synthesis after all engaged specialists land
         try:
             rec = await synthesize(req, ctx, collected)
         except Exception as e:
             rec = f"(synthesis failed: {e})"
         verdict = _extract_verdict(rec)
+        model_now = _current_model()
+        cost = _cost_for_run(model_now)
+        governance = {
+            "gateway": "Mosaic AI Gateway",
+            "guardrails": ["PII / safety filters", "Payload logging", "Rate limiting"],
+            "audit": f"Agent run logged · {cost['calls']} model call(s) · verdict {verdict}",
+            "data": f"Governed via Unity Catalog + ADME legal tags ({CATALOG}.{SCHEMA}) · Lakebase ops",
+            "model_governed": model_now,
+        }
         payload = {
             "text": rec,
             "verdict": verdict,
             "total_ms": _ms(t0),
             "well_id": req.well_id,
             "well_name": well.get("well_name"),
-            "model": _current_model(),
+            "model": model_now,
+            "cost": cost,
+            "governance": governance,
         }
         # Persist the most recent decision for the Overview "last decision" widget
         _LAST_DECISION.update({
@@ -654,7 +774,7 @@ async def get_model():
 @router.post("/model")
 async def set_model(pick: ModelPick):
     global _CURRENT_MODEL
-    if pick.model in AVAILABLE_MODELS:
+    if pick.model in MODEL_IDS:
         _CURRENT_MODEL = pick.model
         return {"model": _CURRENT_MODEL, "ok": True}
     return {"model": _current_model(), "ok": False, "error": "unknown model"}
