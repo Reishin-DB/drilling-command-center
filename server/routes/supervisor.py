@@ -47,6 +47,19 @@ MODEL_ENDPOINT = os.getenv("AGENT_MODEL", "databricks-claude-sonnet-4-5")
 # Defaults to AGENT_MODEL; POST /api/model changes which serving endpoint the
 # Supervisor calls, no redeploy. Governed by the same OAuth token + AI Gateway.
 _CURRENT_MODEL = MODEL_ENDPOINT
+
+# Product label for the gateway that fronts every model call (deck: "Databricks AI Gateway").
+GATEWAY_NAME = "Databricks AI Gateway"
+
+# Broader API & Fallbacks (deck) — automatic failover chain. If the selected
+# endpoint errors (provider outage, rate limit), _openai_call transparently
+# retries the next endpoint in the chain so a run never dies on one provider.
+# The chain always starts with the currently-selected model, then walks these.
+FALLBACK_CHAIN = [
+    "databricks-claude-sonnet-4-5",
+    "databricks-claude-haiku-4-5",
+    "databricks-gpt-oss-120b",
+]
 # Cost fields are illustrative pay-per-token rates (USD per 1M tokens) for the demo's
 # Cost pillar — they show the Choice -> Cost lever (open/small models are far cheaper).
 # tier is a coarse $/$$/$$$ badge for the picker.
@@ -69,11 +82,19 @@ def _current_model() -> str:
 # Specialists call the FM in parallel threads, so guard the accumulator with a lock.
 import threading as _threading
 _usage_lock = _threading.Lock()
-_USAGE = {"prompt": 0, "completion": 0, "calls": 0}
+_USAGE = {"prompt": 0, "completion": 0, "calls": 0, "fallbacks": 0, "served_by": {}}
 
 def _reset_usage() -> None:
     with _usage_lock:
-        _USAGE.update(prompt=0, completion=0, calls=0)
+        _USAGE.update(prompt=0, completion=0, calls=0, fallbacks=0, served_by={})
+
+def _note_served_by(endpoint: str, fell_back: bool) -> None:
+    """Unified Visibility (deck) — track which endpoint actually served each call
+    and how many times the gateway had to fail over, for the observability panel."""
+    with _usage_lock:
+        _USAGE["served_by"][endpoint] = _USAGE["served_by"].get(endpoint, 0) + 1
+        if fell_back:
+            _USAGE["fallbacks"] += 1
 
 def _add_usage(resp: Any) -> None:
     try:
@@ -89,10 +110,16 @@ def _cost_for_run(model: str) -> dict:
     in_rate, out_rate = MODEL_RATES.get(model, MODEL_RATES["databricks-claude-sonnet-4-5"])
     with _usage_lock:
         p, c, n = _USAGE["prompt"], _USAGE["completion"], _USAGE["calls"]
+        fb = _USAGE["fallbacks"]
+        served_by = dict(_USAGE["served_by"])
     usd = (p / 1e6) * in_rate + (c / 1e6) * out_rate
     return {
         "model": model, "calls": n, "prompt_tokens": p, "completion_tokens": c,
         "in_per_m": in_rate, "out_per_m": out_rate, "usd": round(usd, 5),
+        # Unified Visibility (deck) — real-time per-run metrics the gateway logs to UC.
+        "total_tokens": p + c,
+        "fallbacks": fb,
+        "served_by": served_by,
     }
 
 
@@ -108,33 +135,64 @@ def _sql_conn():
     )
 
 
-def _openai_call(messages: list, tools: list) -> Any:
-    """Call Databricks-hosted Claude via the OpenAI-compatible chat endpoint."""
+def _fallback_endpoints() -> list[str]:
+    """Ordered endpoint chain for this call: selected model first, then the
+    configured FALLBACK_CHAIN, de-duplicated. Databricks AI Gateway walks this
+    chain on failure so a provider outage never takes the agent down."""
+    chain = [_current_model()] + FALLBACK_CHAIN
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for m in chain:
+        if m and m not in seen:
+            seen.add(m)
+            ordered.append(m)
+    return ordered
+
+
+def _invoke_endpoint(endpoint: str, body: dict) -> Any:
+    """Single POST to one serving endpoint (SDK do() with a urllib fallback)."""
     from databricks.sdk import WorkspaceClient
     w = WorkspaceClient()
-    body = {
-        "messages":    messages,
-        "tools":       tools,
-        "max_tokens":  1024,
-        "temperature": 0.2,
-    }
     api = w.api_client
     if hasattr(api, "do"):
-        r = api.do("POST", f"/serving-endpoints/{_current_model()}/invocations", body=body)
-        _add_usage(r)
-        return r
+        return api.do("POST", f"/serving-endpoints/{endpoint}/invocations", body=body)
     import urllib.request
     host = (w.config.host or "").rstrip("/")
     if not host.startswith("http"):
         host = "https://" + host
     headers = dict(w.config.authenticate())
     headers["Content-Type"] = "application/json"
-    url = f"{host}/serving-endpoints/{_current_model()}/invocations"
+    url = f"{host}/serving-endpoints/{endpoint}/invocations"
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers)
     with urllib.request.urlopen(req, timeout=60) as resp:
-        r = json.loads(resp.read())
-        _add_usage(r)
-        return r
+        return json.loads(resp.read())
+
+
+def _openai_call(messages: list, tools: list) -> Any:
+    """Call a Databricks-hosted model via the OpenAI-compatible chat endpoint,
+    with Databricks AI Gateway multi-endpoint failover: try the selected model,
+    then walk FALLBACK_CHAIN if it errors. Records which endpoint served the call
+    (and whether we fell back) for the Unified Visibility panel."""
+    body = {
+        "messages":    messages,
+        "tools":       tools,
+        "max_tokens":  1024,
+        "temperature": 0.2,
+    }
+    endpoints = _fallback_endpoints()
+    last_err: Exception | None = None
+    for i, endpoint in enumerate(endpoints):
+        try:
+            r = _invoke_endpoint(endpoint, body)
+            _add_usage(r)
+            _note_served_by(endpoint, fell_back=(i > 0))
+            return r
+        except Exception as e:  # provider outage / rate limit / cold start
+            last_err = e
+            continue
+    raise RuntimeError(
+        f"All {len(endpoints)} gateway endpoints failed; last error: {last_err}"
+    )
 
 
 def _vs_client():
@@ -731,12 +789,32 @@ async def decide(req: DecideReq):
         verdict = _extract_verdict(rec)
         model_now = _current_model()
         cost = _cost_for_run(model_now)
+        # Unified Visibility — a human line describing which endpoints served the run
+        # and whether the gateway had to fail over to a backup provider.
+        served = cost.get("served_by") or {}
+        if cost.get("fallbacks"):
+            served_line = (
+                f"Failover engaged · {cost['fallbacks']} call(s) rerouted · "
+                f"served by {', '.join(served.keys())}"
+            )
+        elif served:
+            served_line = f"All {cost['calls']} call(s) served by {', '.join(served.keys())} · no failover needed"
+        else:
+            served_line = "No model calls this run"
         governance = {
-            "gateway": "Mosaic AI Gateway",
-            "guardrails": ["PII / safety filters", "Payload logging", "Rate limiting"],
+            "gateway": GATEWAY_NAME,
+            "guardrails": ["PII / safety filters", "Payload logging", "Rate limiting", "Multi-endpoint failover"],
             "audit": f"Agent run logged · {cost['calls']} model call(s) · verdict {verdict}",
             "data": f"Governed via Unity Catalog + ADME legal tags ({CATALOG}.{SCHEMA}) · Lakebase ops",
             "model_governed": model_now,
+            # Unified Visibility + Broader API & Fallbacks (deck)
+            "visibility": {
+                "total_tokens": cost.get("total_tokens", 0),
+                "usd": cost.get("usd", 0),
+                "served_by": served,
+                "fallbacks": cost.get("fallbacks", 0),
+                "summary": served_line,
+            },
         }
         payload = {
             "text": rec,
@@ -785,7 +863,14 @@ class ModelPick(BaseModel):
 
 @router.get("/model")
 async def get_model():
-    return {"model": _current_model(), "default": MODEL_ENDPOINT, "available": AVAILABLE_MODELS}
+    return {
+        "model": _current_model(),
+        "default": MODEL_ENDPOINT,
+        "available": AVAILABLE_MODELS,
+        # Discover & Manage + Broader API & Fallbacks (deck)
+        "gateway": GATEWAY_NAME,
+        "fallback_chain": _fallback_endpoints(),
+    }
 
 @router.post("/model")
 async def set_model(pick: ModelPick):

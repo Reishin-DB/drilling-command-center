@@ -150,7 +150,9 @@ const SERVING: NodeDef[] = [
     detail: [
       'CHOICE: any of 6 endpoints (Claude Sonnet/Opus/Haiku + GPT-OSS/Llama/Qwen), swapped at runtime — no redeploy',
       'COST: real per-run token spend × the model rate',
-      'GOVERNANCE: Mosaic AI Gateway — PII/safety guardrails, payload logging, rate limits, audit log',
+      'RELIABILITY: multi-endpoint failover — a provider outage auto-reroutes to a backup model',
+      'GOVERNANCE: Databricks AI Gateway — PII/safety guardrails, payload logging, rate limits, audit log',
+      'VISIBILITY: per-run tokens, spend, and which endpoint served each call logged to Unity Catalog',
       'Supervisor PLANS the task, ROUTES to the relevant specialists, then SYNTHESISES the verdict',
     ],
   },
@@ -382,7 +384,7 @@ export default function DataFlowTab() {
                 { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_distances, gov_legal_tags/entitlements — plus certified UC functions (NPV, break-even, f_wells_within_km).', col: '#CD6116' },
                 { h: '3 · Retrieve',     c: 'Vector Search (wellbore_vs_index, gte-large-en) does semantic analog-well matching; Genie owns NL→SQL over the UC tables for the sidebar + the Supervisor.', col: '#4dabf7' },
                 { h: '4 · Omnigent MAS', c: 'The Supervisor PLANS which specialists a question needs and ROUTES to only those (skipped ones dimmed); the engaged ones run in parallel and stream via SSE; it synthesises the verdict.', col: '#00E5FF' },
-                { h: 'Choice · Cost · Governance', c: 'Swap the model at runtime (no redeploy); each run meters real token cost × the model rate; every call is Mosaic AI Gateway governed (guardrails, rate limits) and audit-logged.', col: '#9254de' },
+                { h: 'Choice · Cost · Governance', c: 'Swap the model at runtime (no redeploy); each run meters real token cost × the model rate; every call is Databricks AI Gateway governed (guardrails, rate limits, multi-endpoint failover) and audit-logged with per-run token + spend visibility in Unity Catalog.', col: '#9254de' },
                 { h: 'Geospatial (GA)',  c: 'Per-basin AOI (ST_ConvexHull + ST_Buffer + ST_Area) and nearest-offset spacing (ST_Distance) on the Overview map, straight from Spatial SQL over operator_wells.', col: '#73d13d' },
                 { h: 'Governance plane', c: 'Unity Catalog grants gate every table + function to the app SP; the Governance tab shows legal tags, entitlements, and persona-masked views. OBO forwards the user token for SQL/Genie.', col: '#F39C12' },
               ].map(c => (

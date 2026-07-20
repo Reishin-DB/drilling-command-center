@@ -41,6 +41,9 @@ body {
   color: var(--text-primary);
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
+  /* Uniform 1.25x enlargement — scales the base font plus every hardcoded
+     inline pixel size and spacing across the app for better readability. */
+  zoom: 1.25;
 }
 
 button {

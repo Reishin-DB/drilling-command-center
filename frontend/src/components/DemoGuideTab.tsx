@@ -28,7 +28,7 @@ const PLATFORM_PIECES = [
   { name: 'Genie + Metric Views', role: 'Natural-language to governed SQL over an ontology of canonical metrics and certified functions.' },
   { name: 'Foundation Model APIs', role: 'Frontier LLMs power the Subsurface Supervisor synthesis — pay-per-token, no key management.' },
   { name: 'Vector Search', role: 'RAG over analog wells and drilling knowledge with Unity Catalog-governed indexes.' },
-  { name: 'Mosaic AI Gateway', role: 'Safety + PII guardrails, rate limits, model choice, and usage tracking in front of every agent.' },
+  { name: 'Databricks AI Gateway', role: 'Safety + PII guardrails, rate limits, model choice, multi-endpoint failover, and per-run usage/spend tracking (logged to Unity Catalog) in front of every agent.' },
   { name: 'Lakebase / DuckDB', role: 'Low-latency operational state for the drilling journal and alerts.' },
 ]
 
@@ -64,7 +64,7 @@ const STEPS: Step[] = [
   },
   {
     num: 5, title: 'Escalate to the multi-agent Supervisor', tab: 'Subsurface Supervisor', tabId: 'supervisor', duration: '60s',
-    talkTrack: 'For a harder question the Subsurface Supervisor is agentic: it first PLANS which of the five specialists the question actually needs and routes to only those — the skipped ones grey out with a reason — then runs the engaged ones in parallel and synthesises one recommendation with citations. Use the CHOICE · COST · CONTROL bar to swap the model (Claude Sonnet/Opus/Haiku or open-weight GPT-OSS/Llama/Qwen) live via Mosaic AI Gateway, no code change. Each run shows its real token COST for the chosen model, and a GOVERNANCE panel with the AI Gateway guardrails + audit-log line. That is Control, Cost, Choice, and Governance in one run.',
+    talkTrack: 'For a harder question the Subsurface Supervisor is agentic: it first PLANS which of the five specialists the question actually needs and routes to only those — the skipped ones grey out with a reason — then runs the engaged ones in parallel and synthesises one recommendation with citations. Use the CHOICE · COST · CONTROL bar to swap the model (Claude Sonnet/Opus/Haiku or open-weight GPT-OSS/Llama/Qwen) live via the Databricks AI Gateway, no code change. If a provider goes down mid-run the gateway fails over to a backup endpoint automatically. Each run shows its real token COST for the chosen model, plus a GOVERNANCE panel with the AI Gateway guardrails, audit-log line, and Unified Visibility (per-run tokens, spend, and which endpoint served each call, logged to Unity Catalog). That is Control, Cost, Choice, Reliability, and Governance in one run.',
     pointAt: ['Orchestration Plan — engaged vs skipped specialists, with reasons', 'CHOICE · COST · CONTROL picker with $/$$/$$$ tiers', 'Per-run COST (real tokens × model rate) + GOVERNANCE panel', 'Economics specialist calling the certified UC NPV function; Analog specialist via Vector Search'],
     features: ['Omnigent orchestration', 'Choice · Cost · Governance (AI Gateway)', 'Vector Search + UC Functions'],
   },
@@ -72,7 +72,7 @@ const STEPS: Step[] = [
     num: 6, title: 'Govern data AND AI', tab: 'Governance', tabId: 'governance', duration: '60s',
     talkTrack: 'Switch persona and ask the same question. Masked columns — lat, lon, API number — stay masked in the AI answer, because Genie and the Supervisor run as the user under Unity Catalog, fronted by the AI Gateway. This is governing AI for all users, not just dashboards.',
     pointAt: ['Persona toggle → live row/column masking', 'AI Governance panel (Gateway, guardrails, model choice)', 'OBO agent identity + UC lineage', 'ADME legal tags + entitlements'],
-    features: ['Unity Catalog masks', 'Mosaic AI Gateway', 'OBO auth'],
+    features: ['Unity Catalog masks', 'Databricks AI Gateway', 'OBO auth'],
   },
   {
     num: 7, title: 'Show how it\'s built + the context graph', tab: 'Data Flow', tabId: 'dataflow', duration: '45s',

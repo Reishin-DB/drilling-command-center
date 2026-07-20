@@ -515,7 +515,7 @@ function ControlCostChoice() {
   }
   return (
     <Panel title="Control · Cost · Choice — the open platform for Data + AI"
-           subtitle="Governance, spend visibility, and model freedom for every agent and user. The Supervisor and Genie call a governed endpoint behind Mosaic AI Gateway — swap the model without touching code.">
+           subtitle="Governance, spend visibility, and model freedom for every agent and user. The Supervisor and Genie call a governed endpoint behind the Databricks AI Gateway — swap the model without touching code, with automatic failover if a provider goes down.">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.1fr', gap: 12 }}>
 
         {/* CONTROL */}
@@ -549,7 +549,7 @@ function ControlCostChoice() {
             </div>
           ))}
           <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
-            Enforced + metered by Mosaic AI Gateway. Same plane governs the SQL warehouse spend.
+            Enforced + metered by the Databricks AI Gateway. Per-run tokens, spend, and the serving endpoint are logged to Unity Catalog. Same plane governs the SQL warehouse spend.
           </div>
         </div>
 
@@ -578,6 +578,9 @@ function ControlCostChoice() {
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
             Active: <span style={{ color: col.choice, fontFamily: 'monospace' }}>{model}</span>{saving ? ' · saving…' : ''} · the Supervisor now calls this endpoint. Anthropic + open-weight, one governed API.
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed var(--border)' }}>
+            ↪️ <strong>Failover:</strong> if the active endpoint errors, the Gateway auto-reroutes to a backup model so a run never dies on one provider. New endpoints are discovered + permissioned centrally in Unity Catalog — no per-app config.
           </div>
         </div>
       </div>

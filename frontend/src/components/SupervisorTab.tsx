@@ -32,8 +32,9 @@ interface WellOpt { well_id: string; well_name: string; basin?: string }
 
 interface RouteDecision { id: string; name: string; engage: boolean; reason: string }
 interface Plan { strategy: string; route: RouteDecision[]; model?: string; plan_ms?: number }
-interface CostInfo { model: string; calls: number; prompt_tokens: number; completion_tokens: number; in_per_m: number; out_per_m: number; usd: number }
-interface GovInfo { gateway: string; guardrails: string[]; audit: string; data: string; model_governed: string }
+interface CostInfo { model: string; calls: number; prompt_tokens: number; completion_tokens: number; in_per_m: number; out_per_m: number; usd: number; total_tokens?: number; fallbacks?: number; served_by?: Record<string, number> }
+interface Visibility { total_tokens: number; usd: number; served_by: Record<string, number>; fallbacks: number; summary: string }
+interface GovInfo { gateway: string; guardrails: string[]; audit: string; data: string; model_governed: string; visibility?: Visibility }
 interface ModelOpt { id: string; label: string; family: string; inPerM?: number; outPerM?: number; tier?: string }
 
 const PRESET_QUESTIONS: { q: string; well: string }[] = [
@@ -351,6 +352,18 @@ export default function SupervisorTab() {
                 <div>📋 {rec.governance.audit}</div>
                 <div>🔒 {rec.governance.data}</div>
               </div>
+              {rec.governance.visibility && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed var(--border)' }}>
+                  <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 4 }}>UNIFIED VISIBILITY</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                    <div>📈 {rec.governance.visibility.total_tokens.toLocaleString()} tokens · ${rec.governance.visibility.usd.toFixed(5)} this run</div>
+                    <div style={{ color: rec.governance.visibility.fallbacks ? 'var(--amber, #d48806)' : 'var(--text-secondary)' }}>
+                      {rec.governance.visibility.fallbacks ? '↪️' : '✅'} {rec.governance.visibility.summary}
+                    </div>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Metrics logged to Unity Catalog by {rec.governance.gateway}.</div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
