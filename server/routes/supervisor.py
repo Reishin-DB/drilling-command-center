@@ -403,12 +403,38 @@ async def _get_well_context(well_id: str) -> dict:
         "  supply_chain_status, days_to_next_casing, esp_health_pct, mud_pump_health_pct "
         "FROM las.drilling_operations WHERE well_id = $1", well_id
     )
+    # H2S / sour-gas safety profile lives in Unity Catalog (governed HSE data),
+    # not Lakebase — pull it via the warehouse and fold it into the shared context.
+    h2s = await _get_h2s_profile(well_id)
     return {
         "well": dict(well) if well else None,
         "econ": dict(econ) if econ else None,
         "res":  dict(res) if res else None,
         "ops":  dict(ops) if ops else None,
+        "h2s":  h2s,
     }
+
+
+async def _get_h2s_profile(well_id: str) -> dict | None:
+    """Fetch the well's H2S safety profile from Unity Catalog (well_h2s_profile)."""
+    cols = [
+        "well_name", "basin", "primary_reservoir", "h2s_risk_level", "sour_classified",
+        "h2s_ppm_last_measured", "h2s_monitor_alarm_ppm", "ppe_level", "eeba_required",
+        "nace_mr0175_required", "continuous_monitor_required", "h2s_training_required",
+        "safety_status", "last_safety_audit_date", "notes",
+    ]
+    esc = str(well_id).replace("'", "''")
+    sql = (
+        f"SELECT {', '.join(cols)} "
+        f"FROM `{CATALOG}`.`{SCHEMA}`.well_h2s_profile WHERE well_id = '{esc}' LIMIT 1"
+    )
+    try:
+        c, rows = await asyncio.to_thread(_run_sql, sql)
+        if not rows:
+            return None
+        return dict(zip([x.lower() for x in c], rows[0]))
+    except Exception:
+        return None
 
 
 async def specialist_analogs(req: DecideReq, ctx: dict) -> dict:
@@ -527,6 +553,44 @@ async def specialist_economics(req: DecideReq, ctx: dict) -> dict:
     }
 
 
+def _h2s_alert_block(h2s: dict | None) -> tuple[str, list[str]]:
+    """Build an H2S safety headline + alert lines from a well's H2S profile.
+    Returns (headline, alerts). Empty/None profile → no H2S signal."""
+    if not h2s:
+        return "", []
+    risk  = str(h2s.get("h2s_risk_level") or "").lower()
+    sour  = bool(h2s.get("sour_classified"))
+    ppm   = h2s.get("h2s_ppm_last_measured")
+    alarm = h2s.get("h2s_monitor_alarm_ppm")
+    ppe   = h2s.get("ppe_level")
+    status = str(h2s.get("safety_status") or "").lower()
+    alerts: list[str] = []
+    try:
+        ppm_f, alarm_f = float(ppm), float(alarm)
+        if alarm_f and ppm_f > alarm_f:
+            alerts.append(
+                f"🔴 H2S {ppm_f:g} ppm exceeds the {alarm_f:g} ppm monitor alarm "
+                f"({ppm_f / alarm_f:.0f}× threshold) — atmosphere is IDLH-capable."
+            )
+    except (TypeError, ValueError):
+        pass
+    if sour:
+        alerts.append("🔴 Well is sour-classified — NACE MR0175 metallurgy + H2S-rated BOP required.")
+    if h2s.get("eeba_required"):
+        alerts.append("🟠 EEBA (escape breathing apparatus) required for all personnel on site.")
+    if h2s.get("continuous_monitor_required"):
+        alerts.append("🟠 Continuous H2S gas monitoring required.")
+    if status in ("overdue", "expired", "non-compliant"):
+        alerts.append(f"🟠 Safety audit status: {status.upper()} (last {h2s.get('last_safety_audit_date')}).")
+    if not alerts:
+        return f"H2S risk: {risk or 'low'} · not sour · {ppm} ppm (below alarm) · PPE {ppe}", []
+    headline = (
+        f"⚠ H2S HAZARD — {risk.upper()} risk · sour={sour} · last measured {ppm} ppm "
+        f"(alarm {alarm} ppm) · PPE {ppe}"
+    )
+    return headline, alerts
+
+
 async def specialist_regulatory(req: DecideReq, ctx: dict) -> dict:
     t0 = time.time()
     sql = (
@@ -544,13 +608,20 @@ async def specialist_regulatory(req: DecideReq, ctx: dict) -> dict:
     except Exception as e:
         table = f"(legal-tag query failed: {e})"
         headline = "n/a"
+
+    # HSE gate — H2S / sour-gas hazard for this well (Unity Catalog well_h2s_profile).
+    h2s_head, h2s_alerts = _h2s_alert_block(ctx.get("h2s"))
+    parts = [headline, table]
+    if h2s_head:
+        parts.append("\n— H2S / SOUR-GAS HSE GATE —\n" + h2s_head)
+        parts.extend(h2s_alerts)
     return {
         "id": "regulatory",
-        "name": "Regulatory & ESG Gate",
-        "feature": "Unity Catalog · ADME legal tags",
-        "endpoint": f"{CATALOG}.{SCHEMA}.gov_legal_tags",
+        "name": "Regulatory & HSE Gate",
+        "feature": "Unity Catalog · ADME legal tags · H2S profile",
+        "endpoint": f"{CATALOG}.{SCHEMA}.gov_legal_tags · well_h2s_profile",
         "ms": _ms(t0),
-        "result": f"{headline}\n{table}",
+        "result": "\n".join(str(p) for p in parts),
     }
 
 
@@ -608,7 +679,12 @@ SYNTHESIS_SYSTEM = (
     "Produce a 1-paragraph recommendation (DRILL · HOLD · DE-SCOPE · ABANDON), then a bullet "
     "list of the 3 strongest supporting facts and 1 line on the top risk. Always cite specific "
     "numbers (NPV, break-even, porosity, perm, NPT hours) and the analog well name. Be terse "
-    "and confident. No preamble, no apologies."
+    "and confident. No preamble, no apologies. "
+    "SAFETY OVERRIDE: if the HSE gate reports an H2S hazard (sour classification or measured ppm "
+    "above the monitor alarm), you MUST call it out explicitly — cite the ppm and required "
+    "controls (PPE level, EEBA, continuous monitoring, NACE MR0175) — and make the recommendation "
+    "conditional on those controls being in place. A strong economic case never overrides an "
+    "unmitigated H2S hazard."
 )
 
 
@@ -635,9 +711,9 @@ SPECIALIST_FN_BY_ID = {
 }
 SPECIALIST_CATALOG = [
     {"id": "analogs",      "name": "Subsurface Analog Retriever", "when": "finding comparable/offset wells or analog fields for the play"},
-    {"id": "petrophysics", "name": "Petrophysics Interpreter",    "when": "rock/fluid quality — porosity, perm, saturation, net pay, reservoir risk"},
+    {"id": "petrophysics", "name": "Petrophysics Interpreter",    "when": "rock/fluid quality — porosity, perm, saturation, net pay, reservoir risk, reservoir H2S / sour fluids"},
     {"id": "economics",    "name": "Economics Evaluator",         "when": "NPV, break-even, WTI sensitivity, capex/opex, the money case"},
-    {"id": "regulatory",   "name": "Regulatory & ESG Gate",       "when": "compliance, legal tags, permits, emissions / ESG"},
+    {"id": "regulatory",   "name": "Regulatory & HSE Gate",       "when": "compliance, legal tags, permits, emissions / ESG, H2S / sour-gas safety, PPE, monitoring, NACE"},
     {"id": "operations",   "name": "Drilling Operations",         "when": "rig, NPT, BHA/casing status, supply chain, execution feasibility"},
 ]
 NAME_BY_ID = {s["id"]: s["name"] for s in SPECIALIST_CATALOG}
@@ -740,13 +816,20 @@ async def decide(req: DecideReq):
                 {"id": "analogs",      "name": "Subsurface Analog Retriever", "feature": "Vector Search"},
                 {"id": "petrophysics", "name": "Petrophysics Interpreter",    "feature": "Model Serving"},
                 {"id": "economics",    "name": "Economics Evaluator",         "feature": "UC Functions"},
-                {"id": "regulatory",   "name": "Regulatory & ESG Gate",       "feature": "ADME Legal Tags"},
+                {"id": "regulatory",   "name": "Regulatory & HSE Gate",       "feature": "Legal Tags · H2S"},
                 {"id": "operations",   "name": "Drilling Operations",         "feature": "Lakebase"},
             ],
         })
 
         # 1) Plan — the supervisor decides which specialists this question needs.
         plan = await plan_route(req)
+        # Safety override: a sour / H2S-flagged well ALWAYS engages the HSE gate,
+        # no matter what the planner chose. You never route away a safety check.
+        if (ctx.get("h2s") or {}).get("sour_classified"):
+            for r in plan["route"]:
+                if r["id"] == "regulatory" and not r["engage"]:
+                    r["engage"] = True
+                    r["reason"] = "H2S hazard — HSE gate mandatory"
         yield _sse("plan", {"strategy": plan["strategy"], "route": plan["route"],
                             "model": _current_model(), "plan_ms": _ms(t0)})
 
@@ -851,7 +934,7 @@ async def info():
             {"id": "analogs",      "name": "Subsurface Analog Retriever", "feature": "Vector Search",         "endpoint": "subsurface-vs · gte-large", "desc": "Top-k analog wells from ADME via semantic search; matches operator well to global ADME analogs."},
             {"id": "petrophysics", "name": "Petrophysics Interpreter",    "feature": "Model Serving",         "endpoint": MODEL_ENDPOINT,               "desc": "Claude 4.5 cross-checks operator's simulated rock-fluid against ADME analog field's actuals."},
             {"id": "economics",    "name": "Economics Evaluator",         "feature": "UC Functions",          "endpoint": f"{CATALOG}.{SCHEMA}.calculate_npv10 · calculate_break_even", "desc": "Governed NPV₁₀ + break-even + ±$10 WTI sensitivity via Unity Catalog SQL functions."},
-            {"id": "regulatory",   "name": "Regulatory & ESG Gate",       "feature": "ADME Legal Tags",       "endpoint": f"{CATALOG}.{SCHEMA}.gov_legal_tags", "desc": "Live legal-tag lookup; ACL inheritance flows from ADME to UC tags."},
+            {"id": "regulatory",   "name": "Regulatory & HSE Gate",       "feature": "ADME Legal Tags · H2S",  "endpoint": f"{CATALOG}.{SCHEMA}.gov_legal_tags · well_h2s_profile", "desc": "Legal-tag lookup (ACL inherited from ADME to UC) plus H2S / sour-gas safety gate: ppm vs monitor alarm, sour classification, PPE, NACE/EEBA, audit status."},
             {"id": "operations",   "name": "Drilling Operations",         "feature": "Lakebase · drilling_operations", "endpoint": "las.drilling_operations", "desc": "Rig, NPT, supply-chain, casing status, BHA health from the operator's Lakebase ops feed."},
         ],
     }

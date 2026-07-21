@@ -18,6 +18,9 @@ interface SpaceInfo {
 }
 
 const SAMPLE_QUESTIONS: { q: string; cat: string }[] = [
+  { q: 'Which wells have the most dangerous H2S levels?',                       cat: 'H2S safety' },
+  { q: 'List all sour-classified wells with their H2S ppm and required PPE',    cat: 'H2S safety' },
+  { q: 'Which formations require continuous H2S monitoring and NACE MR0175?',   cat: 'H2S safety' },
   { q: 'Show each well with its live NPV and IRR, sorted by NPV',                cat: 'economics' },
   { q: 'Which basin has the highest total live NPV?',                           cat: 'economics' },
   { q: 'List wells with a break-even WTI under $50',                            cat: 'economics' },
@@ -122,6 +125,7 @@ export default function GenieTab() {
         <Panel title="Genie space" subtitle={info?.name || 'Subsurface Command — Drilling & Economics'}>
           <div style={{ display: 'grid', gap: 6, fontSize: 11 }}>
             <Row label="Wells"    value="operator_wells (6 NA wells · basin · lat/lon)" />
+            <Row label="H2S"      value="well_h2s_profile · h2s_formation_risk (ppm · sour · PPE · NACE/EEBA · monitor alarm)" />
             <Row label="Economics" value="well_economics (NPV base+live · break-even · IRR · payback · CO₂)" />
             <Row label="Spacing"  value="well_distances (pairwise km · nearest offset · within-N-km)" />
             <Row label="Govern."  value="gov_legal_tags · gov_entitlements (legal-tag governance)" />
