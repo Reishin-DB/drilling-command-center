@@ -1,42 +1,45 @@
+/* Deep-water theme shared with Cognitive Subsurface: blue-black neutrals,
+   an oil-amber accent for pay and the decision, sea blue for interaction,
+   and Databricks Lava kept for alerts. */
 :root {
-  --bg-primary:  #0d0e11;
-  --bg-card:     #13151a;
-  --bg-panel:    #1a1d25;
-  --bg-hover:    #222530;
-  --border:      #2a2e3a;
-  --border-dim:  #1e2130;
-  --text-primary:   #e8eaf0;
-  --text-secondary: #b0b6c8;
-  --text-muted:     #6b7280;
-  --green:     #00c875;
-  --green-dim: #00c87520;
-  --blue:      #4dabf7;
-  --blue-dim:  #4dabf720;
-  --amber:     #ffa940;
-  --amber-dim: #ffa94020;
-  --red:       #ff4d4f;
-  --red-dim:   #ff4d4f20;
-  --purple:    #b37feb;
-  --purple-dim:#b37feb20;
-  --teal:      #36cfc9;
-  --teal-dim:  #36cfc920;
+  --bg-primary:  #0a1620;
+  --bg-card:     #0f1f2b;
+  --bg-panel:    #132836;
+  --bg-hover:    #1a3445;
+  --border:      #223d4f;
+  --border-dim:  #182f3e;
+  --text-primary:   #eef3f6;
+  --text-secondary: #a6b7c2;
+  --text-muted:     #6c8494;
+  --green:     #2fd39b;
+  --green-dim: #2fd39b22;
+  --blue:      #4fb3e8;
+  --blue-dim:  #4fb3e822;
+  --amber:     #f5a524;
+  --amber-dim: #f5a52422;
+  --red:       #ff3621;
+  --red-dim:   #ff362122;
+  --purple:    #b79bff;
+  --purple-dim:#b79bff22;
+  --teal:      #9fcd3f;
+  --teal-dim:  #9fcd3f22;
   --gold:      #ffd666;
-  --gold-dim:  #ffd66620;
-  /* LAS track colors */
+  --gold-dim:  #ffd66622;
+  /* LAS track colors: domain curve colors, bright on dark */
   --gr-color:   #73d13d;
   --rt-color:   #ff7a45;
-  --rhob-color: #9254de;
-  --nphi-color: #40a9ff;
+  --rhob-color: #b37feb;
+  --nphi-color: #4dabf7;
   --dt-color:   #36cfc9;
   --vcl-color:  #8c8c8c;
-  --phi-color:  #4dabf7;
-  --sw-color:   #ff4d4f;
+  --phi-color:  #5bd0b6;
+  --sw-color:   #ff6b6b;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 20px;
@@ -45,6 +48,63 @@ body {
      and the base font bumped 13 → 20 (≈1.5x). The global zoom stays at 1.25
      (the established app scale) so text grows relative to the layout. */
   zoom: 1.25;
+}
+
+code, pre, kbd, samp, .mono {
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* App shell: header, left rail, content, and slide-over drawers. Sized ~1.4x
+   the Cognitive Subsurface shell because this app's tab content is set at
+   1.5x type (see body). */
+.cs-header { height: 72px; padding: 0 24px; display: flex; align-items: center; gap: 18px; background: var(--bg-card); border-bottom: 1px solid var(--border); position: relative; }
+/* A seismic horizon under the header: oil amber fading into sea blue. */
+.cs-header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--amber), var(--blue) 45%, transparent); opacity: .85; }
+.cs-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cs-brand-icon { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; background: var(--amber-dim); border: 1px solid #f5a52455; }
+.cs-brand-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+.cs-brand-sub { font-size: 13.5px; color: var(--text-muted); }
+.cs-toolbar { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.cs-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 6px; font-size: 14px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-muted); }
+.cs-chip b { color: var(--blue); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+.cs-btn { padding: 9px 15px; border-radius: 6px; font-size: 15px; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); text-decoration: none; }
+.cs-btn:hover { color: var(--text-primary); border-color: var(--blue); background: var(--bg-hover); }
+.cs-btn-primary { background: var(--green); border-color: var(--green); color: #07151a; }
+.cs-btn-primary:hover { background: var(--green); color: #07151a; filter: brightness(1.08); }
+.cs-menu-toggle { display: none; }
+
+.cs-body { display: grid; grid-template-columns: 290px 1fr; min-height: calc(100vh - 72px); }
+.cs-rail { padding: 20px 12px; background: var(--bg-card); border-right: 1px solid var(--border); position: sticky; top: 0; height: calc(100vh - 72px); overflow-y: auto; }
+.cs-rail-group { margin-bottom: 20px; }
+.cs-rail-heading { padding: 0 12px 8px; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); }
+.cs-rail-link { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary); font-size: 17px; text-align: left; }
+.cs-rail-link:hover { background: var(--bg-hover); color: var(--text-primary); }
+.cs-rail-link[aria-current="page"] { background: var(--amber-dim); color: var(--text-primary); box-shadow: inset 3px 0 0 var(--amber); }
+.cs-step { width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; border: 1px solid var(--border); color: var(--text-muted); }
+.cs-rail-link[aria-current="page"] .cs-step { border-color: var(--amber); color: var(--amber); }
+.cs-rail-hint { padding: 12px; font-size: 14px; line-height: 1.45; color: var(--text-muted); border-top: 1px solid var(--border-dim); }
+.cs-main { padding: 22px 28px; min-width: 0; }
+
+.cs-overlay { position: fixed; inset: 0; z-index: 120; background: rgba(4, 10, 12, .6); border: 0; }
+.cs-drawer { position: fixed; z-index: 121; top: 0; right: 0; bottom: 0; width: min(640px, 94vw); display: flex; flex-direction: column; background: var(--bg-card); border-left: 1px solid var(--border); box-shadow: -16px 0 36px rgba(0,0,0,.4); }
+.cs-drawer-head { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.cs-drawer-head h2 { font-size: 20px; }
+.cs-drawer-body { padding: 18px 20px; overflow-y: auto; display: grid; gap: 14px; }
+.cs-note { padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-panel); }
+.cs-note h3 { font-size: 17px; margin-bottom: 6px; color: var(--text-primary); }
+.cs-note p, .cs-note li { font-size: 16px; line-height: 1.55; color: var(--text-secondary); }
+.cs-note ul { padding-left: 18px; }
+
+/* Provenance badges: Live = computed from the governed data, Illustrative = demo placeholder. */
+.cs-prov { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.cs-prov-live { color: var(--green); background: var(--green-dim); border: 1px solid #2fd39b66; }
+.cs-prov-ill  { color: var(--amber); background: var(--amber-dim); border: 1px solid #f5a52466; }
+
+@media (max-width: 1100px) {
+  .cs-body { grid-template-columns: 1fr; }
+  .cs-rail { display: none; position: fixed; z-index: 110; top: 72px; left: 0; width: 300px; }
+  .cs-rail[data-open="true"] { display: block; }
+  .cs-menu-toggle { display: inline-block; }
 }
 
 button {
@@ -57,13 +117,13 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-panel); }
-::-webkit-scrollbar-thumb { background: #3a3f52; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #4a4f66; }
+::-webkit-scrollbar-thumb { background: #2b4a5e; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a6078; }
 
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .badge {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import OverviewTab      from './components/OverviewTab'
 import ThreeDViewerTab  from './components/ThreeDViewerTab'
 import EconomicsTab     from './components/EconomicsTab'
@@ -6,113 +6,120 @@ import EquipmentTab     from './components/EquipmentTab'
 import GovernanceTab    from './components/GovernanceTab'
 import GenieTab         from './components/GenieTab'
 import LogViewerTab     from './components/LogViewerTab'
+import SonicTab         from './components/SonicTab'
 import DataFlowTab      from './components/DataFlowTab'
 import GenieSidebar     from './components/GenieSidebar'
 import SupervisorTab    from './components/SupervisorTab'
 import DemoGuideTab     from './components/DemoGuideTab'
+import PresenterNotes   from './components/PresenterNotes'
 
-const TABS = [
-  { id: 'demo',       label: '▶ Demo Guide' },
-  { id: 'overview',   label: '🛰️ Overview' },
-  { id: '3d',         label: '🌐 3D Viewer' },
-  { id: 'viewer',     label: '📊 Log Viewer' },
-  { id: 'economics',  label: '💰 Economics' },
-  { id: 'governance', label: '🛡️ Governance' },
-  { id: 'genie',      label: '✨ Genie' },
-  { id: 'supervisor', label: '🧠 Subsurface Supervisor' },
-  { id: 'equipment',  label: '🔧 Oilfield Equipment' },
-  { id: 'dataflow',   label: '🔀 Data Flow' },
+type View = { id: string; label: string }
+
+// The left rail mirrors the story: one well decision from map to sanction,
+// then the tools that explain the AI, the governance, and the platform.
+const WORKFLOW: View[] = [
+  { id: 'overview',   label: 'Locate the Wells' },
+  { id: 'viewer',     label: 'Read the Logs' },
+  { id: 'sonic',      label: 'Fill the Missing Sonic' },
+  { id: '3d',         label: 'Model the Subsurface' },
+  { id: 'economics',  label: 'Value the Well' },
+  { id: 'supervisor', label: 'Decide with AI' },
+]
+const TOOLS: View[] = [
+  { id: 'equipment',  label: 'Equipment & Integrity' },
+  { id: 'genie',      label: 'Ask Genie' },
+  { id: 'governance', label: 'Governance & Audit' },
+  { id: 'dataflow',   label: 'How It Works' },
 ]
 
 export default function App() {
-  const [active, setActive]         = useState('demo')
+  const [view, setView]             = useState('demo')
+  const [railOpen, setRailOpen]     = useState(false)
+  const [notesOpen, setNotesOpen]   = useState(false)
   const [activeWell, setActiveWell] = useState('SANJUAN-01')
+  const [genieUrl, setGenieUrl]     = useState('')
+
+  useEffect(() => {
+    fetch('/api/genie/space').then(r => r.json()).then(d => setGenieUrl(d.space_url || d.url || '')).catch(() => setGenieUrl(''))
+  }, [])
+
+  const go = useCallback((id: string) => { setView(id); setRailOpen(false); window.scrollTo({ top: 0 }) }, [])
 
   const openWell = (wellId: string, tab: string = '3d') => {
     setActiveWell(wellId)
-    setActive(tab)
+    go(tab)
   }
+
+  const link = (v: View, marker: React.ReactNode) => (
+    <button key={v.id} className="cs-rail-link" aria-current={view === v.id ? 'page' : undefined} onClick={() => go(v.id)}>
+      {marker}<span>{v.label}</span>
+    </button>
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <header style={{
-        background: 'var(--bg-card)',
-        borderBottom: '1px solid var(--border)',
-        padding: '10px 24px',
-        display: 'flex', alignItems: 'center', gap: 16, minHeight: 54, flexWrap: 'wrap',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 33 }}>🛢️</span>
+      <header className="cs-header">
+        <button className="cs-btn cs-menu-toggle" onClick={() => setRailOpen(o => !o)} aria-label="Toggle navigation">☰</button>
+        <div className="cs-brand">
+          <div className="cs-brand-icon" aria-hidden="true">
+            {/* A wellbore through a voxel stack: the brand is the model the app builds. */}
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+              <rect x="2"  y="6"  width="7" height="5" rx="1" fill="var(--blue)" opacity=".55" />
+              <rect x="17" y="6"  width="7" height="5" rx="1" fill="var(--blue)" opacity=".55" />
+              <rect x="2"  y="13" width="7" height="5" rx="1" fill="var(--amber)" opacity=".85" />
+              <rect x="17" y="13" width="7" height="5" rx="1" fill="var(--amber)" opacity=".85" />
+              <rect x="2"  y="20" width="7" height="4" rx="1" fill="var(--blue)" opacity=".35" />
+              <rect x="17" y="20" width="7" height="4" rx="1" fill="var(--blue)" opacity=".35" />
+              <path d="M13 1 V22 Q13 25 16 25" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" fill="none" />
+            </svg>
+          </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 22.5, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-              Subsurface Intelligence
-            </div>
-            <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>
-              OSDU · Unity Catalog · Genie · Foundation Models · Vector Search
-            </div>
+            <div className="cs-brand-title">Subsurface Intelligence</div>
+            <div className="cs-brand-sub">From well logs to a governed drilling decision</div>
           </div>
         </div>
-
-        <nav style={{ display: 'flex', gap: 2, marginLeft: 12 }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setActive(t.id)} style={{
-              background: active === t.id ? 'var(--bg-panel)' : 'transparent',
-              color: active === t.id ? 'var(--text-primary)' : 'var(--text-muted)',
-              border: active === t.id ? '1px solid var(--border)' : '1px solid transparent',
-              borderRadius: 6, padding: '4px 13px', fontSize: 18,
-              fontWeight: active === t.id ? 600 : 400, cursor: 'pointer',
-            }}>
-              {t.label}
-            </button>
-          ))}
-        </nav>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'var(--green-dim)', color: 'var(--green)',
-            border: '1px solid var(--green)', borderRadius: 20,
-            padding: '3px 10px', fontSize: 15, fontWeight: 700, letterSpacing: '0.06em',
-          }}>
-            <span style={{
-              width: 7, height: 7, borderRadius: 4, background: 'var(--green)',
-              animation: 'hdr-pulse 1.4s infinite',
-            }} />
-            LIVE · ADME
-          </span>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            background: 'var(--bg-panel)', border: '1px solid var(--border)',
-            borderRadius: 6, padding: '3px 10px',
-          }}>
-            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>active well</span>
-            <span style={{ color: 'var(--blue)', fontWeight: 700, fontFamily: 'monospace', fontSize: 16.5 }}>
-              {activeWell}
-            </span>
-          </div>
-          <span style={{
-            background: 'var(--bg-panel)', color: 'var(--text-muted)',
-            border: '1px solid var(--border)', borderRadius: 20,
-            padding: '2px 10px', fontSize: 15, fontFamily: 'monospace',
-          }}>
-            adme_client_demo
-          </span>
-          <style>{`@keyframes hdr-pulse { 0%,100% { opacity:.4 } 50% { opacity:1 } }`}</style>
+        <div className="cs-toolbar">
+          <span className="cs-chip">Active well <b>{activeWell}</b></span>
+          <button className="cs-btn" onClick={() => setNotesOpen(true)}>Presenter notes</button>
+          {genieUrl && <a className="cs-btn" href={genieUrl} target="_blank" rel="noopener noreferrer">Open Genie space ↗</a>}
+          <button className="cs-btn cs-btn-primary" onClick={() => window.dispatchEvent(new CustomEvent('open-genie'))}>Ask the Data</button>
         </div>
       </header>
 
-      <main style={{ padding: '20px 24px', maxWidth: 1800, margin: '0 auto' }}>
-        {active === 'demo'       && <DemoGuideTab    onNavigate={setActive} />}
-        {active === 'overview'   && <OverviewTab     onOpenWell={openWell} />}
-        {active === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} />}
-        {active === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}
-        {active === 'economics'  && <EconomicsTab    wellId={activeWell} />}
-        {active === 'equipment'  && <EquipmentTab    wellId={activeWell} onWellChange={setActiveWell} />}
-        {active === 'governance' && <GovernanceTab />}
-        {active === 'genie'      && <GenieTab />}
-        {active === 'supervisor' && <SupervisorTab />}
-        {active === 'dataflow'   && <DataFlowTab />}
-      </main>
+      <div className="cs-body">
+        <aside className="cs-rail" data-open={railOpen}>
+          <nav aria-label="Application navigation">
+            <div className="cs-rail-group">
+              {link({ id: 'demo', label: 'Start Here' }, <span className="cs-step">▶</span>)}
+            </div>
+            <div className="cs-rail-group">
+              <div className="cs-rail-heading">The workflow</div>
+              {WORKFLOW.map((v, i) => link(v, <span className="cs-step">{i + 1}</span>))}
+            </div>
+            <div className="cs-rail-group">
+              <div className="cs-rail-heading">Behind the decision</div>
+              {TOOLS.map(v => link(v, <span className="cs-step">·</span>))}
+            </div>
+          </nav>
+          <div className="cs-rail-hint">Steps 1 to 6 are the demo. The tools below explain the equipment consequence, the AI, the governance, and the platform underneath.</div>
+        </aside>
+
+        <main className="cs-main">
+          {view === 'demo'       && <DemoGuideTab    onNavigate={go} />}
+          {view === 'overview'   && <OverviewTab     onOpenWell={openWell} />}
+          {view === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} onNavigate={go} />}
+          {view === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}
+          {view === 'sonic'      && <SonicTab        wellId={activeWell} onWellChange={setActiveWell} onNavigate={go} />}
+          {view === 'economics'  && <EconomicsTab    wellId={activeWell} />}
+          {view === 'equipment'  && <EquipmentTab    wellId={activeWell} onWellChange={setActiveWell} />}
+          {view === 'governance' && <GovernanceTab />}
+          {view === 'genie'      && <GenieTab />}
+          {view === 'supervisor' && <SupervisorTab />}
+          {view === 'dataflow'   && <DataFlowTab />}
+        </main>
+      </div>
+
+      <PresenterNotes open={notesOpen} onClose={() => setNotesOpen(false)} onNavigate={id => { setNotesOpen(false); go(id) }} />
       <GenieSidebar />
     </div>
   )

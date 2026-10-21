@@ -28,6 +28,13 @@ export default function GenieSidebar() {
   const bodyRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
+  // The header "Ask the Data" button opens the sidebar from anywhere.
+  useEffect(() => {
+    const onOpen = () => setOpen(true)
+    window.addEventListener('open-genie', onOpen)
+    return () => window.removeEventListener('open-genie', onOpen)
+  }, [])
+
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight })
   }, [msgs, loading, stage])
@@ -101,10 +108,10 @@ export default function GenieSidebar() {
       <button onClick={() => setOpen(!open)} style={{
         position: 'fixed', bottom: 20, right: 20, zIndex: 50,
         width: 52, height: 52, borderRadius: 26,
-        background: 'linear-gradient(135deg, #00E5FF, #4dabf7)',
+        background: 'linear-gradient(135deg, #2fd39b, #4fb3e8)',
         border: 'none', cursor: 'pointer',
-        boxShadow: '0 4px 20px rgba(0, 229, 255, 0.35)',
-        fontSize: 33, color: '#0d0e11',
+        boxShadow: '0 4px 20px rgba(47, 211, 155, 0.35)',
+        fontSize: 33, color: '#07151a',
       }} title="Ask Genie">
         {open ? '✕' : '✨'}
       </button>
@@ -127,7 +134,7 @@ export default function GenieSidebar() {
           }}>
             <span style={{ fontSize: 27 }}>✨</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 19.5, color: 'var(--text-primary)' }}>Genie · ADME Live</div>
+              <div style={{ fontWeight: 700, fontSize: 19.5, color: 'var(--text-primary)' }}>Ask the Data · Genie</div>
               <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>
                 Operator wells · WTI market · ADME analog data
               </div>
@@ -193,8 +200,8 @@ export default function GenieSidebar() {
             />
             <button type="submit" disabled={loading || !q.trim()} style={{
               padding: '0 14px', fontSize: 18, fontWeight: 600,
-              background: loading || !q.trim() ? 'var(--bg-panel)' : 'linear-gradient(135deg, #00E5FF, #4dabf7)',
-              color: loading || !q.trim() ? 'var(--text-muted)' : '#0d0e11',
+              background: loading || !q.trim() ? 'var(--bg-panel)' : 'linear-gradient(135deg, #2fd39b, #4fb3e8)',
+              color: loading || !q.trim() ? 'var(--text-muted)' : '#07151a',
               border: 'none', borderRadius: 6, cursor: loading ? 'default' : 'pointer',
             }}>Ask</button>
           </form>

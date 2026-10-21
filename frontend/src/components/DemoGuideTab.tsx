@@ -3,7 +3,7 @@ interface Props {
 }
 
 const SCENE = {
-  customer: 'An E&P operator drilling across multiple US basins (Permian, East Texas, San Juan) with subsurface data spread across OSDU, drilling-ops systems, economics spreadsheets, and reservoir studies.',
+  customer: 'An E&P operator drilling across multiple US basins (Permian, East Texas, San Juan, Green River) with subsurface data spread across OSDU, drilling-ops systems, economics spreadsheets, and reservoir studies.',
   today: 'A drilling engineer answering "which wells are subeconomic at today\'s WTI, and why" pulls from three systems and a spreadsheet, then waits on a data team. Governance is manual, and AI assistants either can\'t see the data or ignore who\'s allowed to see what.',
 }
 
@@ -31,7 +31,8 @@ const PLATFORM_PIECES = [
   { name: 'Foundation Model APIs', role: 'Frontier LLMs power the Subsurface Supervisor synthesis — pay-per-token, no key management.' },
   { name: 'Vector Search', role: 'RAG over analog wells and drilling knowledge with Unity Catalog-governed indexes.' },
   { name: 'Databricks AI Gateway', role: 'Safety + PII guardrails, rate limits, model choice, multi-endpoint failover, and per-run usage/spend tracking (logged to Unity Catalog) in front of every agent.' },
-  { name: 'Lakebase / DuckDB', role: 'Low-latency operational state for the drilling journal and alerts.' },
+  { name: 'MLflow + Model Serving', role: 'Synthetic-sonic model trained against the Gardner baseline on held-out wells, registered in Unity Catalog, served behind AI Gateway.' },
+  { name: 'Voxel geomodel', role: 'Kriged property model from the well logs, computed in the app, honest about its uncertainty.' },
 ]
 
 interface Step {
@@ -41,52 +42,64 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    num: 1, title: 'Set the scene — the portfolio picture', tab: 'Overview', tabId: 'overview', duration: '45s',
-    talkTrack: 'This is the operator\'s drilling portfolio — every well, basin, and rig, governed by Unity Catalog. The map opens with the geospatial layers already on: per-basin AOI footprints (ST_ConvexHull + ST_Buffer + ST_Area) and nearest-offset well-spacing lines (ST_Distance), all real Databricks Spatial SQL (GA) over operator_wells, with the queries shown in the panel.',
-    pointAt: ['Fleet KPI tiles + world map by basin', 'Spatial SQL · GA panel (H3 + ST_ over operator_wells)', 'Basin AOI join via ST_Contains', 'WTI price context'],
-    features: ['ADME / OSDU', 'H3 + ST_ (GA)', 'Unity Catalog'],
+    num: 1, title: 'Locate the wells', tab: 'Locate the Wells', tabId: 'overview', duration: '1 min',
+    talkTrack: 'This is the operator\'s fleet on one governed map. Basin footprints (ST_ConvexHull + ST_Buffer + ST_Area) and nearest-offset spacing (ST_Distance) are Databricks Spatial SQL over operator_wells, with the queries shown below. Click Blanco to fly into the field: the amber diamond is the step-out the voxel model proposes, joined to its nearest control well.',
+    pointAt: ['Spatial wells map: AOI hulls, spacing lines, Cushing hub', 'Field focus chips fly into each field', 'Amber step-out diamond + inspector card', 'Spatial SQL · GA panel with the live queries'],
+    features: ['Spatial SQL (GA)', 'H3', 'Unity Catalog'],
   },
   {
-    num: 2, title: 'Drop into the subsurface twin', tab: '3D Viewer', tabId: '3d', duration: '45s',
-    talkTrack: 'Pick a well and we render the subsurface as a Petrel-style structural model — layered horizons (Sand A, the Sand B reservoir, carbonate), a normal fault offsetting the layers, and structural dip. The real OSDU well trajectories drill straight through it. This is the geological picture an engineer needs before a drilling or completion call.',
-    pointAt: ['Petrel-style layered horizons + reservoir band', 'Normal fault with visible throw/offset', 'Real OSDU well trajectories through the model', 'Geology toggle + stratigraphy legend'],
-    features: ['Gold OSDU tables', 'Structural model', 'Vector Search analogs'],
+    num: 2, title: 'Read the logs', tab: 'Read the Logs', tabId: 'viewer', duration: '45s',
+    talkTrack: 'One well\'s raw curves, QC flags, corrected curves and derived petrophysics (Vcl, porosity, Archie Sw). The same QC runs at scale in the pipeline\'s silver layer, so every number downstream traces back to these samples.',
+    pointAt: ['Raw vs corrected tracks', 'QC flags: spikes, gaps, range', 'Derived Vcl / porosity / Sw', 'Formation tops'],
+    features: ['Lakeflow pipeline', 'Delta'],
   },
   {
-    num: 3, title: 'Show the economics live', tab: 'Economics', tabId: 'economics', duration: '45s',
-    talkTrack: 'Here\'s per-well economics against live WTI — NPV10, IRR, breakeven. The margin state updates with price, so "which wells are underwater today" is a live answer, not a month-end report.',
-    pointAt: ['NPV10 / IRR / breakeven per well', 'Live WTI spot vs breakeven', 'Margin per barrel', 'Portfolio economics'],
-    features: ['Metric Views', 'Certified functions'],
+    num: 3, title: 'Fill the missing sonic with a served model', tab: 'Fill the Missing Sonic', tabId: 'sonic', duration: '90s',
+    talkTrack: 'Green River 03 was logged without a sonic curve, and geomechanics and seismic ties need one. A model trained on the wells that do have sonic predicts it from the other curves. The evaluation holds out whole wells and compares against the Gardner relation engineers use today, so the model has to beat the trusted method on wells it never saw. It is registered in Unity Catalog and served behind AI Gateway; if the endpoint is cold the app falls back to Gardner and says so.',
+    pointAt: ['Model vs Gardner track on the no-sonic well', 'Held-out-well evaluation table', 'Live vs fallback provenance chip', 'Endpoint name'],
+    features: ['MLflow', 'Unity Catalog models', 'Model Serving', 'AI Gateway'],
   },
   {
-    num: 4, title: 'Ask in plain English — ontology-backed Genie', tab: 'Genie', tabId: 'genie', duration: '60s',
-    talkTrack: 'Now the payoff. Ask "rank our wells by NPV and show which are economic at 50 dollar WTI." Watch what the ontology enforces without being asked: it uses LIVE NPV (a governed rule, never the original underwriting number), it returns five wells not six because one well\'s data is unverified and the ontology quarantines it automatically, and "economic at 50" correctly means breakeven below 50. A generic chatbot writing SQL from scratch gets one of those wrong and you\'d never know. Click Show SQL — fully auditable, over the governed Unity Catalog tables, because the data never left the platform.',
-    pointAt: ['LIVE NPV used automatically (governed rule, not the base number)', '5 trusted wells not 6 — unverified data quarantined by the ontology', 'Governed SQL shown + lineage back to Unity Catalog', 'Sample-question chips + conversational follow-ups'],
-    features: ['Genie', 'Unity Catalog', 'Governed NL→SQL'],
+    num: 4, title: 'Model the subsurface in voxels', tab: 'Model the Subsurface', tabId: '3d', duration: '2 min',
+    talkTrack: 'This is a geocellular model built from the logs in seconds. Structure honours every well top; porosity, Sw and Vcl are kriged between wells per stratigraphic sub-layer, and reservoir Sw follows a saturation-height function above the free-water level. Switch to Model uncertainty: it is low at the wells and rises away from them, so the model is honest about what it does not know. The section cuts through the proposed step-out, ranked on hydrocarbon pore thickness and haircut for distance from control.',
+    pointAt: ['Insight banner: step-out HCPT vs control, risked', 'Attribute toggle: lithology, porosity, Sw, HC pore volume, uncertainty', 'Section, pay-only, depth slice, fault, free-water level', 'Hover any voxel for its properties'],
+    features: ['Geostatistics in the app', 'Live from logs', 'Vector Search analogs'],
   },
   {
-    num: 5, title: 'Escalate to the multi-agent Supervisor', tab: 'Subsurface Supervisor', tabId: 'supervisor', duration: '60s',
-    talkTrack: 'For a harder question the Subsurface Supervisor is agentic: it first PLANS which of the five specialists the question actually needs and routes to only those — the skipped ones grey out with a reason — then runs the engaged ones in parallel and synthesises one recommendation with citations. Use the CHOICE · COST · CONTROL bar to swap the model (Claude Sonnet/Opus/Haiku or open-weight GPT-OSS/Llama/Qwen) live via the Databricks AI Gateway, no code change. If a provider goes down mid-run the gateway fails over to a backup endpoint automatically. Each run shows its real token COST for the chosen model, plus a GOVERNANCE panel with the AI Gateway guardrails, audit-log line, and Unified Visibility (per-run tokens, spend, and which endpoint served each call, logged to Unity Catalog). That is Control, Cost, Choice, Reliability, and Governance in one run.',
-    pointAt: ['Orchestration Plan — engaged vs skipped specialists, with reasons', 'CHOICE · COST · CONTROL picker with $/$$/$$$ tiers', 'Per-run COST (real tokens × model rate) + GOVERNANCE panel', 'Economics specialist calling the certified UC NPV function; Analog specialist via Vector Search'],
-    features: ['Omnigent orchestration', 'Choice · Cost · Governance (AI Gateway)', 'Vector Search + UC Functions'],
+    num: 5, title: 'Value the well', tab: 'Value the Well', tabId: 'economics', duration: '45s',
+    talkTrack: 'Per-well NPV10, IRR and break-even against WTI, computed by certified Unity Catalog functions. "Which wells are underwater today" is a live answer, not a month-end report.',
+    pointAt: ['NPV10 / IRR / break-even per well', 'WTI vs break-even', 'Portfolio economics'],
+    features: ['UC functions', 'Metric views'],
   },
   {
-    num: 6, title: 'Turn H2S into an equipment decision', tab: 'Oilfield Equipment', tabId: 'equipment', duration: '60s',
-    talkTrack: 'The Supervisor just flagged H2S. So what does that actually cost us? This tab turns each well\'s governed H2S profile into the equipment consequence, component by component, under NACE MR0175. Pick the sour well: tubulars go from P110 to L80 controlled-hardness against Sulfide Stress Cracking, the wellhead needs sour trim, packer and ESP elastomers move to HNBR/Aflas, flowlines get a corrosion allowance. Each row shows the degradation mechanism, a risk score, the added capex, and the procurement lead time — and the ESP run-life hit if you skip the upgrade. Critically, this is the SAME NACE engine the Supervisor gate and the Genie space use, so the number in the recommendation, the number on this tab, and the answer Genie gives are identical. One governed source of truth, three surfaces.',
-    pointAt: ['Fleet ranked by sour severity; KPI strip (sour wells, sour-service capex, longest lead)', 'Per-component required spec vs baseline, with SSC/HIC/corrosion mechanism', 'Added capex + critical-path lead time per component', 'ESP run-life impact if sour metallurgy is skipped'],
-    features: ['NACE MR0175 engine', 'well_equipment_integrity', 'f_equipment_spec_for_well'],
+    num: 6, title: 'Decide with the Subsurface Supervisor', tab: 'Decide with AI', tabId: 'supervisor', duration: '2 min',
+    talkTrack: 'The Supervisor first plans which specialists the question needs, runs those in parallel, and synthesises one verdict with citations. Use the Choice · Cost · Control bar to swap between frontier and open-weight models through AI Gateway with no code change; each run shows its token cost, the guardrails that ran, and which endpoint served each call.',
+    pointAt: ['Orchestration plan: engaged vs skipped specialists', 'Model picker + per-run cost', 'Guardrails + governance panel', 'Economics specialist calling the UC NPV function'],
+    features: ['Agent orchestration', 'AI Gateway', 'UC functions'],
   },
   {
-    num: 7, title: 'Govern data AND AI', tab: 'Governance', tabId: 'governance', duration: '60s',
-    talkTrack: 'Switch persona and ask the same question. Masked columns — lat, lon, API number — stay masked in the AI answer, because Genie and the Supervisor run as the user under Unity Catalog, fronted by the AI Gateway. This is governing AI for all users, not just dashboards.',
-    pointAt: ['Persona toggle → live row/column masking', 'AI Governance panel (Gateway, guardrails, model choice)', 'OBO agent identity + UC lineage', 'ADME legal tags + entitlements'],
-    features: ['Unity Catalog masks', 'Databricks AI Gateway', 'OBO auth'],
+    num: 7, title: 'Turn H2S into an equipment decision', tab: 'Equipment & Integrity', tabId: 'equipment', duration: '60s',
+    talkTrack: 'The Supervisor flagged H2S. This tab turns each well\'s governed H2S profile into the equipment consequence under NACE MR0175: tubulars, wellhead trim, elastomers, flowlines, with capex and lead time. The same engine drives the Supervisor gate and Genie, so all three give the same answer.',
+    pointAt: ['Fleet ranked by sour severity', 'Required spec vs baseline per component', 'Added capex + lead time', 'ESP run-life impact'],
+    features: ['NACE MR0175 engine', 'UC functions'],
   },
   {
-    num: 8, title: 'Show how it\'s built + the context graph', tab: 'Data Flow', tabId: 'dataflow', duration: '45s',
-    talkTrack: 'Finally, the whole stack on one view: OSDU → Bronze → Silver → Gold, Genie and the Supervisor on top, Unity Catalog governing everything. Scroll to the Genie Ontology, the governed context graph that made step 4 correct. operator_wells is the hub; four foreign-key edges bind to it — economics, H2S safety, and the well-distance table on BOTH ends (that\'s how the system knows well spacing is a real relationship). Then the metric views (one canonical NPV definition) and certified functions. This is the point vs Cognite: this ontology is governed objects IN the lakehouse you already own, not a proprietary graph in a second platform you have to copy your data into.',
-    pointAt: ['Source → medallion → agents flow', 'Relationship graph: 4 FK edges into the operator_wells hub', 'Metric views (canonical NPV) + certified functions', 'Ontology = governed UC objects you own, not a separate platform'],
-    features: ['Lakeflow', 'Unity Catalog', 'Ontology'],
+    num: 8, title: 'Ask in plain English', tab: 'Ask Genie', tabId: 'genie', duration: '60s',
+    talkTrack: 'Ask "rank our wells by NPV and show which are economic at 50 dollar WTI", then "which wells are within 50 km of SANJUAN-01". The space is grounded in the governed tables, metric views and certified functions, so it uses live NPV and the distance function instead of improvising. Click Show SQL: every answer is auditable.',
+    pointAt: ['Governed SQL shown', 'Certified function used for distance', 'Sample questions + follow-ups'],
+    features: ['Genie', 'Unity Catalog'],
+  },
+  {
+    num: 9, title: 'Govern data and AI', tab: 'Governance & Audit', tabId: 'governance', duration: '60s',
+    talkTrack: 'Switch persona and ask the same question: masked columns and filtered rows stay that way in the AI answer, because Genie and the Supervisor run as the user under Unity Catalog row filters and column masks.',
+    pointAt: ['Persona toggle: row + column masking', 'AI governance panel', 'OBO identity + lineage', 'OSDU legal tags'],
+    features: ['Row filters', 'Column masks', 'OBO auth'],
+  },
+  {
+    num: 10, title: 'Show how it is built', tab: 'How It Works', tabId: 'dataflow', duration: '45s',
+    talkTrack: 'The whole stack on one view: volume, Lakeflow bronze/silver/gold, MLflow and Model Serving, Genie and the Supervisor on top, Unity Catalog governing all of it. One bundle job rebuilds the data and the model.',
+    pointAt: ['Source → medallion → serving', 'Ontology: PK/FK graph, metric views, certified functions', 'Bundle job'],
+    features: ['Lakeflow', 'Asset Bundles', 'Unity Catalog'],
   },
 ]
 
@@ -106,7 +119,7 @@ const VS_COGNITE = [
 ]
 const COGNITE_LINE = 'Cognite\'s model: give us a copy of your data, we build the knowledge graph in our platform. That is a second system to license, a second copy to secure, a second place your context gets locked. Databricks flips it: the ontology IS governed objects in the lakehouse you already run. Your context is an asset you own, feeding one AI, one BI layer, one governance model.'
 
-const CY = '#00E5FF', AM = '#F39C12', DBR = '#FF3621'
+const CY = '#4fb3e8', AM = '#f5a524', DBR = '#FF3621'
 
 export default function DemoGuideTab({ onNavigate }: Props) {
   return (

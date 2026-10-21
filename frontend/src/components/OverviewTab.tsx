@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import SpatialWellsMap from './SpatialWellsMap'
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
-import { ComposableMap, Geographies, Geography, Marker, Line, Annotation, ZoomableGroup } from 'react-simple-maps'
-import statesTopo from 'us-atlas/states-10m.json'
 
 interface OverviewProps {
   onOpenWell: (id: string, tab?: string) => void
@@ -38,21 +37,14 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [lastDecision, setLastDecision] = useState<LastDecision | null>(null)
 
+  // Each feed loads on its own so one slow or failing endpoint never blanks the page.
   useEffect(() => {
-    ;(async () => {
-      const [w, e, p, a, ld] = await Promise.all([
-        fetch('/api/wells').then(r => r.json()),
-        fetch('/api/economics/summary').then(r => r.json()),
-        fetch('/api/economics/prices').then(r => r.json()),
-        fetch('/api/wells/alerts').then(r => r.json()).catch(() => ({ alerts: [] })),
-        fetch('/api/supervisor/last_decision').then(r => r.json()).catch(() => ({ empty: true })),
-      ])
-      setWells(w)
-      setEcon(e)
-      setPrices(p)
-      setAlerts(a.alerts || [])
-      setLastDecision(ld)
-    })()
+    const get = (u: string) => fetch(u).then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json() })
+    get('/api/wells').then(w => setWells(Array.isArray(w) ? w : [])).catch(() => {})
+    get('/api/economics/summary').then(setEcon).catch(() => {})
+    get('/api/economics/prices').then(p => setPrices(Array.isArray(p) ? p : [])).catch(() => {})
+    get('/api/wells/alerts').then(a => setAlerts(a.alerts || [])).catch(() => {})
+    get('/api/supervisor/last_decision').then(setLastDecision).catch(() => setLastDecision({ empty: true }))
   }, [])
 
   // Operator's fleet = the LAS wells in North America. ADME is the global
@@ -66,59 +58,11 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
 
   const priceWindow = prices.slice(-120)
 
-  const withCoord = operatorWells.filter(w => w.lat != null && w.lon != null) as Required<Well>[]
-
-  // Auto-fit US states map to operator fleet bounds (geoAlbersUsa projection).
-  const mapCenter = useMemo<[number, number]>(() => {
-    if (withCoord.length === 0) return [-98, 38]
-    const cLat = withCoord.reduce((s, w) => s + w.lat!, 0) / withCoord.length
-    const cLon = withCoord.reduce((s, w) => s + w.lon!, 0) / withCoord.length
-    return [cLon, cLat]
-  }, [withCoord])
-  const mapZoom = useMemo(() => {
-    if (withCoord.length < 2) return 3.5
-    const lats = withCoord.map(w => w.lat!)
-    const lons = withCoord.map(w => w.lon!)
-    const spanLon = Math.max(...lons) - Math.min(...lons)
-    const spanLat = Math.max(...lats) - Math.min(...lats)
-    const span = Math.max(spanLon, spanLat, 4)
-    return Math.min(8, Math.max(2, 40 / span))
-  }, [withCoord])
 
   const criticalCount = alerts.filter(a => a.severity === 'critical').length
   const verdictColor: Record<string, string> = {
-    DRILL: '#27AE60', HOLD: '#F39C12', 'DE-SCOPE': '#CD6116', ABANDON: '#E74C3C', REVIEW: '#4dabf7',
+    DRILL: '#2fd39b', HOLD: '#f5a524', 'DE-SCOPE': '#e07b39', ABANDON: '#ff3621', REVIEW: '#4fb3e8',
   }
-
-  // Per-basin AOI footprints — tight buffered convex hull of the wells (ST_ConvexHull
-  // + ST_Buffer + ST_Area). Hugs the wells instead of covering the whole map.
-  const [showAoi, setShowAoi] = useState(true)
-  const BASIN_COLORS = ['#4dabf7', '#27AE60', '#F39C12', '#b37feb', '#22d3ee', '#e46b8b']
-  const [aoiFeat, setAoiFeat] = useState<{ basin: string; wells: number; km2: number; centroid: number[] }[]>([])
-  const [aoiGeo, setAoiGeo] = useState<any>({ type: 'FeatureCollection', features: [] })
-  useEffect(() => {
-    fetch('/api/geospatial/aoi').then(r => r.json()).then(d => {
-      const feats = (d.features || [])
-      setAoiFeat(feats)
-      setAoiGeo({
-        type: 'FeatureCollection',
-        features: feats.map((f: any, i: number) => ({
-          type: 'Feature', properties: { basin: f.basin, km2: f.km2, wells: f.wells, ci: i },
-          geometry: { type: 'Polygon', coordinates: [f.ring] },
-        })),
-      })
-    }).catch(() => {})
-  }, [])
-
-  // Well spacing — nearest offset well per well via ST_Distance. On by default
-  // so the geospatial (Spatial SQL GA) story is visible on load.
-  const [showSpacing, setShowSpacing] = useState(true)
-  const [spacing, setSpacing] = useState<{ well_id: string; nn: string; km: number; from: number[]; to: number[] }[]>([])
-  useEffect(() => {
-    fetch('/api/geospatial/spacing').then(r => r.json()).then(d => setSpacing(d.pairs || [])).catch(() => {})
-  }, [])
-
-  const CUSHING: [number, number] = [-96.7686, 35.9848]  // WTI pricing hub
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -132,8 +76,8 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
         <Kpi label="Avg Quality" value={`${avgQ.toFixed(0)}`} sub="out of 100 · QC score" color="var(--purple)" />
       </div>
 
-      {/* Last AI decision + Live alerts ticker */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      {/* Last AI decision + live alerts + WTI */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
         <Panel
           title="Last AI decision"
           subtitle={lastDecision && !lastDecision.empty
@@ -205,113 +149,8 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
             </div>
           )}
         </Panel>
-      </div>
-
-      {/* Map + WTI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
-        <Panel title="Operator fleet locations" subtitle={`${withCoord.length} wells in NA · green=gold, amber=corrected, red=critical alerts · click a well to open Log Viewer`}>
-          <div style={{
-            background: 'var(--bg-primary)', borderRadius: 6, border: '1px solid var(--border-dim)',
-            position: 'relative', overflow: 'hidden',
-          }}>
-            <ComposableMap projection="geoAlbersUsa" projectionConfig={{ scale: 1000 }} width={900} height={420} style={{ width: '100%', height: 'auto', display: 'block' }}>
-              <ZoomableGroup center={mapCenter} zoom={mapZoom} minZoom={1} maxZoom={12}>
-                <Geographies geography={statesTopo}>
-                  {({ geographies }) =>
-                    geographies.map(geo => (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        style={{
-                          default: { fill: '#1a1f2b', stroke: '#3a4254', strokeWidth: 0.5, outline: 'none' },
-                          hover:   { fill: '#222a3a', stroke: '#4a5468', strokeWidth: 0.5, outline: 'none' },
-                          pressed: { fill: '#222a3a', stroke: '#4a5468', strokeWidth: 0.5, outline: 'none' },
-                        }}
-                      />
-                    ))
-                  }
-                </Geographies>
-                {/* Per-basin AOI footprints — tight buffered convex hull (ST_ConvexHull + ST_Buffer) */}
-                {showAoi && aoiGeo.features.length > 0 && (
-                  <>
-                    <Geographies geography={aoiGeo as any}>
-                      {({ geographies }) =>
-                        geographies.map((geo, i) => {
-                          const c = BASIN_COLORS[((geo.properties?.ci as number) ?? i) % BASIN_COLORS.length]
-                          return (
-                            <Geography key={geo.rsmKey || i} geography={geo}
-                              style={{
-                                default: { fill: c, fillOpacity: 0.14, stroke: c, strokeWidth: 1.2, strokeDasharray: '5 3', outline: 'none' },
-                                hover:   { fill: c, fillOpacity: 0.24, stroke: c, strokeWidth: 1.4, strokeDasharray: '5 3', outline: 'none' },
-                                pressed: { fill: c, fillOpacity: 0.24, stroke: c, strokeWidth: 1.4, outline: 'none' },
-                              }} />
-                          )
-                        })
-                      }
-                    </Geographies>
-                    {aoiFeat.map((f, i) => f.centroid && (
-                      <Annotation key={`aoi-lbl-${i}`} subject={f.centroid as [number, number]} dx={0} dy={0} connectorProps={{}}>
-                        <text textAnchor="middle" fontSize={7.5} fontWeight={700} fontFamily="monospace"
-                              fill={BASIN_COLORS[i % BASIN_COLORS.length]}
-                              style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 2.4 }}>
-                          {f.basin} · {f.km2.toLocaleString()} km²
-                        </text>
-                      </Annotation>
-                    ))}
-                  </>
-                )}
-                {/* Well spacing — nearest-offset lines (ST_Distance) */}
-                {showSpacing && spacing.map((s, i) => (
-                  <Line key={`sp-${i}`} from={s.from as [number, number]} to={s.to as [number, number]}
-                        stroke="#e46b8b" strokeWidth={0.9} strokeLinecap="round" strokeDasharray="3 2" />
-                ))}
-                {/* Cushing, OK — WTI physical pricing hub (ST_Distance reference) */}
-                <Marker coordinates={CUSHING}>
-                  <rect x={-3.5} y={-3.5} width={7} height={7} transform="rotate(45)" fill="#F5D90A" stroke="#0d1117" strokeWidth={0.8} />
-                  <text x={7} y={3} fontSize={7} fontWeight={700} fill="#F5D90A" fontFamily="monospace"
-                        style={{ pointerEvents: 'none', paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 2.2 }}>Cushing · WTI hub</text>
-                </Marker>
-                {withCoord.map(w => {
-                  const color = w.critical_count > 0 ? '#E74C3C' : w.status === 'gold' ? '#27AE60' : '#F39C12'
-                  return (
-                    <Marker key={w.well_id} coordinates={[w.lon!, w.lat!]} onClick={() => onOpenWell(w.well_id, 'viewer')} style={{ default: { cursor: 'pointer' } }}>
-                      <circle r={9} fill={color} opacity={0.18} />
-                      <circle r={5} fill={color} opacity={0.45} />
-                      <circle r={2.8} fill={color}>
-                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
-                      </circle>
-                      <text x={9} y={3} fontSize={7} fill="var(--text-primary)" fontFamily="monospace" style={{ pointerEvents: 'none' }}>
-                        {w.well_id}
-                      </text>
-                    </Marker>
-                  )
-                })}
-              </ZoomableGroup>
-            </ComposableMap>
-            <div style={{
-              position: 'absolute', top: 10, right: 10, fontSize: 15, fontFamily: 'monospace',
-              background: 'rgba(13,17,23,0.85)', border: '1px solid var(--border-dim)', borderRadius: 4,
-              padding: '6px 9px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: 3,
-            }}>
-              <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#27AE60', marginRight: 6 }} />gold</div>
-              <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#F39C12', marginRight: 6 }} />corrected</div>
-              <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#E74C3C', marginRight: 6 }} />critical</div>
-              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)', fontSize: 13.5, color: '#8794ad' }}>SPATIAL SQL (GA)</div>
-              <button onClick={() => setShowAoi(v => !v)} style={{
-                marginTop: 2, background: showAoi ? '#4dabf722' : 'transparent', color: showAoi ? '#4dabf7' : 'var(--text-muted)',
-                border: `1px solid ${showAoi ? '#4dabf7' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 13.5, cursor: 'pointer', textAlign: 'left',
-              }}>{showAoi ? 'Basin AOI on' : 'Basin AOI off'} · ConvexHull+Buffer</button>
-              <button onClick={() => setShowSpacing(v => !v)} style={{
-                marginTop: 2, background: showSpacing ? '#e46b8b22' : 'transparent', color: showSpacing ? '#e46b8b' : 'var(--text-muted)',
-                border: `1px solid ${showSpacing ? '#e46b8b' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 13.5, cursor: 'pointer', textAlign: 'left',
-              }}>{showSpacing ? 'Spacing on' : 'Spacing off'} · ST_Distance</button>
-              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)' }}>scroll to zoom · drag to pan · ◆ Cushing = WTI hub</div>
-            </div>
-          </div>
-        </Panel>
-
         <Panel title="WTI · last 120 days" subtitle="FRED DCOILWTICO (fallback if egress blocked)">
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={150}>
             <AreaChart data={priceWindow}>
               <defs>
                 <linearGradient id="wtiGrad" x1="0" y1="0" x2="0" y2="1">
@@ -333,28 +172,30 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
         </Panel>
       </div>
 
+      <SpatialWellsMap wells={operatorWells} onOpenWell={onOpenWell} />
+
       {/* Ingest pipeline */}
       <Panel title="OSDU Ingest Pipeline" subtitle="Medallion flow: live OSDU → Bronze → Silver → Gold → Serving">
         <svg width="100%" viewBox="0 0 1280 210" style={{ display: 'block' }}>
           <defs>
             <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="#00E5FF" stopOpacity="0" />
-              <stop offset="0.5" stopColor="#00E5FF" stopOpacity="1" />
-              <stop offset="1" stopColor="#00E5FF" stopOpacity="0" />
+              <stop offset="0" stopColor="#4fb3e8" stopOpacity="0" />
+              <stop offset="0.5" stopColor="#4fb3e8" stopOpacity="1" />
+              <stop offset="1" stopColor="#4fb3e8" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[
-            { x: 20,   label: 'ADME / OSDU',   sub: 'opendes partition',         color: '#27AE60', badge: 'SOURCE' },
-            { x: 280,  label: 'Bronze',        sub: 'bronze_wellbore · raw',     color: '#CD6116', badge: 'BRONZE' },
-            { x: 540,  label: 'Silver',        sub: 'silver_wellbore · cleaned', color: '#8E9AAF', badge: 'SILVER' },
-            { x: 800,  label: 'Gold',          sub: 'wellbore_search_source',    color: '#F39C12', badge: 'GOLD' },
-            { x: 1060, label: 'Vector Search', sub: 'subsurface-vs · gte-large', color: '#00E5FF', badge: 'SERVING' },
+            { x: 20,   label: 'ADME / OSDU',   sub: 'opendes partition',         color: '#2fd39b', badge: 'SOURCE' },
+            { x: 280,  label: 'Bronze',        sub: 'bronze_wellbore · raw',     color: '#e07b39', badge: 'BRONZE' },
+            { x: 540,  label: 'Silver',        sub: 'silver_wellbore · cleaned', color: '#a6b7c2', badge: 'SILVER' },
+            { x: 800,  label: 'Gold',          sub: 'wellbore_search_source',    color: '#f5a524', badge: 'GOLD' },
+            { x: 1060, label: 'Vector Search', sub: 'subsurface-vs · gte-large', color: '#4fb3e8', badge: 'SERVING' },
           ].map((n, i, arr) => (
             <g key={n.label}>
               {i < arr.length - 1 && (
                 <>
-                  <line x1={n.x + 200} y1="70" x2={arr[i+1].x} y2="70" stroke="#2a2e3a" strokeWidth="1" strokeDasharray="4 3" />
-                  <circle cx={n.x + 200} cy="70" r="2.5" fill="#00E5FF">
+                  <line x1={n.x + 200} y1="70" x2={arr[i+1].x} y2="70" stroke="#223d4f" strokeWidth="1" strokeDasharray="4 3" />
+                  <circle cx={n.x + 200} cy="70" r="2.5" fill="#4fb3e8">
                     <animate attributeName="cx" values={`${n.x + 200};${arr[i+1].x}`} dur="2.5s" repeatCount="indefinite" begin={`${i * 0.5}s`} />
                     <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin={`${i * 0.5}s`} />
                   </circle>
