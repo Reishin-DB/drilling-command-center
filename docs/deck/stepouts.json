@@ -1,0 +1,85 @@
+{
+    "stepouts": [
+        {
+            "field": "East Texas",
+            "basin": "East Texas",
+            "anchor_well": "EASTTEXAS-05",
+            "nearest_well": "EASTTEXAS-05",
+            "control_wells": [
+                "EASTTEXAS-05"
+            ],
+            "lat": 31.52339,
+            "lon": -94.58353,
+            "hcpt_ft": 220.3,
+            "risked_hcpt_ft": 145.4,
+            "control_mean_hcpt_ft": 202.2,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+        },
+        {
+            "field": "Wamsutter",
+            "basin": "Green River",
+            "anchor_well": "GREENRIVER-03",
+            "nearest_well": "GREENRIVER-03",
+            "control_wells": [
+                "GREENRIVER-03"
+            ],
+            "lat": 41.677,
+            "lon": -107.92885,
+            "hcpt_ft": 232.6,
+            "risked_hcpt_ft": 153.5,
+            "control_mean_hcpt_ft": 250.6,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+        },
+        {
+            "field": "Midland",
+            "basin": "Permian Basin",
+            "anchor_well": "PERMIAN-04",
+            "nearest_well": "PERMIAN-04",
+            "control_wells": [
+                "PERMIAN-04"
+            ],
+            "lat": 31.953,
+            "lon": -102.11779,
+            "hcpt_ft": 219.2,
+            "risked_hcpt_ft": 144.7,
+            "control_mean_hcpt_ft": 220.8,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+        },
+        {
+            "field": "Edwards",
+            "basin": "Permian Basin",
+            "anchor_well": "PERMIAN-06",
+            "nearest_well": "PERMIAN-06",
+            "control_wells": [
+                "PERMIAN-06"
+            ],
+            "lat": 31.223,
+            "lon": -100.93773,
+            "hcpt_ft": 245.1,
+            "risked_hcpt_ft": 161.8,
+            "control_mean_hcpt_ft": 246.2,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+        },
+        {
+            "field": "Blanco",
+            "basin": "San Juan",
+            "anchor_well": "SANJUAN-01",
+            "nearest_well": "SANJUAN-01",
+            "control_wells": [
+                "SANJUAN-01",
+                "SANJUAN-02"
+            ],
+            "lat": 36.72396,
+            "lon": -107.57252,
+            "hcpt_ft": 253.0,
+            "risked_hcpt_ft": 167.5,
+            "control_mean_hcpt_ft": 220.9,
+            "nearest_well_ft": 2616,
+            "uncertainty": 0.68
+        }
+    ]
+}

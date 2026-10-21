@@ -90,6 +90,7 @@ export default function GovernanceTab() {
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
+      <UcPolicyPanel />
       {/* KPI strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
         <Kpi label="ADME legal tags"   value={legal?.legal_tags?.length ?? '…'} sub={legal?.error ? 'UC fetch failed' : 'gov_legal_tags'} color="var(--teal)" />
@@ -605,6 +606,77 @@ function Panel({ title, subtitle, children }: { title: string; subtitle?: string
         {subtitle && <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
       </div>
       {children}
+    </div>
+  )
+}
+
+
+// ── Live Unity Catalog policy: same query as the app SP and as you (OBO) ────
+interface PolicyView { principal: string | null; jv_partner: boolean | null; rows: { basin: string; zone_rows: number; sw_visible: number; hc_pore_visible: number; net_pay_ft: number }[]; total_rows: number; error: string | null }
+interface PolicyResp { user: string | null; query: string; policy_sql: string; partner_basin: string; app_sp: PolicyView; you: PolicyView }
+
+function UcPolicyPanel() {
+  const [d, setD] = useState<PolicyResp | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [showSql, setShowSql] = useState(false)
+  const load = () => fetch('/api/governance/uc_policy').then(r => r.json()).then(setD).catch(() => {})
+  useEffect(() => { load() }, [])
+  const toggle = async () => {
+    if (!d) return
+    setBusy(true)
+    await fetch(`/api/governance/uc_policy/partner?on=${!d.you?.jv_partner}`, { method: 'POST' }).catch(() => {})
+    await load(); setBusy(false)
+  }
+  const partner = !!d?.you?.jv_partner
+  return (
+    <div className="card" style={{ padding: '16px 18px', borderColor: partner ? '#f5a52488' : 'var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 19.5, fontWeight: 700 }}>Unity Catalog policy · live</div>
+          <div style={{ fontSize: 14.5, color: 'var(--text-muted)' }}>The same query on <span className="mono">gold_zone_summary</span>, run as the app and as you. A row filter and two column masks are enforced on the caller's identity.</div>
+        </div>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          <button className="cs-btn" onClick={() => setShowSql(v => !v)}>{showSql ? 'Hide' : 'Show'} policy SQL</button>
+          <button className={partner ? 'cs-btn' : 'cs-btn cs-btn-primary'} disabled={busy || !d?.user} onClick={toggle}>
+            {busy ? 'Applying…' : partner ? 'Restore operator view' : `Make me a ${d?.partner_basin || 'San Juan'} JV partner`}
+          </button>
+        </span>
+      </div>
+      {showSql && d && <pre className="mono" style={{ fontSize: 13.5, background: 'var(--bg-panel)', border: '1px solid var(--border-dim)', borderRadius: 6, padding: 12, marginBottom: 12, whiteSpace: 'pre-wrap', color: 'var(--teal)' }}>{d.policy_sql + '\n\n-- the query both identities run\n' + d.query}</pre>}
+      {!d ? <span className="spinner" /> : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <PolicyTable title="As the app service principal" sub="operator view" v={d.app_sp} />
+          <PolicyTable title={`As you${d.user ? ` · ${d.user}` : ''}`} sub={partner ? `mapped as JV partner · ${d.partner_basin}` : 'operator view'} v={d.you} highlight={partner} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PolicyTable({ title, sub, v, highlight }: { title: string; sub: string; v: PolicyView; highlight?: boolean }) {
+  return (
+    <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-panel)', border: `1px solid ${highlight ? '#f5a52488' : 'var(--border-dim)'}` }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+        <div style={{ fontSize: 16.5, fontWeight: 600 }}>{title}</div>
+        <span className={highlight ? 'cs-prov cs-prov-ill' : 'cs-prov cs-prov-live'}>{sub}</span>
+      </div>
+      {v?.error ? <div style={{ fontSize: 14.5, color: 'var(--amber)' }}>{/scope/i.test(v.error)
+        ? 'Your session token has no sql scope yet. Open the app in a fresh browser window and reload. The policy still applies to you in Genie and the SQL editor.'
+        : v.error}</div> : (
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
+          <thead><tr style={{ color: 'var(--text-muted)', textAlign: 'left', fontSize: 12.5, textTransform: 'uppercase', letterSpacing: '.05em' }}>
+            <th style={{ padding: 4 }}>Basin</th><th style={{ padding: 4 }}>Zone rows</th><th style={{ padding: 4 }}>Sw visible</th><th style={{ padding: 4 }}>HC pore ft visible</th><th style={{ padding: 4 }}>Net pay ft</th></tr></thead>
+          <tbody>{v?.rows.map(r => (
+            <tr key={r.basin} style={{ borderTop: '1px solid var(--border-dim)' }}>
+              <td style={{ padding: 4 }}>{r.basin}</td><td style={{ padding: 4 }}>{r.zone_rows}</td>
+              <td style={{ padding: 4, color: r.sw_visible ? 'var(--text-primary)' : 'var(--amber)' }}>{r.sw_visible || 'masked'}</td>
+              <td style={{ padding: 4, color: r.hc_pore_visible ? 'var(--text-primary)' : 'var(--amber)' }}>{r.hc_pore_visible || 'masked'}</td>
+              <td style={{ padding: 4 }}>{r.net_pay_ft?.toLocaleString()}</td>
+            </tr>))}
+            <tr style={{ borderTop: '1px solid var(--border)', fontWeight: 600 }}><td style={{ padding: 4 }}>Total</td><td style={{ padding: 4 }}>{v?.total_rows}</td><td colSpan={3} /></tr>
+          </tbody>
+        </table>
+      )}
     </div>
   )
 }

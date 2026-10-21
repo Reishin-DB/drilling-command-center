@@ -1,3 +1,4 @@
+import zlib
 import math
 import random
 import datetime
@@ -580,7 +581,7 @@ def _build_formation_tops(well_id: str) -> list:
         name, top, base, *_, ztype, _, _ = z
         if prev_base is not None:
             # small per-well depth variation
-            offset = (hash(well_id + name) % 100) - 50
+            offset = (zlib.crc32((well_id + name).encode()) % 100) - 50
         else:
             offset = 0
         adj_top  = top  + offset
@@ -924,7 +925,7 @@ async def seed_osdu_wells(conn):
         td_ft = float(w.get("total_depth_ft") or 10000.0)
         depth_start = max(1000.0, td_ft - 5000.0)
         depth_end = td_ft
-        seed_val = abs(hash(w["well_id"])) % 10000
+        seed_val = zlib.crc32(w["well_id"].encode()) % 10000
         rows = _gen_log_samples(
             w["well_id"], depth_start, depth_end, seed_val,
             has_dt=True, add_spikes=True, status=w.get("status") or "corrected",

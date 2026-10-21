@@ -119,6 +119,7 @@ from server.routes.geospatial import router as geospatial_router
 from server.routes.equipment  import router as equipment_router
 from server.routes.voxels     import router as voxels_router
 from server.routes.sonic      import router as sonic_router
+from server.routes.uc_policy  import router as uc_policy_router
 
 app.include_router(wells_router,      prefix="/api")
 app.include_router(logs_router,       prefix="/api")
@@ -131,6 +132,7 @@ app.include_router(geospatial_router, prefix="/api")
 app.include_router(equipment_router,  prefix="/api")
 app.include_router(voxels_router,     prefix="/api")
 app.include_router(sonic_router,      prefix="/api")
+app.include_router(uc_policy_router,  prefix="/api")
 
 # Serve React SPA
 frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")

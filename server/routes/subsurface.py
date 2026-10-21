@@ -1,5 +1,6 @@
 """Subsurface scene endpoint: wells + reservoirs + samples + formations, all
 geo-normalized for the 3D viewer."""
+import zlib
 import math
 import os
 from fastapi import APIRouter
@@ -31,7 +32,7 @@ def _synth_trajectory(well_id: str, td_ft: float, tvd_ft: float, well_type: str)
     tvd = max(1.0, min(tvd_ft or td, td))
     horiz = math.sqrt(max(0.0, td * td - tvd * tvd))
     # Azimuth hashed off well_id for consistency
-    az = (abs(hash(well_id)) % 360) * math.pi / 180.0
+    az = (zlib.crc32(well_id.encode()) % 360) * math.pi / 180.0
     points: list[tuple[float, float, float]] = []
     if well_type == "vertical" or horiz < 100:
         for i in range(11):

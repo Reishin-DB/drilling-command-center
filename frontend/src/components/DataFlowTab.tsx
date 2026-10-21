@@ -283,6 +283,7 @@ export default function DataFlowTab() {
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
+      <LakehouseBuild />
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border)',
         borderRadius: 8, padding: 14,
@@ -602,6 +603,57 @@ function OntologyView() {
       </div>
       <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 14 }}>
         <OntologyGraph />
+      </div>
+    </div>
+  )
+}
+
+
+// ── The lakehouse build behind the logs, the sonic model and the policies ──
+const BUILD_LANES: { lane: string; color: string; steps: { name: string; sub: string }[] }[] = [
+  { lane: 'LAND', color: '#a6b7c2', steps: [
+    { name: 'UC volume · raw', sub: 'LAS-style curves, well headers, formation tops' },
+    { name: 'bronze_logs', sub: 'Auto Loader, schema on read' },
+    { name: 'silver_logs · silver_wells', sub: 'despike, gaps, range expectations' },
+    { name: 'gold_petrophysics · gold_zone_summary', sub: 'Vcl, porosity, Archie Sw, net pay' },
+  ] },
+  { lane: 'LEARN', color: '#2fd39b', steps: [
+    { name: 'gold_sonic_features', sub: 'GR, RHOB, NPHI, log RT, depth' },
+    { name: 'MLflow bake-off', sub: 'leave-one-well-out vs Gardner and Faust' },
+    { name: 'synthetic_sonic@champion', sub: 'Unity Catalog model registry' },
+    { name: 'subsurface-synthetic-sonic', sub: 'Model Serving + AI Gateway' },
+  ] },
+  { lane: 'SERVE', color: '#4fb3e8', steps: [
+    { name: 'Databricks App', sub: 'voxel model, map, sonic, economics' },
+    { name: 'Genie', sub: 'gold tables, metric views, certified functions' },
+    { name: 'Subsurface Supervisor', sub: 'specialists, model choice, cost' },
+    { name: 'Row filter + column masks', sub: 'basin_filter, mask_interpretation' },
+  ] },
+]
+
+function LakehouseBuild() {
+  return (
+    <div className="card" style={{ padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+        <div style={{ fontSize: 21, fontWeight: 700 }}>The lakehouse build</div>
+        <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>One Asset Bundle job, <span className="mono">subsurface-command-build</span>, lands the data, runs the Lakeflow pipeline, trains, registers, serves and scores. Everything below lives in <span className="mono">oil_pump_monitor_catalog.subsurface_command</span>.</div>
+      </div>
+      <div style={{ border: '2px dashed #f5a52488', borderRadius: 12, padding: '18px 14px 10px', position: 'relative', display: 'grid', gap: 10 }}>
+        <span className="mono" style={{ position: 'absolute', top: -11, left: 16, background: 'var(--bg-card)', padding: '0 8px', color: 'var(--amber)', fontSize: 13, fontWeight: 700, letterSpacing: '.1em' }}>UNITY CATALOG</span>
+        {BUILD_LANES.map(l => (
+          <div key={l.lane} style={{ display: 'flex', alignItems: 'stretch', gap: 8 }}>
+            <span className="mono" style={{ width: 70, flex: 'none', alignSelf: 'center', fontSize: 12.5, letterSpacing: '.14em', color: l.color }}>{l.lane}</span>
+            {l.steps.map((st, i) => (
+              <div key={st.name} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                <div style={{ flex: 1, padding: '9px 10px', borderRadius: 7, border: `1px solid ${l.color}66`, background: 'var(--bg-panel)', textAlign: 'center' }}>
+                  <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{st.name}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{st.sub}</div>
+                </div>
+                {i < l.steps.length - 1 && l.lane !== 'SERVE' && <span style={{ color: 'var(--text-muted)' }}>→</span>}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   )

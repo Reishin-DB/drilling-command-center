@@ -1,0 +1,8 @@
+{'dip_deg': 1.19, 'dip_azimuth_deg': 245.4, 'closure_ft': 158} {'azimuth_deg': 350.9, 'offset_ft': 3591, 'throw_ft': 140, 'normal': [0.1574, 0.9875]} 9275 [{'well_id': 'SANJUAN-01', 'hcpt_ft': 238.6}, {'well_id': 'SANJUAN-02', 'hcpt_ft': 203.3}]
+{'name': 'Entrada', 'type': 'shale', 'voxels': 9364, 'pay_fraction': 0.0, 'phi_mean': 0.027, 'sw_mean': 0.981, 'control_wells': 2}
+{'name': 'Morrison', 'type': 'sand', 'voxels': 7490, 'pay_fraction': 0.057, 'phi_mean': 0.11, 'sw_mean': 0.75, 'control_wells': 2}
+{'name': 'Todilto', 'type': 'carbonate', 'voxels': 6803, 'pay_fraction': 0.0, 'phi_mean': 0.018, 'sw_mean': 0.961, 'control_wells': 2}
+{'name': 'Brushy Basin', 'type': 'shale', 'voxels': 4917, 'pay_fraction': 0.0, 'phi_mean': 0.038, 'sw_mean': 0.982, 'control_wells': 2}
+{'name': 'Westwater', 'type': 'reservoir', 'voxels': 11268, 'pay_fraction': 0.976, 'phi_mean': 0.226, 'sw_mean': 0.168, 'control_wells': 2}
+{'name': 'Salt Wash', 'type': 'fluvial', 'voxels': 7596, 'pay_fraction': 0.08, 'phi_mean': 0.109, 'sw_mean': 0.736, 'control_wells': 2}
+{'nx': 32, 'ny': 32, 'nz': 48, 'x0': -12992.301348468549, 'y0': -12992.301348468549, 'z0': 5000.0, 'dx': 812.0188342792843, 'dy': 812.0188342792843, 'dz': 104.16666666666667, 'order': 'x fastest, then y, then depth'}

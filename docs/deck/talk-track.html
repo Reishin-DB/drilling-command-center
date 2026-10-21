@@ -1,0 +1,145 @@
+<!doctype html><html><head><meta charset='utf-8'><style>
+@page { size: letter; margin: 0.7in 0.75in }
+body { font-family: Inter, 'Helvetica Neue', Arial, sans-serif; color: #1B2A33; font-size: 11pt; line-height: 1.5 }
+h1 { font-size: 22pt; margin: 0 0 6px } h2 { font-size: 14pt; margin: 22px 0 6px; color: #E8541E; border-bottom: 1px solid #D5DDE1; padding-bottom: 3px }
+h3 { font-size: 11.5pt; margin: 14px 0 4px }
+blockquote { margin: 6px 0 8px; padding: 6px 12px; border-left: 3px solid #0E8C86; background: #F4F6F7; color: #2A3B45 }
+code { font-family: Menlo, monospace; font-size: 9.5pt; background: #F1F3F4; padding: 0 3px; border-radius: 3px }
+ul, ol { margin: 4px 0 8px; padding-left: 22px } li { margin: 2px 0 } p { margin: 5px 0 }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9.8pt } th, td { border: 1px solid #D5DDE1; padding: 5px 7px; text-align: left; vertical-align: top } th { background: #F4F6F7 } tr { page-break-inside: avoid }
+h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
+</style></head><body><h1>Subsurface Intelligence: talk track</h1>
+<p>For the FE Bar AI roleplay: about 20 minutes with two personas, a <b>business stakeholder</b> (asset manager or VP subsurface, owns the next-well decision and the capex) and a <b>technical stakeholder</b> (petrophysics or subsurface data lead, owns whether this is trustworthy and fits the stack). Scored on demo setup, value communication, reading the room, and professionalism.</p>
+<p>Shape: <b>open and discover (3 min) → the value pitch (3 min) → demo (9 min) → architecture and decisions (2 min) → ask (1 min) → questions.</b> Leave room; the questions are where the score is made.</p>
+<p>Every number is tagged so you can defend it: <b>[demo]</b> computed live by the app or the training job on the synthetic fleet, <b>[yours]</b> a number you ask them for. There are no industry-benchmark dollar figures in this track on purpose; if they ask for one, turn it into a <b>[yours]</b> question.</p>
+<h2>0. Before you start (10 min ahead)</h2>
+<ul>
+<li><b>Warm the sonic endpoint.</b> It scales to zero. Open <i>Fill the Missing Sonic</i> once; the chip must read <code>Live · Model Serving · subsurface-synthetic-sonic</code>, not <code>Fallback · Gardner relation</code>. If it says fallback, wait 60 seconds and reload.</li>
+<li><b>Warm the voxel model.</b> Open <i>Model the Subsurface</i> with SANJUAN-01 as the active well. The banner should read <b>2,616 ft</b>, <b>253 ft</b>, <b>15% above</b>, <b>167.5 ft risked</b>.</li>
+<li><b>Open the app in a fresh browser window</b> so your session token carries the <code>sql</code> and Genie scopes. Check <i>Governance &amp; Audit</i>: the "As you" table must show 84 rows, not a scope message.</li>
+<li><b>Reset governance.</b> The policy button must read "Make me a San Juan JV partner"; if it reads "Restore operator view", click it.</li>
+<li><b>Have the deck open</b> on slide 2, and the two Genie questions ready to paste (section 3, step 8).</li>
+<li><b>Reset the camera</b> on the voxel tab by switching tabs away and back if you rehearsed with it rotated.</li>
+</ul>
+<h2>1. Open and discover (3 min)</h2>
+<p><b>Say:</b></p>
+<blockquote>Thanks for the time. My goal today is narrow: show you one subsurface decision, where the next well goes in a field you already produce from, done end to end on Databricks, and get your honest read on whether it would hold up on your data. Before I start, two quick questions so I aim this at what matters to you.</blockquote>
+<p><b>Ask the business persona:</b></p>
+<ul>
+<li>When the team proposes the next well in a producing field, how long does it take to get from "we think there is room" to a located, priced proposal? Who touches it?</li>
+<li>What happens to that decision when a key log is missing on a nearby well?</li>
+</ul>
+<p><b>Ask the technical persona:</b></p>
+<ul>
+<li>Where do your logs, tops, and well headers live today, and how do they get into the geomodel?</li>
+<li>What would you need to see before you trusted a model to fill a missing curve, or to rank a location?</li>
+</ul>
+<p><b>Listen for, and reuse later:</b> the number of hand-offs, weeks or months of cycle time, wells drilled without sonic, distrust of black-box models, partners who need some data but not all. Play their words back at each step.</p>
+<h2>2. The value pitch (3 min) · deck slides 2 and 3</h2>
+<h3>The 30-second version</h3>
+<blockquote>The data to place the next well already exists: logs, tops, headers, economics. It just lives in five places, and every gap, like a well with no sonic, becomes a side project. We put it on one governed platform. The missing sonic is filled by a model that beats the relation your petrophysicists use today, <b>3.6 times lower error on wells it never saw</b>. The logs become a <b>voxel geomodel in under a second</b> that proposes a step-out, risked for how far it is from control. And everyone, including partners and AI assistants, sees only what they are entitled to.</blockquote>
+<h3>What is new here (say it this way)</h3>
+<blockquote>None of the techniques are exotic. Pseudo-sonic from other curves, kriging between wells, saturation-height functions: your team knows all of them. What is new is that they run <b>as one governed workflow on the platform where the data already is</b>: the pipeline, the model registry, the served model, the geomodel, the economics, and the AI, with Unity Catalog enforcing who sees what in every one of them.</blockquote>
+<p>Lead with "one governed workflow", not "a new algorithm". The first is hard to rebut; the second invites someone to name a vendor.</p>
+<h3>The value, in three levers</h3>
+<table><tr><th>Lever</th><th>What changes</th><th>The number</th></tr><tr><td><b>1. Fill the gaps</b></td><td>Missing sonic is predicted from the other curves, scored against Gardner on held-out wells</td><td><b>3.0 µs/ft</b> error vs <b>10.7</b> for Gardner refit on the same wells, <b>3.6x</b> lower, across <b>13 wells</b> and <b>31,189 samples</b> <b>[demo]</b></td></tr><tr><td><b>2. Place the well</b></td><td>The logs become a geomodel that ranks a step-out and states its uncertainty</td><td>Blanco step-out <b>2,616 ft</b> from SANJUAN-01 with <b>253 ft</b> of hydrocarbon pore thickness, <b>15%</b> above the control wells, <b>168 ft</b> after the uncertainty haircut <b>[demo]</b></td></tr><tr><td><b>3. Decide faster, safely</b></td><td>Question to governed answer in one sitting, partners see only their basin</td><td>How long does a step-out proposal take today <b>[yours]</b>? JV partner sees <b>30 of 84</b> zone rows, Sw and HC pore feet masked <b>[demo]</b></td></tr></table>
+<h2>3. The demo (9 min)</h2>
+<p>Click path follows the left rail. For each step: <b>click</b>, <b>say</b>, <b>land the line</b>.</p>
+<h3>Start Here (20 s)</h3>
+<p><b>Click:</b> <i>Start Here</i>, scroll once so they see the six steps.</p>
+<p><b>Say:</b> "Six steps, one decision. I'll go quickly through the first two and spend time on three and four."</p>
+<h3>1. Locate the Wells (1 min)</h3>
+<p><b>Click:</b> <i>Locate the Wells</i>. Point at the KPI strip, then the <b>Spatial wells</b> card. Click <b>Blanco</b> to fly in.</p>
+<p><b>Say:</b> "This is the fleet on a governed map. The basin footprints and the spacing lines are Databricks Spatial SQL over the well table, ST_ConvexHull and ST_Distance, and the queries are on this page. The amber diamond is where the voxel model, which we'll build in a minute, wants the next well."</p>
+<p><b>Click:</b> the amber diamond, then point at the inspector card.</p>
+<p><b>Land:</b> "Location is a governed query, not a GIS export."</p>
+<h3>2. Read the Logs (45 s)</h3>
+<p><b>Click:</b> <i>Read the Logs</i> (SANJUAN-01).</p>
+<p><b>Say:</b> "Raw curves, QC flags, corrected curves, and petrophysics: shale volume from gamma ray, density porosity, Archie water saturation. The pipeline does exactly this QC at scale in the silver layer, with expectations that quarantine bad samples."</p>
+<p><b>Land:</b> "Every number downstream traces back to these samples."</p>
+<h3>3. Fill the Missing Sonic (1.5 min) · the model moment</h3>
+<p><b>Click:</b> <i>Fill the Missing Sonic</i>. GREENRIVER-03 is selected; point at the chip <code>Live · Model Serving</code>.</p>
+<p><b>Say:</b> "Green River 03 was drilled without a sonic log, and geomechanics and seismic ties need one. The green track is the served model's prediction; the dashed purple is Gardner with published coefficients, the relation most teams reach for."</p>
+<p><b>Point at:</b> the Evaluation table.</p>
+<p><b>Say:</b> "Here's what makes it trustworthy. We hold out <b>whole wells</b>, because samples from one well share its geology and a random split would leak. Gardner refit on the training wells: 10.7 microseconds per foot. The served model: <b>3.0</b>. Gradient-boosted trees tied the linear model at the noise floor, so we serve the <b>simpler</b> one: easier to explain to a petrophysicist and nothing lost."</p>
+<p><b>Optional, technical persona:</b> switch to SANJUAN-01, which has measured sonic: "On a well where we can check, the model is within 2.6 against 18.7 for textbook Gardner."</p>
+<p><b>Land:</b> "The model has to beat the method you already trust, on wells it never saw. And if the endpoint is cold, the app says so and falls back to Gardner, labelled."</p>
+<h3>4. Model the Subsurface (2 min) · the hero moment</h3>
+<p><b>Click:</b> <i>Model the Subsurface</i>. Let the insight banner read for a second.</p>
+<p><b>Say:</b> "This is a voxel geomodel built from those logs, about fifty thousand cells, computed when the page loaded. The structure honours every formation top. Porosity, saturation and shale are kriged between the wells layer by layer, and reservoir saturation follows a saturation-height function above the free-water level, so the crest holds more oil than the flank."</p>
+<p><b>Click:</b> <b>Model uncertainty</b>.</p>
+<p><b>Say:</b> "And this is the part I'd want as an engineer: green at the wells, purple away from them. The model is honest about what it doesn't know."</p>
+<p><b>Click:</b> back to <b>Hydrocarbon pore volume</b>; drag to orbit once; hover a Westwater voxel.</p>
+<p><b>Say:</b> "The step-out it proposes is 2,616 feet from San Juan 01, with 253 feet of hydrocarbon pore thickness, 15% above what the two wells see. Risked for distance from control, 168. That's a candidate your geoscientists review, not a decision the model makes for them."</p>
+<p><b>Land:</b> "A geomodel in the app, in seconds, that tells you where it is uncertain."</p>
+<h3>5. Value the Well (45 s)</h3>
+<p><b>Click:</b> <i>Value the Well</i>.</p>
+<p><b>Say:</b> "Per-well NPV, IRR and break-even at today's WTI, from certified Unity Catalog functions. San Juan 01 carries about <b>$51 million</b> of NPV10 at <b>32%</b> IRR in the demo. The step-out is the candidate you would price next with the same functions."</p>
+<p><b>Land:</b> "One governed definition of NPV, everywhere it appears."</p>
+<h3>6. Decide with AI (1.5 min)</h3>
+<p><b>Click:</b> <i>Decide with AI</i>. Ask about SANJUAN-01 or GREENRIVER-03; let the plan render.</p>
+<p><b>Say:</b> "The Supervisor first plans which specialists the question needs and greys out the rest with a reason, then runs those in parallel and synthesises one verdict with citations. Up here, I can swap between frontier and open-weight models through AI Gateway with no code change, and every run shows its cost and the guardrails that ran."</p>
+<p><b>Land:</b> "Choice, cost and control over the AI, not just the data."</p>
+<h3>7. Ask the Data (1 min)</h3>
+<p><b>Click:</b> <i>Ask the Data</i> in the header. Paste:</p>
+<ol>
+<li>"Rank our wells by NPV and show which are economic at 50 dollar WTI"</li>
+<li>"Which wells are within 50 km of SANJUAN-01 and how far?"</li>
+</ol>
+<p><b>Say:</b> "Plain English to governed SQL, grounded in the same tables, metric views and certified functions. Click Show SQL: every answer is auditable."</p>
+<p><b>Land:</b> "Anyone can ask the field a question, and the answer is governed SQL."</p>
+<h3>8. Governance &amp; Audit (1 min)</h3>
+<p><b>Click:</b> <i>Governance &amp; Audit</i>. The top panel, <b>Unity Catalog policy · live</b>, runs the same query on the gold zone summary as the app and as you: 84 rows across 4 basins on both sides.</p>
+<p><b>Click:</b> <b>Make me a San Juan JV partner</b>.</p>
+<p><b>Say:</b> "I've just mapped myself as a joint-venture partner. Same query, my identity: 30 rows, San Juan only, and saturation and hydrocarbon pore feet are masked while net pay stays visible. That's a row filter and a column mask on the table in Unity Catalog, not code in this app. Because Genie and the Supervisor run as me, they obey it too."</p>
+<p><b>Click:</b> <b>Show policy SQL</b> if the technical persona leans in, then <b>Restore operator view</b>.</p>
+<p><b>Land:</b> "Governance is the platform, not an app feature you have to trust."</p>
+<h3>9. How It Works (30 s, or skip if short on time)</h3>
+<p><b>Click:</b> <i>How It Works</i>.</p>
+<p><b>Say:</b> "Volume, Lakeflow bronze, silver, gold, MLflow against the baselines, the model registry, Model Serving behind AI Gateway, then the app, Genie and the Supervisor. One Asset Bundle job rebuilds it."</p>
+<h2>4. Architecture and decisions (2 min) · deck slides 5 to 7</h2>
+<p>Say these as decisions you made, each with the reason:</p>
+<ul>
+<li><b>Held-out wells, not rows.</b> Samples from one well share a geology; a random split would leak and flatter the model.</li>
+<li><b>The baseline is the method they use.</b> Gardner, and Gardner refit on the same training wells, so the comparison is fair. The textbook version is shown too, because it's what most people apply.</li>
+<li><b>Simplest model that ties wins.</b> Trees and linear tied at 3.0; the linear model is served.</li>
+<li><b>Fallback is labelled.</b> If the endpoint is cold the app uses Gardner and says so on screen. No silent degradation.</li>
+<li><b>The geomodel states its uncertainty.</b> Kriging standard deviation is an attribute you can show, and the ranking is haircut by it.</li>
+<li><b>Policies live in Unity Catalog.</b> The row filter and column mask are SQL functions on the tables, so the app, Genie, and the SQL editor all obey them.</li>
+<li><b>Every screen tags Live vs Illustrative.</b> Slide 7 lists exactly what is synthetic.</li>
+</ul>
+<h2>5. The ask (1 min) · deck slide 8</h2>
+<blockquote>Here's what I'd propose. <b>Business:</b> name one field and the person who owns its next-well decision. Success is a step-out your team agrees is credible, with its value, in weeks rather than a quarter. <b>Technical:</b> a two-week working session with petrophysics and data to map your logs, tops and OSDU records to this pipeline, and agree the bar the sonic model has to clear against your current method.</blockquote>
+<p>Then stop talking.</p>
+<h2>6. Objection handling</h2>
+<p><b>"This is synthetic data. Why should I believe it?"</b></p>
+<blockquote>It is, and every screen says so. What's real is the machinery: the pipeline, the evaluation design, the served model, the policies. The rock model behind the logs is physically coupled, porosity drives density, neutron and sonic together, so the model has to learn real relationships. The pilot replaces the logs with yours, and the evaluation re-runs on your wells against your current method. If it doesn't beat it, you'll see that too.</blockquote>
+<p><b>"Kriging between two wells isn't a geomodel."</b></p>
+<blockquote>Agreed, and the model says so: with one or two wells the uncertainty attribute goes purple quickly, and the step-out is haircut for it. The point isn't that this replaces Petrel; it's that a defensible first look, with its uncertainty, is available in seconds on governed data, so the geoscientist starts from a ranked, explained candidate.</blockquote>
+<p><b>"We already have Petrel / Techlog for this."</b></p>
+<blockquote>Keep them. This isn't a replacement for the interpretation workstation; it's the governed data and AI layer under it. The logs, tops and models land once in Unity Catalog, the missing curves are filled and versioned, and the interpretation tools, the economics and the AI all read the same governed copy.</blockquote>
+<p><b>"Why linear and not deep learning?"</b></p>
+<blockquote>Because it tied. We tried gradient-boosted trees; on held-out wells they matched the linear model at 3.0. When two models tie, the simpler one is easier to explain, cheaper to serve, and harder to break. On your data we'd re-run the same bake-off.</blockquote>
+<p><b>"How do I know the model isn't overfit?"</b></p>
+<blockquote>Leave-one-well-out. Every score in that table is on a well the model never saw in training. On San Juan 01, which has measured sonic, it's within 2.6 microseconds per foot.</blockquote>
+<p><b>"The OSDU panels say offline."</b></p>
+<blockquote>They're fed by a partner ADME workspace that isn't live right now, and the app says so instead of faking it. The connector pattern is the same; on your OSDU instance those panels light up.</blockquote>
+<p><b>"What does this cost to run?"</b></p>
+<blockquote>The sonic model is a small endpoint that scales to zero, behind AI Gateway with usage tracking and inference tables, so you see the cost per call. The Supervisor shows token cost per run. The rest is pipeline and SQL on serverless.</blockquote>
+<p><b>"Can partners query this through Genie and see too much?"</b></p>
+<blockquote>No. The row filter and column mask are on the tables in Unity Catalog, and Genie runs as the signed-in user. The partner sees 30 rows, San Juan only, with the masked columns NULL, whichever tool they use.</blockquote>
+<h2>7. Questions to expect from the technical persona</h2>
+<ul>
+<li><i>How are the logs QC'd?</i> Silver despikes, flags gaps and range violations with pipeline expectations; bad samples are excluded from training and from the model's inputs.</li>
+<li><i>What are the model inputs?</i> GR, RHOB, NPHI, log10 RT and depth.</li>
+<li><i>Where is the model?</i> <code>oil_pump_monitor_catalog.subsurface_command.synthetic_sonic</code>, alias <code>@champion</code>, served on <code>subsurface-synthetic-sonic</code>.</li>
+<li><i>How is the step-out ranked?</i> Undrilled columns between 2,500 ft and one correlation range from control are ranked on kriged hydrocarbon pore thickness, times one minus half the column's kriging uncertainty.</li>
+<li><i>How do I rebuild it?</i> <code>databricks bundle deploy -t fevm</code> then run the <code>subsurface-command-build</code> job.</li>
+</ul>
+<h2>8. Reading the room</h2>
+<ul>
+<li>If the <b>business persona</b> drifts during step 3, skip the optional measured-well check and go straight to the voxel banner.</li>
+<li>If the <b>technical persona</b> leans in on step 4, toggle uncertainty and pay-only, and offer the method panel on the right.</li>
+<li>After step 4, check in with both: "Is that the kind of candidate your team would want to start from?"</li>
+<li>If time is short, cut step 9 and shorten step 6 to the model picker and cost meter.</li>
+</ul></body></html>

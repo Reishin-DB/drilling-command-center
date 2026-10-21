@@ -98,8 +98,11 @@ export default function ThreeDViewerTab({ wellId, onWellChange, onNavigate }: {
 
   useEffect(() => {
     setLoading(true); setErr('')
-    fetch(`/api/voxels/${encodeURIComponent(wellId)}`).then(r => r.json()).then((m: Model) => {
-      if (m.error) setErr(m.error)
+    fetch(`/api/voxels/${encodeURIComponent(wellId)}`).then(r => {
+      if (!r.ok) throw new Error(`Voxel model unavailable (HTTP ${r.status})`)
+      return r.json()
+    }).then((m: Model) => {
+      if (m.error || !m.grid) setErr(m.error || 'Voxel model unavailable')
       else {
         setModel(m)
         // Open on the pay: slice from just above the main reservoir.

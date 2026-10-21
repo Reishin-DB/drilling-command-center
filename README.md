@@ -116,3 +116,9 @@ FastAPI, DuckDB (in-process app state), React 18 with three.js and Recharts, Dat
 ## License
 
 See `LICENSE` and `NOTICE`.
+
+## Presenting it
+
+- `docs/Subsurface-Intelligence-Deck.pdf`: 10 slides, numbers read from `ml/metrics.json` and the live step-outs (`python docs/deck/build_deck.py`).
+- `docs/TALK-TRACK.md` and `docs/Subsurface-Intelligence-Talk-Track.pdf`: the FE Bar roleplay script with pre-flight checks, the click path, objection handling and the ask (`python docs/deck/build_talk_track.py`).
+- `screenshots/`: hero captures of the live app used by the deck.

@@ -80,11 +80,11 @@ export default function SonicTab({ wellId, onWellChange, onNavigate }: { wellId:
                 <LineChart data={rows} layout="vertical" margin={{ top: 8, right: 20, left: 10, bottom: 8 }}>
                   <CartesianGrid stroke="#182f3e" />
                   <XAxis type="number" domain={['dataMin - 5', 'dataMax + 5']} tick={{ fill: '#a6b7c2', fontSize: 13 }} label={{ value: 'DT µs/ft', position: 'insideBottom', offset: -2, fill: '#6c8494', fontSize: 13 }} />
-                  <YAxis type="number" dataKey="md" reversed domain={['dataMin', 'dataMax']} tick={{ fill: '#a6b7c2', fontSize: 13 }} width={60} label={{ value: 'MD ft', angle: -90, position: 'insideLeft', fill: '#6c8494', fontSize: 13 }} />
+                  <YAxis type="number" dataKey="md" domain={['dataMin', 'dataMax']} tick={{ fill: '#a6b7c2', fontSize: 13 }} width={60} label={{ value: 'MD ft', angle: -90, position: 'insideLeft', fill: '#6c8494', fontSize: 13 }} />
                   <Tooltip contentStyle={{ background: '#132836', border: '1px solid #223d4f', fontSize: 14 }} formatter={(v: any) => (typeof v === 'number' ? v.toFixed(1) : v)} labelFormatter={(l: any) => `${l} ft`} />
                   <Legend wrapperStyle={{ fontSize: 14 }} />
                   {hasActual && <Line dataKey="dt_actual" name="Measured DT" stroke="#a6b7c2" dot={false} strokeWidth={1.2} isAnimationActive={false} />}
-                  <Line dataKey="dt_gardner" name="Gardner baseline" stroke="#b79bff" dot={false} strokeWidth={1.2} strokeDasharray="4 3" isAnimationActive={false} />
+                  <Line dataKey="dt_gardner" name="Gardner (published coefficients)" stroke="#b79bff" dot={false} strokeWidth={1.2} strokeDasharray="4 3" isAnimationActive={false} />
                   <Line dataKey="dt_model" name="Model prediction" stroke="#2fd39b" dot={false} strokeWidth={1.8} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
@@ -105,7 +105,7 @@ export default function SonicTab({ wellId, onWellChange, onNavigate }: { wellId:
               </table>
             ) : <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>Metrics appear once the training job has run.</div>}
             <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 8 }}>Errors in µs/ft{m?.n_samples ? ` over ${m.n_samples.toLocaleString()} samples` : ''}. Champion rule: {m?.champion_rule || 'lowest held-out MAE'}.</div>
-            {thisWell && <div style={{ fontSize: 14.5, marginTop: 8, color: 'var(--text-secondary)' }}>On this well ({thisWell.n.toLocaleString()} samples with measured DT): model {thisWell.model_mae.toFixed(1)} vs Gardner {thisWell.gardner_mae.toFixed(1)} µs/ft.</div>}
+            {thisWell && <div style={{ fontSize: 14.5, marginTop: 8, color: 'var(--text-secondary)' }}>On this well ({thisWell.n.toLocaleString()} samples with measured DT): model {thisWell.model_mae.toFixed(1)} vs published Gardner {thisWell.gardner_mae.toFixed(1)} µs/ft.</div>}
           </div>
           <div className="card" style={{ padding: '14px 16px' }}>
             <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>How it is built</div>
