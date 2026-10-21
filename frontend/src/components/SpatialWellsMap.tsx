@@ -52,7 +52,7 @@ export default function SpatialWellsMap({ wells, onOpenWell }: { wells: MapWell[
     const lats = placed.map(w => w.lat!), lons = placed.map(w => w.lon!)
     const center: [number, number] = [(Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2]
     const span = Math.max(Math.max(...lons) - Math.min(...lons), Math.max(...lats) - Math.min(...lats), 4)
-    return { center, zoom: Math.min(8, Math.max(1.6, 28 / span)) }
+    return { center, zoom: Math.min(8, Math.max(1.4, 19 / span)) }
   }, [placed])
   const v = view || fleetView
   const k = 1 / v.zoom   // counter-scale for marker geometry
@@ -92,15 +92,15 @@ export default function SpatialWellsMap({ wells, onOpenWell }: { wells: MapWell[
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 360px' }}>
-        <div style={{ position: 'relative', background: 'radial-gradient(ellipse at 40% 30%, #0f2534 0%, #081520 70%)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', height: 440 }}>
+        <div style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 40% 30%, #0f2534 0%, #081520 70%)' }}>
           {/* Field focus */}
           <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2, display: 'flex', gap: 6, flexWrap: 'wrap', maxWidth: '90%' }}>
             <FocusChip active={!view} onClick={() => setView(null)}>All fleet</FocusChip>
             {fields.map(f => <FocusChip key={f.field} active={!!view && selStep?.field === f.field} onClick={() => focus(f)}>{f.field}</FocusChip>)}
           </div>
 
-          <ComposableMap projection="geoAlbersUsa" projectionConfig={{ scale: 1000 }} width={900} height={760} style={{ width: '100%', height: 'auto', display: 'block' }}>
+          <ComposableMap projection="geoAlbersUsa" projectionConfig={{ scale: 1000 }} width={900} height={440} style={{ width: '100%', height: '100%', display: 'block' }}>
             <ZoomableGroup center={v.center} zoom={v.zoom} minZoom={1} maxZoom={800}
               onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => setView({ center: coordinates, zoom })}>
               <Geographies geography={statesTopo}>
@@ -198,7 +198,7 @@ export default function SpatialWellsMap({ wells, onOpenWell }: { wells: MapWell[
         </div>
 
         {/* Inspector */}
-        <div style={{ borderLeft: '1px solid var(--border)', padding: 16, display: 'grid', gap: 14, alignContent: 'start', background: 'var(--bg-card)' }}>
+        <div style={{ borderLeft: '1px solid var(--border)', padding: 14, display: 'grid', gap: 12, alignContent: 'start', background: 'var(--bg-card)', overflowY: 'auto' }}>
           {sel ? <>
             <div>
               <div className="label" style={{ fontSize: 12.5 }}>Selected well</div>
