@@ -329,6 +329,53 @@ _QC_RULES = [
 ]
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Rock physics behind the synthetic logs
+# ─────────────────────────────────────────────────────────────────────────────
+# Every curve is derived from the same latent rock at each depth sample, so the
+# logs carry the cross-correlations a petrophysicist expects (density and
+# neutron read the same porosity, gamma ray reads the same shale, the sonic
+# slows with porosity, shale, gas, and shallower burial). That is what makes a
+# synthetic-sonic model meaningful: DT is recoverable from the other curves,
+# but not by a one-curve transform.
+#
+# name -> (phi_mu, phi_sig, vcl_mu, vcl_sig, sw_mu, gr_clean, rho_ma, dt_ma, m)
+#   phi = total porosity, vcl = shale volume, sw = water saturation,
+#   rho_ma / dt_ma = clean matrix density (g/cc) and slowness (us/ft),
+#   m = Archie cementation exponent. Westwater is gas-bearing.
+_ROCK = {
+    "Entrada":      (0.140, 0.025, 0.75, 0.10, 1.00, 15.0, 2.65, 55.5, 2.0),
+    "Morrison":     (0.165, 0.035, 0.36, 0.14, 0.45, 15.0, 2.65, 55.5, 2.0),
+    "Todilto":      (0.030, 0.015, 0.03, 0.02, 1.00,  8.0, 2.71, 47.5, 2.3),
+    "Brushy Basin": (0.150, 0.025, 0.70, 0.10, 1.00, 15.0, 2.65, 55.5, 2.0),
+    "Westwater":    (0.180, 0.035, 0.12, 0.07, 0.15, 15.0, 2.65, 55.5, 2.0),
+    "Salt Wash":    (0.160, 0.035, 0.38, 0.15, 0.45, 15.0, 2.65, 55.5, 2.0),
+}
+_GR_SHALE, _RHO_SH, _DT_SH, _RHO_GAS, _DT_FL, _RW = 120.0, 2.68, 80.0, 0.25, 189.0, 0.05
+_AR1 = 0.92   # sample-to-sample correlation of the latent rock (2 ft spacing)
+
+
+def rock_to_logs(zone: str, phi: float, vcl: float, sw: float, md: float) -> dict:
+    """Noise-free log response of one rock sample. Shared with the pipeline."""
+    _, _, _, _, _, gr_clean, rho_ma, dt_ma, m = _ROCK[zone]
+    rho_mat = vcl * _RHO_SH + (1 - vcl) * rho_ma
+    rho_fl = sw * 1.0 + (1 - sw) * _RHO_GAS
+    hydrogen_index = sw + (1 - sw) * 0.3
+    # Raymer-Hunt-Gardner velocity mix, with a mild compaction trend: rock
+    # buried deeper than ~7,500 ft is faster, shallower rock slower.
+    v_mat = 1e6 / (vcl * _DT_SH + (1 - vcl) * dt_ma)
+    v_fl = 1e6 / _DT_FL * (0.75 + 0.25 * sw)          # gas slows the pore fluid
+    v = (1 - phi) ** 2 * v_mat + phi * v_fl
+    v *= 1.07 * (1.0 + 0.035 * (md - 7500.0) / 2500.0)
+    return {
+        "gr":   gr_clean + (_GR_SHALE - gr_clean) * vcl,
+        "rhob": (1 - phi) * rho_mat + phi * rho_fl,
+        "nphi": phi * hydrogen_index + 0.22 * vcl,
+        "dt":   1e6 / v,
+        "rt":   _RW / (max(phi, 0.01) ** m * max(sw, 0.05) ** 2),
+    }
+
+
 def _get_zone(md: float) -> tuple:
     for z in _ZONES:
         if z[1] <= md < z[2]:
@@ -367,23 +414,36 @@ def _gen_log_samples(well_id: str, depth_start: float, depth_end: float, seed: i
             gaps.append((start_idx, start_idx + length))
         gap_ranges[curve] = gaps
 
+    # Per-well offsets so neighbouring wells are similar but not identical.
+    well_phi = rng.gauss(0, 0.012)
+    well_vcl = rng.gauss(0, 0.04)
+    z_phi = z_vcl = z_sw = 0.0
+    innov = math.sqrt(1 - _AR1 ** 2)
+
     rows = []
     for i, md in enumerate(mds):
         z = _get_zone(md)
         (zname, ztop, zbase, gr_mu, gr_sig, logrt_mu, logrt_sig,
          rhob_mu, rhob_sig, nphi_mu, nphi_sig, dt_mu, dt_sig, ztype, pef_mu, sp_mu) = z
+        trend_gr, trend_rhob = gr_mu, rhob_mu   # fallbacks for gap-filled corrected curves
 
-        # Trend: subtle gradual change within zone
-        frac = (md - ztop) / max(zbase - ztop, 1)
-        trend_gr   = gr_mu   + frac * 2
-        trend_rhob = rhob_mu + frac * 0.005
+        # Latent rock: AR(1) in depth, porosity and shale anti-correlated.
+        z_phi = _AR1 * z_phi + innov * rng.gauss(0, 1)
+        z_vcl = _AR1 * z_vcl + innov * (-0.5 * rng.gauss(0, 1) + 0.866 * rng.gauss(0, 1))
+        z_sw = _AR1 * z_sw + innov * rng.gauss(0, 1)
+        phi_mu, phi_s, vcl_mu, vcl_s, sw_mu, *_ = _ROCK[zname]
+        vcl_t = max(0.0, min(1.0, vcl_mu + well_vcl + vcl_s * (z_vcl - 0.4 * z_phi)))
+        phi_t = max(0.005, min(0.40, phi_mu + well_phi + phi_s * z_phi - 0.03 * (vcl_t - vcl_mu)))
+        sw_t = 1.0 if sw_mu >= 1.0 else max(0.08, min(1.0, sw_mu + 0.06 * z_sw + 0.15 * vcl_t))
+        rock = rock_to_logs(zname, phi_t, vcl_t, sw_t, md)
 
-        gr_raw   = max(0.0,  round(trend_gr   + rng.gauss(0, gr_sig),   2))
-        rt_raw   = round(max(0.01, 10 ** (logrt_mu + rng.gauss(0, logrt_sig))), 4)
+        # Tool response = rock + measurement noise.
+        gr_raw   = max(0.0, round(rock["gr"] + rng.gauss(0, 4.0), 2))
+        rt_raw   = round(max(0.01, rock["rt"] * 10 ** rng.gauss(0, 0.06)), 4)
         rxo_raw  = round(max(0.01, rt_raw * rng.uniform(0.4, 1.8)), 4)
-        rhob_raw = round(max(1.50, min(3.0, trend_rhob + rng.gauss(0, rhob_sig))), 4)
-        nphi_raw = round(max(-0.05, min(0.60, nphi_mu + rng.gauss(0, nphi_sig))), 4)
-        dt_raw   = round(max(40.0, min(200.0, dt_mu + rng.gauss(0, dt_sig))), 2) if has_dt else None
+        rhob_raw = round(max(1.50, min(3.0, rock["rhob"] + rng.gauss(0, 0.015))), 4)
+        nphi_raw = round(max(-0.05, min(0.60, rock["nphi"] + rng.gauss(0, 0.012))), 4)
+        dt_raw   = round(max(40.0, min(200.0, rock["dt"] + rng.gauss(0, 1.5))), 2) if has_dt else None
         cali_raw = round(max(4.0, min(18.0, 8.5 + rng.gauss(0, 0.4))), 3)
         sp_raw   = round(sp_mu + rng.gauss(0, 4), 2)
         pef_raw  = round(max(0.1, pef_mu + rng.gauss(0, 0.2)), 3)
