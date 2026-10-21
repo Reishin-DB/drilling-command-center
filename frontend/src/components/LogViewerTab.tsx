@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 
-const WELLS = ['BAKER-001','BAKER-002','CONOCO-7H','MARATHON-15X','SHELL-3D','PIONEER-22S']
+const WELLS = ['SANJUAN-01','SANJUAN-02','GREENRIVER-03','PERMIAN-04','EASTTEXAS-05','PERMIAN-06']
 const PLOT_H = 680
 const DEPTH_W = 54
 
@@ -143,14 +143,14 @@ function LogTrack({ label, subLabel, xMin, xMax, logScale, width, md, depthMin, 
         display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
         padding: '0 4px',
       }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', lineHeight: 1.2 }}>{label}</div>
-        {subLabel && <div style={{ fontSize: 9, color: 'var(--text-muted)', textAlign: 'center', marginTop: 2 }}>{subLabel}</div>}
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', lineHeight: 1.2 }}>{label}</div>
+        {subLabel && <div style={{ fontSize: 13.5, color: 'var(--text-muted)', textAlign: 'center', marginTop: 2 }}>{subLabel}</div>}
         {/* Scale ticks */}
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: 3 }}>
-          <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
             {logScale ? xMin.toExponential(0) : xMin.toFixed(0)}
           </span>
-          <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
             {logScale ? xMax.toExponential(0) : xMax.toFixed(0)}
           </span>
         </div>
@@ -208,7 +208,7 @@ function DepthTrack({ depthMin, depthMax }: { depthMin: number; depthMax: number
         width: DEPTH_W, height: headerH, background: 'var(--bg-card)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700 }}>MD (ft)</span>
+        <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 700 }}>MD (ft)</span>
       </div>
       <svg width={DEPTH_W} height={PLOT_H} style={{ background: '#0d0f14', display: 'block' }}>
         {ticks.map(t => {
@@ -247,7 +247,7 @@ function FormationTrack({ formations, depthMin, depthMax }: {
         width: 90, height: headerH, background: 'var(--bg-card)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700 }}>FORMATION</span>
+        <span style={{ fontSize: 13.5, color: 'var(--text-muted)', fontWeight: 700 }}>FORMATION</span>
       </div>
       <svg width={90} height={PLOT_H} style={{ background: '#0a0b0e', display: 'block', overflow: 'hidden' }}>
         {formations
@@ -327,7 +327,7 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
           <span className="label">WELL</span>
           <select value={wellId} onChange={e => { onWellChange(e.target.value); loadData(e.target.value) }} style={{
             background: 'var(--bg-panel)', border: '1px solid var(--border)', color: 'var(--text-primary)',
-            borderRadius: 5, padding: '4px 8px', fontSize: 12, outline: 'none',
+            borderRadius: 5, padding: '4px 8px', fontSize: 18, outline: 'none',
           }}>
             {WELLS.map(w => <option key={w} value={w}>{w}</option>)}
           </select>
@@ -338,10 +338,10 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
           <span className="label">DEPTH</span>
           <input type="number" value={depthMin} step={100}
             onChange={e => setDepthMin(Number(e.target.value))} style={inputStyle} />
-          <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>–</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: 16.5 }}>–</span>
           <input type="number" value={depthMax} step={100}
             onChange={e => setDepthMax(Number(e.target.value))} style={inputStyle} />
-          <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>ft</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: 16.5 }}>ft</span>
         </div>
 
         {/* Zoom presets */}
@@ -351,7 +351,7 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
               background: window === w ? 'var(--blue-dim)' : 'var(--bg-panel)',
               color: window === w ? 'var(--blue)' : 'var(--text-muted)',
               border: `1px solid ${window === w ? 'var(--blue)' : 'var(--border)'}`,
-              borderRadius: 4, padding: '3px 9px', fontSize: 11,
+              borderRadius: 4, padding: '3px 9px', fontSize: 16.5,
             }}>{w} ft</button>
           ))}
         </div>
@@ -363,7 +363,7 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
               background: mode === m ? 'var(--green-dim)' : 'var(--bg-panel)',
               color: mode === m ? 'var(--green)' : 'var(--text-muted)',
               border: `1px solid ${mode === m ? 'var(--green)' : 'var(--border)'}`,
-              borderRadius: 4, padding: '3px 9px', fontSize: 11, textTransform: 'capitalize',
+              borderRadius: 4, padding: '3px 9px', fontSize: 16.5, textTransform: 'capitalize',
             }}>{m}</button>
           ))}
         </div>
@@ -373,14 +373,14 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
             background: showDerived ? 'var(--gold-dim)' : 'var(--bg-card)',
             color: showDerived ? 'var(--gold)' : 'var(--text-muted)',
             border: `1px solid ${showDerived ? 'var(--gold)' : 'var(--border)'}`,
-            borderRadius: 6, padding: '6px 12px', fontSize: 11, fontWeight: 600,
+            borderRadius: 6, padding: '6px 12px', fontSize: 16.5, fontWeight: 600,
           }}>⭐ Derived curves</button>
         )}
 
         {loading && <span className="spinner" />}
 
         {data && (
-          <div style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>
+          <div style={{ marginLeft: 'auto', fontSize: 16.5, color: 'var(--text-muted)' }}>
             {data.sample_count.toLocaleString()} samples ·
             {data.has_corrected ? ' ✓ Corrected' : ' ⚠ Raw only'} ·
             {data.has_derived   ? ' ⭐ Derived' : ''}
@@ -389,7 +389,7 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
       </div>
 
       {/* Legend */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 11 }}>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 16.5 }}>
         {[
           { color: 'var(--gr-color)',   label: 'GR (API)' },
           { color: 'var(--rt-color)',   label: 'RT (Ω·m)' },
@@ -405,7 +405,7 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
             <span style={{ color: 'var(--text-muted)' }}>{l.label}</span>
           </div>
         ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, fontSize: 10, alignItems: 'center' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, fontSize: 15, alignItems: 'center' }}>
           {[['🔴','Spike (QC=1)'],['🟠','Range (QC=2)'],['🟣','Gap (QC=3)']].map(([d, l]) => (
             <span key={l as string} style={{ color: 'var(--text-muted)' }}>{d} {l as string}</span>
           ))}
@@ -516,9 +516,9 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
                   background: inView ? 'var(--amber-dim)' : 'transparent',
                   color: inView ? 'var(--amber)' : 'var(--text-muted)',
                   border: `1px solid ${inView ? 'var(--amber)' : 'var(--border)'}`,
-                  borderRadius: 4, padding: '3px 9px', fontSize: 11,
+                  borderRadius: 4, padding: '3px 9px', fontSize: 16.5,
                 }}>
-                  {f.formation_name} <span style={{ fontSize: 9, opacity: 0.7 }}>{f.top_md.toFixed(0)} ft</span>
+                  {f.formation_name} <span style={{ fontSize: 13.5, opacity: 0.7 }}>{f.top_md.toFixed(0)} ft</span>
                 </button>
               )
             })}
@@ -532,5 +532,5 @@ export default function LogViewerTab({ wellId, onWellChange }: Props) {
 const inputStyle: React.CSSProperties = {
   background: 'var(--bg-panel)', border: '1px solid var(--border)',
   color: 'var(--text-primary)', borderRadius: 5,
-  padding: '3px 7px', fontSize: 12, width: 72, outline: 'none',
+  padding: '3px 7px', fontSize: 18, width: 72, outline: 'none',
 }

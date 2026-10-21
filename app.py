@@ -114,6 +114,7 @@ from server.routes.genie      import router as genie_router
 from server.routes.subsurface import router as subsurface_router
 from server.routes.supervisor import router as supervisor_router
 from server.routes.geospatial import router as geospatial_router
+from server.routes.equipment  import router as equipment_router
 
 app.include_router(wells_router,      prefix="/api")
 app.include_router(logs_router,       prefix="/api")
@@ -123,6 +124,7 @@ app.include_router(genie_router,      prefix="/api")
 app.include_router(subsurface_router, prefix="/api")
 app.include_router(supervisor_router, prefix="/api")
 app.include_router(geospatial_router, prefix="/api")
+app.include_router(equipment_router,  prefix="/api")
 
 # Serve React SPA
 frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")

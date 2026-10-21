@@ -241,7 +241,7 @@ async def audit_events(limit: int = 12):
             ("operator@energy.com",   "getTable",   "unityCatalog",          200, "adme_osdu.bronze_wellbore"),
             ("analyst@energy.com",    "queryStart", "databrickssql",         200, "wellbore_search_source"),
             ("external@partner.com",  "queryStart", "databrickssql",         403, "row filter: status IN ('gold','corrected')"),
-            ("operator@energy.com",   "updateRow",  "apps",                  200, "journal entry · BAKER-001"),
+            ("operator@energy.com",   "updateRow",  "apps",                  200, "journal entry · SANJUAN-01"),
             ("svc-app@databricks",    "getTable",   "unityCatalog",          200, "gov_legal_tags"),
             ("analyst@energy.com",    "queryStart", "databrickssql",         200, "lat/lon column masked"),
             ("external@partner.com",  "getTable",   "unityCatalog",          403, "ADME legal-tag denied: export-controlled"),

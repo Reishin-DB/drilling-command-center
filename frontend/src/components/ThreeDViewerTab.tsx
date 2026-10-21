@@ -556,10 +556,10 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
           display: 'flex', alignItems: 'center', gap: 12,
         }}>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+            <div style={{ fontWeight: 600, fontSize: 19.5, color: 'var(--text-primary)' }}>
               Subsurface Model · 3D
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>
               Drag to orbit · scroll to zoom · click a well to focus
               {scene && ` · ${scene.wells.length} wells · ${scene.reservoirs.length} reservoirs · ${scene.samples.length} samples`}
             </div>
@@ -567,7 +567,7 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
             {(Object.keys(PROP_COLORSCALES) as PropKey[]).map(k => (
               <button key={k} onClick={() => setProp(k)} style={{
-                padding: '3px 10px', fontSize: 11,
+                padding: '3px 10px', fontSize: 16.5,
                 background: prop === k ? 'var(--teal-dim)' : 'var(--bg-panel)',
                 color: prop === k ? 'var(--teal)' : 'var(--text-muted)',
                 border: `1px solid ${prop === k ? 'var(--teal)' : 'var(--border)'}`,
@@ -575,14 +575,14 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
               }}>{PROP_COLORSCALES[k].label}</button>
             ))}
             <button onClick={() => setShowGeo(g => !g)} style={{
-              padding: '3px 10px', fontSize: 11,
+              padding: '3px 10px', fontSize: 16.5,
               background: showGeo ? 'var(--amber-dim, rgba(243,156,18,0.15))' : 'var(--bg-panel)',
               color: showGeo ? '#F39C12' : 'var(--text-muted)',
               border: `1px solid ${showGeo ? '#F39C12' : 'var(--border)'}`,
               borderRadius: 4, cursor: 'pointer',
             }}>Geology</button>
             <button onClick={() => { setYaw(0.6); setPitch(0.35); setZoom(0.9) }} style={{
-              padding: '3px 10px', fontSize: 11,
+              padding: '3px 10px', fontSize: 16.5,
               background: 'var(--bg-panel)', color: 'var(--text-muted)',
               border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer',
             }}>reset</button>
@@ -654,17 +654,17 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
       <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
         <Panel title="Active well">
           {activeWell ? (
-            <div style={{ fontSize: 12 }}>
+            <div style={{ fontSize: 18 }}>
               <div style={{ fontWeight: 700, color: 'var(--blue)', fontFamily: 'monospace' }}>{activeWell.well_id}</div>
               <div style={{ color: 'var(--text-primary)' }}>{activeWell.well_name}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 4 }}>
                 {activeWell.well_type} · TD {activeWell.total_depth_ft?.toLocaleString()} ft · TVD {Math.round(activeWell.tvd_ft).toLocaleString()} ft
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+              <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 4 }}>
                 {activeWell.lat != null && activeWell.lon != null && `Surface ${activeWell.lat.toFixed(3)}, ${activeWell.lon.toFixed(3)}`}
               </div>
             </div>
-          ) : <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pick a well</div>}
+          ) : <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>Pick a well</div>}
         </Panel>
 
         <Panel title="Reservoirs" subtitle={`${scene?.reservoirs?.length || 0} · live from OSDU`}>
@@ -674,13 +674,13 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
               return (
                 <div key={r.record_id} style={{
                   background: 'var(--bg-panel)', border: '1px solid var(--border)',
-                  borderRadius: 4, padding: '6px 8px', fontSize: 11,
+                  borderRadius: 4, padding: '6px 8px', fontSize: 16.5,
                 }}>
                   <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.name || '—'}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 15 }}>
                     {r.formation} · {Math.round(r.depth_ft).toLocaleString()} ft
                   </div>
-                  <div style={{ color: 'var(--teal)', fontSize: 10, marginTop: 2 }}>
+                  <div style={{ color: 'var(--teal)', fontSize: 15, marginTop: 2 }}>
                     {PROP_COLORSCALES[prop].label}: {typeof value === 'number' ? value.toFixed(1) : '—'} {PROP_COLORSCALES[prop].unit}
                   </div>
                 </div>
@@ -691,21 +691,21 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
 
         <Panel title="Similar wells · Vector Search" subtitle={`top ${similar.length} by semantic match`}>
           {similar.length === 0 ? (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>No matches yet.</div>
+            <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>No matches yet.</div>
           ) : (
             <div style={{ display: 'grid', gap: 6 }}>
               {similar.map(s => (
                 <div key={s.well_key} style={{
                   background: 'var(--bg-panel)', border: '1px solid var(--border)',
-                  borderRadius: 4, padding: '6px 8px', fontSize: 11,
+                  borderRadius: 4, padding: '6px 8px', fontSize: 16.5,
                 }}>
-                  <div style={{ fontFamily: 'monospace', color: 'var(--teal)', fontSize: 11 }}>
+                  <div style={{ fontFamily: 'monospace', color: 'var(--teal)', fontSize: 16.5 }}>
                     {s.well_name || s.well_key.slice(-10)}
                   </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 15, marginTop: 2 }}>
                     {s.platform} · {s.primary_reservoir} · {s.drilling_result}
                   </div>
-                  <div style={{ color: 'var(--blue)', fontSize: 10, marginTop: 2 }}>
+                  <div style={{ color: 'var(--blue)', fontSize: 15, marginTop: 2 }}>
                     score {s.score.toFixed(3)}
                   </div>
                 </div>
@@ -719,7 +719,7 @@ export default function ThreeDViewerTab({ wellId, onWellChange }: { wellId: stri
             {scene?.wells.map(w => (
               <button key={w.well_id} onClick={() => onWellChange(w.well_id)} style={{
                 display: 'block', width: '100%', textAlign: 'left',
-                padding: '4px 8px', fontSize: 11, marginBottom: 2,
+                padding: '4px 8px', fontSize: 16.5, marginBottom: 2,
                 background: w.well_id === wellId ? 'var(--blue-dim)' : 'transparent',
                 color: w.well_id === wellId ? 'var(--blue)' : 'var(--text-secondary)',
                 border: `1px solid ${w.well_id === wellId ? 'var(--blue)' : 'transparent'}`,
@@ -765,8 +765,8 @@ function Panel({ title, subtitle, children }: { title: string; subtitle?: string
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: 14 }}>
       <div style={{ marginBottom: 10 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+        <div style={{ fontWeight: 600, fontSize: 19.5, color: 'var(--text-primary)' }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
       </div>
       {children}
     </div>

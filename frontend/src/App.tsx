@@ -2,6 +2,7 @@ import { useState } from 'react'
 import OverviewTab      from './components/OverviewTab'
 import ThreeDViewerTab  from './components/ThreeDViewerTab'
 import EconomicsTab     from './components/EconomicsTab'
+import EquipmentTab     from './components/EquipmentTab'
 import GovernanceTab    from './components/GovernanceTab'
 import GenieTab         from './components/GenieTab'
 import LogViewerTab     from './components/LogViewerTab'
@@ -19,12 +20,13 @@ const TABS = [
   { id: 'governance', label: '🛡️ Governance' },
   { id: 'genie',      label: '✨ Genie' },
   { id: 'supervisor', label: '🧠 Subsurface Supervisor' },
+  { id: 'equipment',  label: '🔧 Oilfield Equipment' },
   { id: 'dataflow',   label: '🔀 Data Flow' },
 ]
 
 export default function App() {
   const [active, setActive]         = useState('demo')
-  const [activeWell, setActiveWell] = useState('BAKER-001')
+  const [activeWell, setActiveWell] = useState('SANJUAN-01')
 
   const openWell = (wellId: string, tab: string = '3d') => {
     setActiveWell(wellId)
@@ -36,16 +38,16 @@ export default function App() {
       <header style={{
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border)',
-        padding: '0 24px',
-        display: 'flex', alignItems: 'center', gap: 16, height: 54,
+        padding: '10px 24px',
+        display: 'flex', alignItems: 'center', gap: 16, minHeight: 54, flexWrap: 'wrap',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 22 }}>🛢️</span>
+          <span style={{ fontSize: 33 }}>🛢️</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+            <div style={{ fontWeight: 700, fontSize: 22.5, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
               Subsurface Intelligence
             </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>
               OSDU · Unity Catalog · Genie · Foundation Models · Vector Search
             </div>
           </div>
@@ -57,7 +59,7 @@ export default function App() {
               background: active === t.id ? 'var(--bg-panel)' : 'transparent',
               color: active === t.id ? 'var(--text-primary)' : 'var(--text-muted)',
               border: active === t.id ? '1px solid var(--border)' : '1px solid transparent',
-              borderRadius: 6, padding: '4px 13px', fontSize: 12,
+              borderRadius: 6, padding: '4px 13px', fontSize: 18,
               fontWeight: active === t.id ? 600 : 400, cursor: 'pointer',
             }}>
               {t.label}
@@ -70,7 +72,7 @@ export default function App() {
             display: 'inline-flex', alignItems: 'center', gap: 6,
             background: 'var(--green-dim)', color: 'var(--green)',
             border: '1px solid var(--green)', borderRadius: 20,
-            padding: '3px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+            padding: '3px 10px', fontSize: 15, fontWeight: 700, letterSpacing: '0.06em',
           }}>
             <span style={{
               width: 7, height: 7, borderRadius: 4, background: 'var(--green)',
@@ -83,15 +85,15 @@ export default function App() {
             background: 'var(--bg-panel)', border: '1px solid var(--border)',
             borderRadius: 6, padding: '3px 10px',
           }}>
-            <span style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>active well</span>
-            <span style={{ color: 'var(--blue)', fontWeight: 700, fontFamily: 'monospace', fontSize: 11 }}>
+            <span style={{ fontSize: 13.5, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>active well</span>
+            <span style={{ color: 'var(--blue)', fontWeight: 700, fontFamily: 'monospace', fontSize: 16.5 }}>
               {activeWell}
             </span>
           </div>
           <span style={{
             background: 'var(--bg-panel)', color: 'var(--text-muted)',
             border: '1px solid var(--border)', borderRadius: 20,
-            padding: '2px 10px', fontSize: 10, fontFamily: 'monospace',
+            padding: '2px 10px', fontSize: 15, fontFamily: 'monospace',
           }}>
             adme_client_demo
           </span>
@@ -105,6 +107,7 @@ export default function App() {
         {active === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'economics'  && <EconomicsTab    wellId={activeWell} />}
+        {active === 'equipment'  && <EquipmentTab    wellId={activeWell} onWellChange={setActiveWell} />}
         {active === 'governance' && <GovernanceTab />}
         {active === 'genie'      && <GenieTab />}
         {active === 'supervisor' && <SupervisorTab />}

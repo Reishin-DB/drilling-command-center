@@ -125,9 +125,10 @@ const SERVING: NodeDef[] = [
     x: 460, y: 320, w: 150, h: 60,
     color: '#b37feb', badge: 'UC FN',
     detail: [
-      'calculate_npv10()',
-      'calculate_break_even()',
-      'f_wells_within_km() — ST_Distance table fn',
+      'calculate_npv10() · calculate_break_even()',
+      'f_well_profile() — identity + economics + H2S in one call',
+      'f_wells_economic_at_wti() — trusted wells economic at $X',
+      'f_wells_within_km() — great-circle proximity via well_distances',
       'EXECUTE granted to app SP; called by Economics specialist',
     ],
   },
@@ -287,8 +288,8 @@ export default function DataFlowTab() {
         borderRadius: 8, padding: 14,
       }}>
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontWeight: 600, fontSize: 14 }}>Subsurface Intelligence · Data & AI Flow</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <div style={{ fontWeight: 600, fontSize: 21 }}>Subsurface Intelligence · Data & AI Flow</div>
+          <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>
             Click any node to see what it does · orange dashed box = Unity Catalog governance boundary
           </div>
         </div>
@@ -359,29 +360,29 @@ export default function DataFlowTab() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <span style={{
                 padding: '2px 8px', borderRadius: 3, background: sel.color, opacity: 0.85,
-                fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: '#0d0e11',
+                fontSize: 15, fontFamily: 'monospace', fontWeight: 700, color: '#0d0e11',
               }}>{sel.badge}</span>
-              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{sel.label}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>· {sel.sub}</div>
+              <div style={{ fontWeight: 700, fontSize: 22.5, color: 'var(--text-primary)' }}>{sel.label}</div>
+              <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>· {sel.sub}</div>
               <button onClick={() => setSelected(null)} style={{
                 marginLeft: 'auto', background: 'transparent', color: 'var(--text-muted)',
                 border: '1px solid var(--border)', borderRadius: 4, padding: '2px 10px',
-                fontSize: 11, cursor: 'pointer',
+                fontSize: 16.5, cursor: 'pointer',
               }}>Back to overview</button>
             </div>
-            <ul style={{ fontSize: 12, color: 'var(--text-secondary)', paddingLeft: 20, lineHeight: 1.7 }}>
+            <ul style={{ fontSize: 18, color: 'var(--text-secondary)', paddingLeft: 20, lineHeight: 1.7 }}>
               {sel.detail.map((d, i) => <li key={i}>{d}</li>)}
             </ul>
           </>
         ) : (
           <>
-            <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', marginBottom: 10 }}>
+            <div style={{ fontWeight: 600, fontSize: 21, color: 'var(--text-primary)', marginBottom: 10 }}>
               How it works
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
                 { h: '1 · Ingest',       c: 'Operational data (wells, economics, drilling ops, reservoir, WTI) is generated in-process into DuckDB on startup — the app carries its own data, no external source needed.', col: '#27AE60' },
-                { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_distances, gov_legal_tags/entitlements — plus certified UC functions (NPV, break-even, f_wells_within_km).', col: '#CD6116' },
+                { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_h2s_profile, well_equipment_integrity, well_distances, gov_legal_tags/entitlements — plus certified UC functions (NPV, break-even, f_wells_within_km, f_equipment_spec_for_well).', col: '#CD6116' },
                 { h: '3 · Retrieve',     c: 'Vector Search (wellbore_vs_index, gte-large-en) does semantic analog-well matching; Genie owns NL→SQL over the UC tables for the sidebar + the Supervisor.', col: '#4dabf7' },
                 { h: '4 · Omnigent MAS', c: 'The Supervisor PLANS which specialists a question needs and ROUTES to only those (skipped ones dimmed); the engaged ones run in parallel and stream via SSE; it synthesises the verdict.', col: '#00E5FF' },
                 { h: 'Choice · Cost · Governance', c: 'Swap the model at runtime (no redeploy); each run meters real token cost × the model rate; every call is Databricks AI Gateway governed (guardrails, rate limits, multi-endpoint failover) and audit-logged with per-run token + spend visibility in Unity Catalog.', col: '#9254de' },
@@ -393,8 +394,8 @@ export default function DataFlowTab() {
                   borderLeft: `3px solid ${c.col}`, borderRadius: 4,
                   padding: '10px 12px',
                 }}>
-                  <div style={{ fontWeight: 600, fontSize: 12, color: c.col, marginBottom: 4 }}>{c.h}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{c.c}</div>
+                  <div style={{ fontWeight: 600, fontSize: 18, color: c.col, marginBottom: 4 }}>{c.h}</div>
+                  <div style={{ fontSize: 16.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{c.c}</div>
                 </div>
               ))}
             </div>
@@ -411,83 +412,196 @@ export default function DataFlowTab() {
 interface OntCol { name: string; pk?: boolean; fk?: string }
 interface OntEntity { table: string; group: string; cols: OntCol[] }
 const ONT_GROUP_COLOR: Record<string, string> = {
-  HUB: '#4dabf7', ECONOMICS: '#27AE60', REFERENCE: '#F39C12', GOVERNANCE: '#f97316',
+  HUB: '#4dabf7', ECONOMICS: '#27AE60', SAFETY: '#e64980', REFERENCE: '#F39C12', GOVERNANCE: '#f97316',
 }
 const ONT_ENTITIES: OntEntity[] = [
   { table: 'operator_wells', group: 'HUB', cols: [
-    { name: 'well_id', pk: true }, { name: 'basin' }, { name: 'lat / lon' }, { name: 'npv10_musd' },
-    { name: 'wti_break_even' }, { name: 'rop_ft_per_hr' }, { name: 'npt_hours_last_30d' } ] },
-  { table: 'operator_economics_live', group: 'ECONOMICS', cols: [
-    { name: 'well_id', fk: 'operator_wells' }, { name: 'wti_spot' }, { name: 'margin_per_bbl' }, { name: 'economics_state' } ] },
-  { table: 'gold_reservoir', group: 'REFERENCE', cols: [
-    { name: 'reservoir_key', pk: true }, { name: 'field' }, { name: 'formation' }, { name: 'ooip_mm_sm3' } ] },
-  { table: 'gold_rock_and_fluid', group: 'REFERENCE', cols: [
-    { name: 'sample_key', pk: true }, { name: 'wellbore_id' }, { name: 'porosity_frac' }, { name: 'permeability_md' } ] },
+    { name: 'well_id', pk: true }, { name: 'well_name' }, { name: 'basin' }, { name: 'state' },
+    { name: 'well_type' }, { name: 'lat / lon' }, { name: 'total_depth_ft' } ] },
+  { table: 'well_economics', group: 'ECONOMICS', cols: [
+    { name: 'well_id', pk: true, fk: 'operator_wells' }, { name: 'status' }, { name: 'npv10_live_musd' },
+    { name: 'npv10_base_musd' }, { name: 'wti_break_even' }, { name: 'irr_pct' }, { name: 'margin_per_bbl' } ] },
+  { table: 'well_h2s_profile', group: 'SAFETY', cols: [
+    { name: 'well_id', pk: true, fk: 'operator_wells' }, { name: 'h2s_risk_level' }, { name: 'sour_classified' },
+    { name: 'ppe_level' }, { name: 'safety_status' } ] },
+  { table: 'well_equipment_integrity', group: 'SAFETY', cols: [
+    { name: 'well_id', fk: 'operator_wells' }, { name: 'severity_band' }, { name: 'component_name' },
+    { name: 'required_spec' }, { name: 'degradation_mechanism' }, { name: 'upgrade_capex_musd' }, { name: 'upgrade_lead_weeks' } ] },
+  { table: 'well_distances', group: 'REFERENCE', cols: [
+    { name: 'from_well', fk: 'operator_wells' }, { name: 'to_well', fk: 'operator_wells' }, { name: 'km' }, { name: 'same_basin' } ] },
+  { table: 'wellbore_analogs', group: 'REFERENCE', cols: [
+    { name: 'well_key', pk: true }, { name: 'platform' }, { name: 'primary_reservoir' }, { name: 'drilling_result' } ] },
   { table: 'gov_legal_tags', group: 'GOVERNANCE', cols: [
     { name: 'legal_tag_name' }, { name: 'is_valid' }, { name: 'data_partition_id' } ] },
   { table: 'gov_entitlements', group: 'GOVERNANCE', cols: [
-    { name: 'group_id' }, { name: 'group_name' }, { name: 'data_partition_id' } ] },
+    { name: 'group_id' }, { name: 'group_name' }, { name: 'description' } ] },
 ]
 const ONT_METRICS = [
-  { name: 'mv_well_economics', desc: 'NPV, IRR, breakeven, margin by basin/state/field' },
-  { name: 'mv_drilling_ops', desc: 'ROP, NPT, mud weight, health by rig/phase' },
+  { name: 'mv_well_economics', desc: 'NPV10-live, IRR, breakeven, capex, margin, CO2 by well/basin — trusted rows only, live NPV, IRR averaged not summed' },
+  { name: 'mv_well_portfolio', desc: 'Well counts and depth by basin, state, and well type' },
+  { name: 'mv_equipment_integrity', desc: 'Sour-service capex, lead time, and degradation risk by well, basin, severity band, and component' },
 ]
 const ONT_FUNCTIONS = [
-  { name: 'f_well_profile(well_id)', desc: 'Identity, economics, operations for one well' },
-  { name: 'f_high_npt_wells(min_hours)', desc: 'Wells losing time to NPT' },
-  { name: 'f_subeconomic_wells()', desc: 'Wells with breakeven above current WTI' },
+  { name: 'f_well_profile(well_id)', desc: 'Identity + live economics + H2S safety for one well' },
+  { name: 'f_wells_economic_at_wti(wti)', desc: 'Trusted-quality wells economic at a given WTI price' },
+  { name: 'f_wells_within_km(well_id, km)', desc: 'Wells within N km via great-circle well_distances' },
+  { name: 'f_equipment_spec_for_well(well_id)', desc: 'Per-component NACE MR0175 sour-service spec, mechanism, capex, and lead time for one well' },
 ]
+
+// ─── Knowledge-graph nodes/edges (the ontology drawn as a graph) ─────────────
+interface GNode { id: string; label: string; sub: string; x: number; y: number; w: number; h: number; kind: 'hub'|'entity'|'ref'|'gov'|'metric'|'fn'; color: string }
+const G_NODES: GNode[] = [
+  { id: 'operator_wells',   label: 'operator_wells',   sub: 'HUB · well_id PK',        x: 292, y: 210, w: 160, h: 48, kind: 'hub',    color: '#4dabf7' },
+  { id: 'well_economics',   label: 'well_economics',   sub: 'FK → operator_wells',     x: 297, y: 96,  w: 150, h: 40, kind: 'entity', color: '#27AE60' },
+  { id: 'well_h2s_profile', label: 'well_h2s_profile', sub: 'FK → operator_wells',     x: 297, y: 332, w: 150, h: 40, kind: 'entity', color: '#e64980' },
+  { id: 'well_equipment_integrity', label: 'well_equipment_integrity', sub: 'derives from H2S', x: 285, y: 408, w: 174, h: 40, kind: 'entity', color: '#e64980' },
+  { id: 'well_distances',   label: 'well_distances',   sub: 'from/to FK',              x: 78,  y: 214, w: 148, h: 40, kind: 'entity', color: '#F39C12' },
+  { id: 'wellbore_analogs', label: 'wellbore_analogs', sub: 'analogs · Vector Search', x: 78,  y: 100, w: 148, h: 40, kind: 'ref', color: '#F39C12' },
+  { id: 'gov',              label: 'gov_legal_tags / entitlements', sub: 'OSDU governance', x: 62, y: 332, w: 190, h: 40, kind: 'gov', color: '#f97316' },
+  { id: 'mv_well_economics', label: 'mv_well_economics', sub: 'canonical NPV · IRR', x: 618, y: 92,  w: 214, h: 42, kind: 'metric', color: '#2ec26a' },
+  { id: 'mv_well_portfolio', label: 'mv_well_portfolio', sub: 'counts + depth',     x: 618, y: 150, w: 214, h: 42, kind: 'metric', color: '#2ec26a' },
+  { id: 'mv_equipment_integrity', label: 'mv_equipment_integrity', sub: 'sour capex · lead · risk', x: 618, y: 208, w: 214, h: 42, kind: 'metric', color: '#2ec26a' },
+  { id: 'f_well_profile',    label: 'f_well_profile()', sub: 'identity + econ + H2S', x: 618, y: 274, w: 214, h: 40, kind: 'fn', color: '#b37feb' },
+  { id: 'f_wells_economic_at_wti', label: 'f_wells_economic_at_wti()', sub: 'economic at $X WTI', x: 610, y: 330, w: 230, h: 40, kind: 'fn', color: '#b37feb' },
+  { id: 'f_wells_within_km', label: 'f_wells_within_km()', sub: 'proximity', x: 618, y: 386, w: 214, h: 40, kind: 'fn', color: '#b37feb' },
+  { id: 'f_equipment_spec_for_well', label: 'f_equipment_spec_for_well()', sub: 'sour-service spec', x: 604, y: 442, w: 242, h: 40, kind: 'fn', color: '#b37feb' },
+]
+interface GEdge { from: string; to: string; kind: 'fk'|'derives'|'reads'; label: string }
+const G_EDGES: GEdge[] = [
+  { from: 'well_economics',   to: 'operator_wells', kind: 'fk', label: 'FK' },
+  { from: 'well_h2s_profile', to: 'operator_wells', kind: 'fk', label: 'FK' },
+  { from: 'well_distances',   to: 'operator_wells', kind: 'fk', label: 'from/to FK' },
+  { from: 'mv_well_economics', to: 'well_economics', kind: 'derives', label: 'defines over' },
+  { from: 'mv_well_portfolio', to: 'operator_wells', kind: 'derives', label: 'defines over' },
+  { from: 'f_well_profile',    to: 'operator_wells', kind: 'reads', label: 'certified read' },
+  { from: 'f_wells_economic_at_wti', to: 'well_economics', kind: 'reads', label: 'certified read' },
+  { from: 'f_wells_within_km', to: 'well_distances', kind: 'reads', label: 'certified read' },
+  { from: 'well_equipment_integrity', to: 'well_h2s_profile', kind: 'derives', label: 'from H2S' },
+  { from: 'mv_equipment_integrity', to: 'well_equipment_integrity', kind: 'derives', label: 'defines over' },
+  { from: 'f_equipment_spec_for_well', to: 'well_equipment_integrity', kind: 'reads', label: 'certified read' },
+]
+const gById = (id: string) => G_NODES.find(n => n.id === id)!
+const gCenter = (n: GNode): [number, number] => [n.x + n.w / 2, n.y + n.h / 2]
+// point where the center-line crosses node n's border, heading toward (tx,ty)
+function gBorder(n: GNode, tx: number, ty: number): [number, number] {
+  const [cx, cy] = gCenter(n)
+  const dx = tx - cx, dy = ty - cy
+  if (dx === 0 && dy === 0) return [cx, cy]
+  const sx = dx !== 0 ? (n.w / 2) / Math.abs(dx) : Infinity
+  const sy = dy !== 0 ? (n.h / 2) / Math.abs(dy) : Infinity
+  const s = Math.min(sx, sy)
+  return [cx + dx * s, cy + dy * s]
+}
+const G_EDGE_COLOR: Record<GEdge['kind'], string> = { fk: '#4dabf7', derives: '#2ec26a', reads: '#b37feb' }
+
+function OntologyGraph() {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 8px' }}>Knowledge graph · entities → metric views → certified functions</div>
+      <svg viewBox="0 0 900 500" style={{ width: '100%', maxWidth: 820, margin: '0 auto', display: 'block', background: 'var(--bg-primary)', borderRadius: 6, border: '1px solid var(--border)' }}>
+        <defs>
+          <marker id="ontArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#8b949e" />
+          </marker>
+        </defs>
+        {/* governed semantic-layer band on the right */}
+        <rect x="596" y="78" width="290" height="410" fill="#2ec26a" opacity="0.05" rx="10" />
+        <text x="741" y="70" textAnchor="middle" fill="#2ec26a" fontSize="10" fontFamily="monospace" fontWeight="700">GOVERNED SEMANTIC LAYER</text>
+
+        {G_EDGES.map((e, i) => {
+          const a = gById(e.from), b = gById(e.to)
+          const [ax, ay] = gCenter(a), [bx, by] = gCenter(b)
+          const [x1, y1] = gBorder(a, bx, by)
+          const [x2, y2] = gBorder(b, ax, ay)
+          const col = G_EDGE_COLOR[e.kind]
+          const mx = (x1 + x2) / 2, my = (y1 + y2) / 2
+          return (
+            <g key={`ge-${i}`}>
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={col} strokeWidth="1.4"
+                    strokeDasharray={e.kind === 'fk' ? 'none' : '5 4'} markerEnd="url(#ontArrow)" opacity="0.9" />
+              <text x={mx} y={my - 3} textAnchor="middle" fill={col} fontSize="8.5" fontFamily="monospace" opacity="0.95">{e.label}</text>
+            </g>
+          )
+        })}
+
+        {G_NODES.map(n => (
+          <g key={n.id}>
+            <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="7"
+                  fill="var(--bg-card)" stroke={n.color}
+                  strokeWidth={n.kind === 'hub' ? 2.4 : 1.3}
+                  strokeDasharray={n.kind === 'ref' || n.kind === 'gov' ? '4 3' : 'none'} />
+            <circle cx={n.x + 12} cy={n.y + 13} r="4" fill={n.color} />
+            <text x={n.x + n.w / 2} y={n.y + (n.h > 46 ? 24 : 20)} textAnchor="middle" fill="var(--text-primary)"
+                  fontSize={n.kind === 'hub' ? 12.5 : 11.5} fontWeight="700" fontFamily="monospace">{n.label}</text>
+            <text x={n.x + n.w / 2} y={n.y + (n.h > 46 ? 39 : 34)} textAnchor="middle" fill="var(--text-muted)"
+                  fontSize="8.5" fontFamily="monospace">{n.sub}</text>
+          </g>
+        ))}
+      </svg>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 15, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+        <span><span style={{ color: '#4dabf7' }}>──</span> foreign key (RELY)</span>
+        <span><span style={{ color: '#2ec26a' }}>╌╌</span> metric view defines over</span>
+        <span><span style={{ color: '#b37feb' }}>╌╌</span> certified function reads</span>
+        <span style={{ color: '#4dabf7' }}>● hub</span>
+        <span style={{ color: '#F39C12' }}>◌ reference (no FK)</span>
+      </div>
+    </div>
+  )
+}
 
 function OntologyView() {
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: 16 }}>
-      <div style={{ marginBottom: 4 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>Genie Ontology · the context graph</div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontWeight: 600, fontSize: 21, color: 'var(--text-primary)' }}>Genie Ontology · the context graph</div>
+        <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>
           The governed semantic layer Genie reads to answer with confidence: entities and relationships,
           canonical metric definitions, and certified functions. It improves as new questions are added.
         </div>
       </div>
       <div style={{ maxHeight: 440, overflowY: 'auto', marginTop: 12, paddingRight: 4 }}>
-        <div style={{ fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 8px' }}>Entities &amp; relationships</div>
+        <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 8px' }}>Entities &amp; relationships</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
           {ONT_ENTITIES.map(e => (
             <div key={e.table} style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ width: 8, height: 8, borderRadius: 2, background: ONT_GROUP_COLOR[e.group] }} />
-                <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>{e.table}</span>
-                <span style={{ marginLeft: 'auto', fontSize: 9, color: ONT_GROUP_COLOR[e.group], fontWeight: 700 }}>{e.group}</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 18.8, fontWeight: 700, color: 'var(--text-primary)' }}>{e.table}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 13.5, color: ONT_GROUP_COLOR[e.group], fontWeight: 700 }}>{e.group}</span>
               </div>
               <div style={{ padding: '6px 10px' }}>
                 {e.cols.map(c => (
-                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'monospace', color: 'var(--text-secondary)', padding: '2px 0' }}>
+                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 16.5, fontFamily: 'monospace', color: 'var(--text-secondary)', padding: '2px 0' }}>
                     <span>{c.name}</span>
-                    {c.pk && <span style={{ fontSize: 8.5, color: '#F39C12', border: '1px solid #F39C1255', borderRadius: 3, padding: '0 4px' }}>PK</span>}
-                    {c.fk && <span style={{ fontSize: 10, color: '#4dabf7' }}>→ {c.fk}</span>}
+                    {c.pk && <span style={{ fontSize: 12.8, color: '#F39C12', border: '1px solid #F39C1255', borderRadius: 3, padding: '0 4px' }}>PK</span>}
+                    {c.fk && <span style={{ fontSize: 15, color: '#4dabf7' }}>→ {c.fk}</span>}
                   </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Metric views · canonical definitions</div>
+        <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Metric views · canonical definitions</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 }}>
           {ONT_METRICS.map(m => (
             <div key={m.name} style={{ background: 'var(--bg-panel)', border: '1px solid #27AE6044', borderLeft: '3px solid #27AE60', borderRadius: 4, padding: '8px 12px' }}>
-              <div style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: '#27AE60' }}>{m.name}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{m.desc}</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: '#27AE60' }}>{m.name}</div>
+              <div style={{ fontSize: 16.5, color: 'var(--text-secondary)', marginTop: 2 }}>{m.desc}</div>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Certified functions · trusted answers</div>
+        <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Certified functions · trusted answers</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 }}>
           {ONT_FUNCTIONS.map(f => (
             <div key={f.name} style={{ background: 'var(--bg-panel)', border: '1px solid #4dabf744', borderLeft: '3px solid #4dabf7', borderRadius: 4, padding: '8px 12px' }}>
-              <div style={{ fontFamily: 'monospace', fontSize: 11.5, fontWeight: 700, color: '#4dabf7' }}>{f.name}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{f.desc}</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 17.2, fontWeight: 700, color: '#4dabf7' }}>{f.name}</div>
+              <div style={{ fontSize: 16.5, color: 'var(--text-secondary)', marginTop: 2 }}>{f.desc}</div>
             </div>
           ))}
         </div>
+      </div>
+      <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 14 }}>
+        <OntologyGraph />
       </div>
     </div>
   )

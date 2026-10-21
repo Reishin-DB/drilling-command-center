@@ -24,8 +24,8 @@ const SAMPLE_QUESTIONS: { q: string; cat: string }[] = [
   { q: 'Show each well with its live NPV and IRR, sorted by NPV',                cat: 'economics' },
   { q: 'Which basin has the highest total live NPV?',                           cat: 'economics' },
   { q: 'List wells with a break-even WTI under $50',                            cat: 'economics' },
-  { q: 'What is the nearest well to BAKER-001 and how far?',                     cat: 'spacing' },
-  { q: 'How many wells are within 500 km of BAKER-001?',                        cat: 'spacing' },
+  { q: 'What is the nearest well to SANJUAN-01 and how far?',                     cat: 'spacing' },
+  { q: 'How many wells are within 500 km of SANJUAN-01?',                        cat: 'spacing' },
   { q: 'Show all wells with their basin and location',                          cat: 'wells' },
   { q: 'Total CO2 tonnes per year across the fleet',                            cat: 'ESG' },
   { q: 'Rank basins by average break-even WTI',                                 cat: 'economics' },
@@ -123,7 +123,7 @@ export default function GenieTab() {
       {/* Left: sample questions + space info */}
       <div style={{ display: 'grid', gap: 16, position: 'sticky', top: 12 }}>
         <Panel title="Genie space" subtitle={info?.name || 'Subsurface Command — Drilling & Economics'}>
-          <div style={{ display: 'grid', gap: 6, fontSize: 11 }}>
+          <div style={{ display: 'grid', gap: 6, fontSize: 16.5 }}>
             <Row label="Wells"    value="operator_wells (6 NA wells · basin · lat/lon)" />
             <Row label="H2S"      value="well_h2s_profile · h2s_formation_risk (ppm · sour · PPE · NACE/EEBA · monitor alarm)" />
             <Row label="Economics" value="well_economics (NPV base+live · break-even · IRR · payback · CO₂)" />
@@ -133,7 +133,7 @@ export default function GenieTab() {
                target="_blank" rel="noreferrer" style={{
               marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'start',
               background: 'var(--blue-dim)', border: '1px solid var(--blue)', borderRadius: 6,
-              padding: '4px 10px', fontSize: 10.5, color: 'var(--blue)', textDecoration: 'none', fontWeight: 600,
+              padding: '4px 10px', fontSize: 15.8, color: 'var(--blue)', textDecoration: 'none', fontWeight: 600,
             }}>Open Genie ↗</a>
           </div>
         </Panel>
@@ -145,10 +145,10 @@ export default function GenieTab() {
                 textAlign: 'left', padding: '7px 10px', borderRadius: 6,
                 background: 'var(--bg-panel)', color: 'var(--text-secondary)',
                 border: '1px solid var(--border)', cursor: loading ? 'default' : 'pointer',
-                fontSize: 11, lineHeight: 1.4,
+                fontSize: 16.5, lineHeight: 1.4,
               }}>
                 <div>{s.q}</div>
-                <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'monospace' }}>{s.cat}</div>
+                <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'monospace' }}>{s.cat}</div>
               </button>
             ))}
           </div>
@@ -163,7 +163,7 @@ export default function GenieTab() {
           <button onClick={newConv} disabled={loading || msgs.length === 0} style={{
             background: 'var(--bg-panel)', color: 'var(--text-muted)',
             border: '1px solid var(--border)', borderRadius: 4, padding: '3px 10px',
-            fontSize: 10, cursor: msgs.length === 0 || loading ? 'default' : 'pointer',
+            fontSize: 15, cursor: msgs.length === 0 || loading ? 'default' : 'pointer',
           }}>+ New conversation</button>
         }
       >
@@ -172,7 +172,7 @@ export default function GenieTab() {
           display: 'flex', flexDirection: 'column', gap: 12, paddingRight: 4,
         }}>
           {msgs.length === 0 && !loading && (
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '20px 0' }}>
+            <div style={{ fontSize: 18, color: 'var(--text-muted)', padding: '20px 0' }}>
               Genie translates natural-language questions into governed SQL over the operator's wells, economics,
               well spacing, and legal-tag tables in Unity Catalog. Pick a sample on the left or type your own.
               Genie remembers the conversation, so follow-ups work.
@@ -182,7 +182,7 @@ export default function GenieTab() {
           {loading && stage && (
             <div style={{
               background: 'var(--bg-panel)', border: '1px solid var(--border)',
-              borderRadius: 10, padding: '10px 14px', fontSize: 12,
+              borderRadius: 10, padding: '10px 14px', fontSize: 18,
               display: 'flex', alignItems: 'center', gap: 10, maxWidth: 420,
             }}>
               <span style={{
@@ -190,7 +190,7 @@ export default function GenieTab() {
                 background: 'var(--teal)', animation: 'genie-pulse 1.1s infinite',
               }} />
               <span style={{ color: 'var(--teal)', fontWeight: 600 }}>{stage.msg}</span>
-              <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 10 }}>
+              <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 15 }}>
                 {(stage.elapsed_ms / 1000).toFixed(1)}s
               </span>
               <style>{`@keyframes genie-pulse { 0%,100% { opacity:.35 } 50% { opacity:1 } }`}</style>
@@ -208,18 +208,18 @@ export default function GenieTab() {
             disabled={loading} rows={2}
             style={{
               flex: 1, background: 'var(--bg-panel)', border: '1px solid var(--border)',
-              borderRadius: 6, padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)',
+              borderRadius: 6, padding: '10px 12px', fontSize: 19.5, color: 'var(--text-primary)',
               opacity: loading ? 0.6 : 1, resize: 'vertical', fontFamily: 'inherit',
             }}
           />
           {loading ? (
             <button type="button" onClick={cancel} style={{
-              padding: '11px 16px', fontSize: 12, fontWeight: 700, color: 'white',
+              padding: '11px 16px', fontSize: 18, fontWeight: 700, color: 'white',
               background: 'var(--red)', border: 'none', borderRadius: 6, cursor: 'pointer',
             }}>◼ Cancel</button>
           ) : (
             <button type="submit" disabled={!q.trim()} style={{
-              padding: '11px 18px', fontSize: 12, fontWeight: 700,
+              padding: '11px 18px', fontSize: 18, fontWeight: 700,
               background: !q.trim() ? 'var(--bg-panel)' : 'linear-gradient(135deg, #00E5FF, #4dabf7)',
               color: !q.trim() ? 'var(--text-muted)' : '#0d0e11',
               border: 'none', borderRadius: 6, cursor: !q.trim() ? 'default' : 'pointer',
@@ -237,7 +237,7 @@ function MsgBubble({ m }: { m: Msg }) {
       <div style={{
         alignSelf: 'flex-end', maxWidth: '70%',
         background: 'var(--blue-dim)', border: '1px solid var(--blue)',
-        borderRadius: 10, padding: '8px 12px', fontSize: 13, color: 'var(--text-primary)',
+        borderRadius: 10, padding: '8px 12px', fontSize: 19.5, color: 'var(--text-primary)',
       }}>
         {m.text}
       </div>
@@ -246,14 +246,14 @@ function MsgBubble({ m }: { m: Msg }) {
   return (
     <div style={{ alignSelf: 'flex-start', maxWidth: '95%' }}>
       {m.error && (
-        <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', padding: 10, fontSize: 12, borderRadius: 6 }}>
+        <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', padding: 10, fontSize: 18, borderRadius: 6 }}>
           ⚠️ {m.error}
         </div>
       )}
       {m.text && (
         <div style={{
           background: 'var(--bg-panel)', border: '1px solid var(--border)',
-          borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)',
+          borderRadius: 10, padding: '10px 14px', fontSize: 19.5, color: 'var(--text-primary)',
           lineHeight: 1.55, whiteSpace: 'pre-wrap',
         }}>{m.text}</div>
       )}
@@ -262,11 +262,11 @@ function MsgBubble({ m }: { m: Msg }) {
           marginTop: 8,
           background: 'var(--bg-primary)', border: '1px solid var(--border-dim)', borderRadius: 6,
         }}>
-          <summary style={{ cursor: 'pointer', padding: '6px 10px', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
+          <summary style={{ cursor: 'pointer', padding: '6px 10px', fontSize: 16.5, color: 'var(--text-muted)', fontWeight: 600 }}>
             Generated SQL
           </summary>
           <pre style={{
-            margin: 0, padding: '8px 12px', fontFamily: 'monospace', fontSize: 11,
+            margin: 0, padding: '8px 12px', fontFamily: 'monospace', fontSize: 16.5,
             color: 'var(--teal)', whiteSpace: 'pre-wrap', overflowX: 'auto',
           }}>{m.sql}</pre>
         </details>
@@ -276,7 +276,7 @@ function MsgBubble({ m }: { m: Msg }) {
           marginTop: 8, maxHeight: 320, overflow: 'auto',
           border: '1px solid var(--border-dim)', borderRadius: 6,
         }}>
-          <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: 16.5, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-panel)', position: 'sticky', top: 0 }}>
                 {(m.columns || []).map(c => (
@@ -297,14 +297,14 @@ function MsgBubble({ m }: { m: Msg }) {
             </tbody>
           </table>
           {m.rows.length > 100 && (
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', padding: 6, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, color: 'var(--text-muted)', padding: 6, textAlign: 'center' }}>
               + {m.rows.length - 100} more rows
             </div>
           )}
         </div>
       )}
       {m.elapsedMs && (
-        <div style={{ marginTop: 4, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+        <div style={{ marginTop: 4, fontSize: 15, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
           answered in {(m.elapsedMs / 1000).toFixed(1)}s
         </div>
       )}
@@ -320,8 +320,8 @@ function Panel({ title, subtitle, right, children }: { title: string; subtitle?:
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12, gap: 8 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{title}</div>
-          {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+          <div style={{ fontWeight: 600, fontSize: 19.5, color: 'var(--text-primary)' }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
         </div>
         {right}
       </div>
@@ -332,7 +332,7 @@ function Panel({ title, subtitle, right, children }: { title: string; subtitle?:
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 6, fontSize: 11 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 6, fontSize: 16.5 }}>
       <div style={{ color: 'var(--text-muted)' }}>{label}</div>
       <div style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{value}</div>
     </div>

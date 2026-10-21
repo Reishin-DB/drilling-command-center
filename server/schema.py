@@ -246,22 +246,22 @@ _ZONES = [
 
 _WELLS = [
     # well_id, well_name, field, basin, county, state, api, lat, lon, kb_ft, td_ft, spud, type, status, quality, notes
-    ("BAKER-001", "Baker 1-A", "Blanco", "San Juan", "Rio Arriba", "NM",
+    ("SANJUAN-01", "San Juan 01", "Blanco", "San Juan", "Rio Arriba", "NM",
      "30-039-00001", 36.72, -107.58, 5842, 10000, "2022-03-15", "vertical",   "gold",      88,
      "Showcase well: full petrophysical processing and derived curves"),
-    ("BAKER-002", "Baker 2-B", "Blanco", "San Juan", "Rio Arriba", "NM",
+    ("SANJUAN-02", "San Juan 02", "Blanco", "San Juan", "Rio Arriba", "NM",
      "30-039-00002", 36.69, -107.54, 5860, 10000, "2022-06-20", "vertical",   "corrected", 72,
      "Corrections applied; washout zones in Brushy Basin shale affect RHOB/NPHI"),
-    ("CONOCO-7H", "Conoco 7-H", "Wamsutter", "Green River", "Sweetwater", "WY",
+    ("GREENRIVER-03", "Green River 03", "Wamsutter", "Green River", "Sweetwater", "WY",
      "49-037-00701", 41.68,  -107.92, 6105,  9800, "2023-01-10", "horizontal","qc_complete",61,
      "No DT curve available — synthetic sonic needed for geomechanics bundle"),
-    ("MARATHON-15X", "Marathon 15-X", "Midland", "Permian Basin", "Midland", "TX",
+    ("PERMIAN-04", "Permian 04", "Midland", "Permian Basin", "Midland", "TX",
      "42-329-15000", 31.95,  -102.11, 2740, 10000, "2023-09-05", "vertical",   "raw",       0,
      "Freshly ingested — QC not yet run"),
-    ("SHELL-3D", "Shell 3-D", "East Texas", "East Texas", "Nacogdoches", "TX",
+    ("EASTTEXAS-05", "East Texas 05", "East Texas", "East Texas", "Nacogdoches", "TX",
      "42-347-03000", 31.53,  -94.58,  180,  10000, "2021-11-30", "deviated",  "gold",      95,
      "Best-in-class QC; all correction modules applied; full derived curve bundle"),
-    ("PIONEER-22S", "Pioneer 22-S", "Edwards", "Permian Basin", "Irion", "TX",
+    ("PERMIAN-06", "Permian 06", "Edwards", "Permian Basin", "Irion", "TX",
      "42-235-22000", 31.22,  -100.93, 2560,  9800, "2022-08-14", "vertical",  "corrected", 78,
      "Carbonate well; Edwards Lime karst porosity; tight matrix corrections applied"),
 ]
@@ -576,19 +576,19 @@ async def seed_data(conn):
 
     well_configs = [
         # well_id, seed, has_dt, add_spikes
-        ("BAKER-001",   42,  True,  True),
-        ("BAKER-002",   77,  True,  True),
-        ("CONOCO-7H",   13,  False, True),
-        ("MARATHON-15X",99,  True,  True),
-        ("SHELL-3D",    55,  True,  False),
-        ("PIONEER-22S", 31,  True,  True),
+        ("SANJUAN-01",   42,  True,  True),
+        ("SANJUAN-02",   77,  True,  True),
+        ("GREENRIVER-03",   13,  False, True),
+        ("PERMIAN-04",99,  True,  True),
+        ("EASTTEXAS-05",    55,  True,  False),
+        ("PERMIAN-06", 31,  True,  True),
     ]
 
     for wdata in _WELLS:
         (wid, wname, field, basin, county, state, api, lat, lon, kb, td, spud,
          wtype, status, qscore, notes) = wdata
         spud_date = datetime.date.fromisoformat(spud) if spud else None
-        curve_count = 9 if not wid.startswith("CONOCO") else 8
+        curve_count = 9 if not wid.startswith("GREENRIVER") else 8
         await conn.execute(INSERT_WELL,
             wid, wname, field, basin, county, state, api, lat, lon, kb, td,
             spud_date, wtype, status, qscore, curve_count, notes
@@ -616,17 +616,17 @@ async def seed_data(conn):
 
     # ── Seed some anomaly records ────────────────────────────────────────────
     anomalies = [
-        ("BAKER-002",   "rhob_raw", 7520.0, 7540.0, "washout",     "warning",  None,
+        ("SANJUAN-02",   "rhob_raw", 7520.0, 7540.0, "washout",     "warning",  None,
          "Caliper > 12in suggests borehole washout; density unreliable"),
-        ("BAKER-002",   "nphi_raw", 7520.0, 7540.0, "washout",     "warning",  None,
+        ("SANJUAN-02",   "nphi_raw", 7520.0, 7540.0, "washout",     "warning",  None,
          "Washout-induced apparent porosity increase"),
-        ("CONOCO-7H",   "dt_raw",   5000.0, 10000.0,"curve_missing","critical", None,
+        ("GREENRIVER-03",   "dt_raw",   5000.0, 10000.0,"curve_missing","critical", None,
          "No DT acquisition — synthetic sonic required for geomechanics"),
-        ("MARATHON-15X","gr_raw",   8100.0, 8104.0,  "spike",       "warning",  421.5,
+        ("PERMIAN-04","gr_raw",   8100.0, 8104.0,  "spike",       "warning",  421.5,
          "GR spike 421 API at 8100 ft — likely tool noise during connection"),
-        ("MARATHON-15X","rt_raw",   6804.0, 6812.0,  "spike",       "warning",  0.003,
+        ("PERMIAN-04","rt_raw",   6804.0, 6812.0,  "spike",       "warning",  0.003,
          "Resistivity dropout to 0.003 Ω·m — probable mud invasion artifact"),
-        ("PIONEER-22S", "rhob_raw", 6850.0, 6920.0,  "karst",       "warning",  None,
+        ("PERMIAN-06", "rhob_raw", 6850.0, 6920.0,  "karst",       "warning",  None,
          "Karst-related density anomaly in Todilto carbonate"),
     ]
     for a in anomalies:
@@ -637,19 +637,19 @@ async def seed_data(conn):
 
     # ── Seed a couple of processing run history records ──────────────────────
     runs = [
-        ("RUN-001", "BAKER-001",   "STD-PETRO-V1",  "complete",
+        ("RUN-001", "SANJUAN-01",   "STD-PETRO-V1",  "complete",
          datetime.datetime(2024, 3, 10, 8, 0),
          datetime.datetime(2024, 3, 10, 8, 4),
          {"samples": 2501, "spikes_corrected": 5, "gaps_filled": 8, "phi_mean": 0.12, "sw_mean": 0.42}),
-        ("RUN-002", "SHELL-3D",    "HIFI-RSVR-V1",  "complete",
+        ("RUN-002", "EASTTEXAS-05",    "HIFI-RSVR-V1",  "complete",
          datetime.datetime(2024, 5, 18, 14, 0),
          datetime.datetime(2024, 5, 18, 14, 9),
          {"samples": 2501, "spikes_corrected": 0, "gaps_filled": 2, "phi_mean": 0.14, "sw_mean": 0.38}),
-        ("RUN-003", "BAKER-002",   "STD-PETRO-V1",  "complete",
+        ("RUN-003", "SANJUAN-02",   "STD-PETRO-V1",  "complete",
          datetime.datetime(2024, 4, 2, 9, 30),
          datetime.datetime(2024, 4, 2, 9, 33),
          {"samples": 2501, "spikes_corrected": 12, "gaps_filled": 15, "phi_mean": 0.10, "sw_mean": 0.51}),
-        ("RUN-004", "MARATHON-15X","STD-PETRO-V1",  "pending",
+        ("RUN-004", "PERMIAN-04","STD-PETRO-V1",  "pending",
          None, None, {}),
     ]
     for (rid, wid, recipe, status, ts_start, ts_end, metrics) in runs:
@@ -688,12 +688,12 @@ async def seed_data(conn):
     # ── Simulated drilling operations (rig, NPT, supply chain) for NA fleet ────
     drilling_ops = [
         # well_id,        rig,                contractor,    status,       days, npt_30d, csg, phase,     md,    rop, mud,  inc_date,    sev,        incident, supply,   next_csg, esp, pump
-        ("BAKER-001",     "Patterson 314",    "Patterson",   "drilling",     42, 36.5,    3, "production", 9450, 18.4, 9.6, "2026-04-22","minor",    "Hole pack-off at 8120 ft, cleared in 4 hr", "on schedule",     6,  91, 88),
-        ("BAKER-002",     "Patterson 207",    "Patterson",   "drilling",     58, 72.1,    3, "production", 9780, 14.1, 9.8, "2026-05-11","moderate", "Lost circulation in Brushy Basin shale",  "casing delayed", 12,  85, 82),
-        ("CONOCO-7H",     "Helmerich H&P 412","H&P",         "logging",      71, 28.0,    4, "evaluation", 9800, 0.0, 10.2, "2026-03-30","minor",    "Twist-off recovered with overshot",        "on schedule",     0,  93, 90),
-        ("MARATHON-15X",  "Independence 88",  "Independence","spud",          5,  2.5,    1, "surface",     940, 96.2, 8.8, None,         None,       None,                                       "on schedule",     3,  95, 96),
-        ("SHELL-3D",      "Nabors B-12",      "Nabors",      "completion",  108,  6.0,    4, "completion",10000,  0.0, 9.4, "2026-02-14","minor",    "Cement bond log re-run on lateral",        "on schedule",     0,  98, 95),
-        ("PIONEER-22S",   "Patterson 119",    "Patterson",   "drilling",     34, 41.8,    2, "intermediate",6200,16.7, 10.0,"2026-05-02","major",    "BHA failed at 5840 ft; tripped out clean", "BHA delayed",     8,  74, 78),
+        ("SANJUAN-01",     "Rig 314",    "Contractor A",   "drilling",     42, 36.5,    3, "production", 9450, 18.4, 9.6, "2026-04-22","minor",    "Hole pack-off at 8120 ft, cleared in 4 hr", "on schedule",     6,  91, 88),
+        ("SANJUAN-02",     "Rig 207",    "Contractor A",   "drilling",     58, 72.1,    3, "production", 9780, 14.1, 9.8, "2026-05-11","moderate", "Lost circulation in Brushy Basin shale",  "casing delayed", 12,  85, 82),
+        ("GREENRIVER-03",     "Rig 412","Contractor B",         "logging",      71, 28.0,    4, "evaluation", 9800, 0.0, 10.2, "2026-03-30","minor",    "Twist-off recovered with overshot",        "on schedule",     0,  93, 90),
+        ("PERMIAN-04",  "Rig 088",  "Contractor C","spud",          5,  2.5,    1, "surface",     940, 96.2, 8.8, None,         None,       None,                                       "on schedule",     3,  95, 96),
+        ("EASTTEXAS-05",      "Rig B-12",      "Contractor D",      "completion",  108,  6.0,    4, "completion",10000,  0.0, 9.4, "2026-02-14","minor",    "Cement bond log re-run on lateral",        "on schedule",     0,  98, 95),
+        ("PERMIAN-06",   "Rig 119",    "Contractor A",   "drilling",     34, 41.8,    2, "intermediate",6200,16.7, 10.0,"2026-05-02","major",    "BHA failed at 5840 ft; tripped out clean", "BHA delayed",     8,  74, 78),
     ]
     for r in drilling_ops:
         inc_date = None
@@ -725,12 +725,12 @@ async def seed_data(conn):
     # Supervisor's Petrophysics specialist has clean UC-shape data to reason over.
     reservoir_sim = [
         # well_id,         formation,                phi,   k_md, So,   Sw,   net_pay, OOIP, P_psi, T_F, depth_ft, analog,        analog_field
-        ("BAKER-001",     "Mancos / Westwater",      0.182, 145.0, 0.74, 0.22, 78,  18.4, 3200, 168, 9450, "15/9-F-1 A",   "Block 15/9"),
-        ("BAKER-002",     "Mancos / Brushy Basin",   0.155, 88.0,  0.71, 0.25, 62,  14.2, 3260, 172, 9780, "15/9-F-14",    "Block 15/9"),
-        ("CONOCO-7H",     "Lewis Shale / Almond",    0.142, 22.0,  0.66, 0.30, 95,  21.3, 4150, 184, 9800, "34/10-A-1 H",  "Block 34/10"),
-        ("MARATHON-15X",  "Wolfcamp A",              0.084, 0.18,  0.78, 0.20, 110, 28.0, 4900, 192, 9800, "34/10-7",      "Block 34/10"),
-        ("SHELL-3D",      "Woodbine / Tuscaloosa",   0.215, 320.0, 0.82, 0.16, 65,  32.5, 4400, 198, 10000,"15/9-F-11",    "Block 15/9"),
-        ("PIONEER-22S",   "Edwards Lime",            0.108, 2.8,   0.70, 0.27, 84,  19.7, 4250, 188, 9800, "34/10-B-1 H",  "Block 34/10"),
+        ("SANJUAN-01",     "Mancos / Westwater",      0.182, 145.0, 0.74, 0.22, 78,  18.4, 3200, 168, 9450, "15/9-F-1 A",   "Block 15/9"),
+        ("SANJUAN-02",     "Mancos / Brushy Basin",   0.155, 88.0,  0.71, 0.25, 62,  14.2, 3260, 172, 9780, "15/9-F-14",    "Block 15/9"),
+        ("GREENRIVER-03",     "Lewis Shale / Almond",    0.142, 22.0,  0.66, 0.30, 95,  21.3, 4150, 184, 9800, "34/10-A-1 H",  "Block 34/10"),
+        ("PERMIAN-04",  "Wolfcamp A",              0.084, 0.18,  0.78, 0.20, 110, 28.0, 4900, 192, 9800, "34/10-7",      "Block 34/10"),
+        ("EASTTEXAS-05",      "Woodbine / Tuscaloosa",   0.215, 320.0, 0.82, 0.16, 65,  32.5, 4400, 198, 10000,"15/9-F-11",    "Block 15/9"),
+        ("PERMIAN-06",   "Edwards Lime",            0.108, 2.8,   0.70, 0.27, 84,  19.7, 4250, 188, 9800, "34/10-B-1 H",  "Block 34/10"),
     ]
     for r in reservoir_sim:
         await conn.execute(
@@ -750,12 +750,12 @@ async def seed_data(conn):
     # populated immediately at startup) ─────────────────────────────────────────
     operator_econ = [
         # well_id,        capex,opex, peak, decl, BE, NPV10, IRR, payback, CO2
-        ("BAKER-001",     58.0, 4.1, 1800, 18, 42, 28.4, 32.0, 2.8, 2100),
-        ("BAKER-002",     52.0, 3.8, 1500, 20, 48, 14.2, 19.0, 3.8, 1900),
-        ("CONOCO-7H",     72.0, 5.2, 3200, 28, 52, 42.1, 38.0, 2.2, 3400),
-        ("MARATHON-15X",  48.0, 3.5, 1200, 25, 58,  8.6, 14.0, 4.5, 1700),
-        ("SHELL-3D",      65.0, 4.8, 2100, 15, 38, 55.8, 44.0, 2.1, 2400),
-        ("PIONEER-22S",   44.0, 3.2, 1400, 22, 51, 11.2, 17.0, 4.2, 1800),
+        ("SANJUAN-01",     58.0, 4.1, 1800, 18, 42, 28.4, 32.0, 2.8, 2100),
+        ("SANJUAN-02",     52.0, 3.8, 1500, 20, 48, 14.2, 19.0, 3.8, 1900),
+        ("GREENRIVER-03",     72.0, 5.2, 3200, 28, 52, 42.1, 38.0, 2.2, 3400),
+        ("PERMIAN-04",  48.0, 3.5, 1200, 25, 58,  8.6, 14.0, 4.5, 1700),
+        ("EASTTEXAS-05",      65.0, 4.8, 2100, 15, 38, 55.8, 44.0, 2.1, 2400),
+        ("PERMIAN-06",   44.0, 3.2, 1400, 22, 51, 11.2, 17.0, 4.2, 1800),
     ]
     for (wid, capex, opex, rate, decl, be, npv, irr, pb, co2) in operator_econ:
         await conn.execute(

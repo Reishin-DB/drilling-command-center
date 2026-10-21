@@ -73,8 +73,8 @@ QUERIES = [
     {
         "key": "nearest_wells",
         "title": "Nearest offset wells (fn)",
-        "description": "Certified function f_wells_within_km — offset wells within 500 km of BAKER-001 by ST_Distance.",
-        "sql": f"SELECT * FROM {FQS}.f_wells_within_km('BAKER-001', 500)",
+        "description": "Certified function f_wells_within_km — offset wells within 500 km of SANJUAN-01 by ST_Distance.",
+        "sql": f"SELECT * FROM {FQS}.f_wells_within_km('SANJUAN-01', 500)",
     },
 ]
 

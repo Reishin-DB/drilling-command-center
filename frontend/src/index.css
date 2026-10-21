@@ -39,10 +39,11 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 20px;
   -webkit-font-smoothing: antialiased;
-  /* Uniform 1.25x enlargement — scales the base font plus every hardcoded
-     inline pixel size and spacing across the app for better readability. */
+  /* Text enlarged ~1.5x for readability: every inline fontSize was scaled 1.5x
+     and the base font bumped 13 → 20 (≈1.5x). The global zoom stays at 1.25
+     (the established app scale) so text grows relative to the layout. */
   zoom: 1.25;
 }
 

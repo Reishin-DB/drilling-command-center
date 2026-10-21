@@ -12,7 +12,7 @@ interface Msg {
 
 const SAMPLE_QUESTIONS = [
   'Which basin has the highest total live NPV?',
-  'What is the nearest well to BAKER-001 and how far?',
+  'What is the nearest well to SANJUAN-01 and how far?',
   'List wells with a break-even WTI under $50',
   'Total CO2 tonnes per year across the fleet',
   'Which legal tags are valid?',
@@ -104,7 +104,7 @@ export default function GenieSidebar() {
         background: 'linear-gradient(135deg, #00E5FF, #4dabf7)',
         border: 'none', cursor: 'pointer',
         boxShadow: '0 4px 20px rgba(0, 229, 255, 0.35)',
-        fontSize: 22, color: '#0d0e11',
+        fontSize: 33, color: '#0d0e11',
       }} title="Ask Genie">
         {open ? '✕' : '✨'}
       </button>
@@ -125,17 +125,17 @@ export default function GenieSidebar() {
             background: 'var(--bg-panel)',
             display: 'flex', alignItems: 'center', gap: 10,
           }}>
-            <span style={{ fontSize: 18 }}>✨</span>
+            <span style={{ fontSize: 27 }}>✨</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>Genie · ADME Live</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+              <div style={{ fontWeight: 700, fontSize: 19.5, color: 'var(--text-primary)' }}>Genie · ADME Live</div>
+              <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>
                 Operator wells · WTI market · ADME analog data
               </div>
             </div>
             {loading && (
               <button onClick={cancel} style={{
                 background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)',
-                borderRadius: 6, padding: '3px 10px', fontSize: 11, cursor: 'pointer',
+                borderRadius: 6, padding: '3px 10px', fontSize: 16.5, cursor: 'pointer',
               }}>Cancel</button>
             )}
           </div>
@@ -145,12 +145,12 @@ export default function GenieSidebar() {
             flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10,
           }}>
             {msgs.length === 0 && !loading && (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>
                 <div style={{ marginBottom: 10 }}>Ask anything about ADME wellbore, reservoir, rock-and-fluid or governance data. Examples:</div>
                 {SAMPLE_QUESTIONS.map(s => (
                   <button key={s} onClick={() => ask(s)} style={{
                     display: 'block', width: '100%', textAlign: 'left', marginBottom: 6,
-                    padding: '6px 10px', fontSize: 11,
+                    padding: '6px 10px', fontSize: 16.5,
                     background: 'var(--bg-panel)', border: '1px solid var(--border)',
                     borderRadius: 6, color: 'var(--text-secondary)', cursor: 'pointer',
                   }}>{s}</button>
@@ -161,7 +161,7 @@ export default function GenieSidebar() {
             {loading && stage && (
               <div style={{
                 background: 'var(--bg-panel)', border: '1px solid var(--border)',
-                borderRadius: 10, padding: '8px 12px', fontSize: 11, color: 'var(--text-secondary)',
+                borderRadius: 10, padding: '8px 12px', fontSize: 16.5, color: 'var(--text-secondary)',
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
                 <span style={{
@@ -169,7 +169,7 @@ export default function GenieSidebar() {
                   background: 'var(--teal)', animation: 'genie-pulse 1.1s infinite',
                 }} />
                 <span style={{ color: 'var(--teal)', fontWeight: 600 }}>{stage.msg}</span>
-                <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 10 }}>
+                <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 15 }}>
                   {(stage.elapsed_ms / 1000).toFixed(1)}s
                 </span>
                 <style>{`@keyframes genie-pulse { 0%,100% { opacity:.35 } 50% { opacity:1 } }`}</style>
@@ -187,12 +187,12 @@ export default function GenieSidebar() {
               disabled={loading}
               style={{
                 flex: 1, background: 'var(--bg-panel)', border: '1px solid var(--border)',
-                borderRadius: 6, padding: '8px 10px', fontSize: 12, color: 'var(--text-primary)',
+                borderRadius: 6, padding: '8px 10px', fontSize: 18, color: 'var(--text-primary)',
                 opacity: loading ? 0.6 : 1,
               }}
             />
             <button type="submit" disabled={loading || !q.trim()} style={{
-              padding: '0 14px', fontSize: 12, fontWeight: 600,
+              padding: '0 14px', fontSize: 18, fontWeight: 600,
               background: loading || !q.trim() ? 'var(--bg-panel)' : 'linear-gradient(135deg, #00E5FF, #4dabf7)',
               color: loading || !q.trim() ? 'var(--text-muted)' : '#0d0e11',
               border: 'none', borderRadius: 6, cursor: loading ? 'default' : 'pointer',
@@ -210,7 +210,7 @@ function MsgBubble({ m }: { m: Msg }) {
       <div style={{
         alignSelf: 'flex-end', maxWidth: '85%',
         background: 'var(--blue-dim)', border: '1px solid var(--blue)',
-        borderRadius: 10, padding: '6px 10px', fontSize: 12, color: 'var(--text-primary)',
+        borderRadius: 10, padding: '6px 10px', fontSize: 18, color: 'var(--text-primary)',
       }}>
         {m.text}
       </div>
@@ -219,20 +219,20 @@ function MsgBubble({ m }: { m: Msg }) {
   return (
     <div style={{ alignSelf: 'flex-start', maxWidth: '95%' }}>
       {m.error && (
-        <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', padding: 8, fontSize: 11, borderRadius: 6 }}>
+        <div style={{ background: 'var(--red-dim)', border: '1px solid var(--red)', color: 'var(--red)', padding: 8, fontSize: 16.5, borderRadius: 6 }}>
           ⚠️ {m.error}
         </div>
       )}
       {m.text && (
         <div style={{
           background: 'var(--bg-panel)', border: '1px solid var(--border)',
-          borderRadius: 10, padding: '8px 10px', fontSize: 12, color: 'var(--text-primary)',
+          borderRadius: 10, padding: '8px 10px', fontSize: 18, color: 'var(--text-primary)',
           lineHeight: 1.5, whiteSpace: 'pre-wrap',
         }}>{m.text}</div>
       )}
       {m.sql && (
         <div style={{
-          marginTop: 6, padding: '6px 8px', fontFamily: 'monospace', fontSize: 10,
+          marginTop: 6, padding: '6px 8px', fontFamily: 'monospace', fontSize: 15,
           background: 'var(--bg-primary)', color: 'var(--teal)', border: '1px solid var(--border-dim)',
           borderRadius: 6, whiteSpace: 'pre-wrap', overflowX: 'auto',
         }}>{m.sql}</div>
@@ -242,7 +242,7 @@ function MsgBubble({ m }: { m: Msg }) {
           marginTop: 6, maxHeight: 180, overflow: 'auto',
           border: '1px solid var(--border-dim)', borderRadius: 6,
         }}>
-          <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: 15, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-panel)' }}>
                 {(m.columns || []).map(c => (
@@ -263,7 +263,7 @@ function MsgBubble({ m }: { m: Msg }) {
             </tbody>
           </table>
           {m.rows.length > 30 && (
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', padding: 4, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, color: 'var(--text-muted)', padding: 4, textAlign: 'center' }}>
               + {m.rows.length - 30} more
             </div>
           )}

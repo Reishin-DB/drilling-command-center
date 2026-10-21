@@ -37,20 +37,27 @@ interface Visibility { total_tokens: number; usd: number; served_by: Record<stri
 interface GovInfo { gateway: string; guardrails: string[]; audit: string; data: string; model_governed: string; visibility?: Visibility }
 interface ModelOpt { id: string; label: string; family: string; inPerM?: number; outPerM?: number; tier?: string }
 
-const PRESET_QUESTIONS: { q: string; well: string }[] = [
-  { q: 'Should we drill an infill development well next to BAKER-001 in the Mancos / Westwater play?',   well: 'BAKER-001' },
-  { q: 'Is PIONEER-22S worth re-fracking given current WTI and the recent BHA failure?',                  well: 'PIONEER-22S' },
-  { q: 'Should we accelerate the SHELL-3D lateral or hold for the Q3 capex window?',                      well: 'SHELL-3D' },
-  { q: 'What is the economic + ESG case to spud a Wolfcamp A development well near MARATHON-15X?',        well: 'MARATHON-15X' },
-]
+// Preset questions are generated for the CURRENTLY SELECTED well so they always
+// match the operator well in the dropdown. Uses the well's own identity + basin,
+// no hardcoded play details, so it stays correct for any well (renamed or new).
+function presetQuestions(w: WellOpt | undefined): string[] {
+  const name = w?.well_name || w?.well_id || 'this well'
+  const basin = w?.basin ? ` in the ${w.basin} basin` : ''
+  return [
+    `Should we drill an infill development well next to ${name}${basin}?`,
+    `Is ${name} worth re-fracking given current WTI?`,
+    `Should we accelerate the ${name} lateral or hold for the next capex window?`,
+    `What is the full drill-and-complete case for ${name}, including H2S equipment impact?`,
+  ]
+}
 
 type Status = 'idle' | 'running' | 'done' | 'error' | 'skipped'
 
 export default function SupervisorTab() {
   const [info, setInfo]       = useState<SupervisorInfo | null>(null)
   const [wells, setWells]     = useState<WellOpt[]>([])
-  const [question, setQ]      = useState(PRESET_QUESTIONS[0].q)
-  const [wellId, setWellId]   = useState<string>('BAKER-001')
+  const [wellId, setWellId]   = useState<string>('SANJUAN-01')
+  const [question, setQ]      = useState(presetQuestions({ well_id: 'SANJUAN-01', well_name: 'San Juan 01', basin: 'San Juan' })[0])
   const [wti, setWti]         = useState<number>(75)
   const [runMeta, setRunMeta] = useState<{ well_name?: string; basin?: string; formation?: string; analog_well_id?: string; analog_field?: string } | null>(null)
   const [running, setRunning] = useState(false)
@@ -162,10 +169,15 @@ export default function SupervisorTab() {
     setRunning(false)
   }
 
-  const order = ['analogs','petrophysics','economics','regulatory','operations']
-  const specialistsRender = info?.specialists ?
-    order.map(id => info.specialists.find(s => s.id === id)).filter(Boolean) as SpecialistInfo[]
-    : []
+  // Render ALL specialists the backend advertises, in a stable preferred order.
+  // Any agent not in the preference list still shows (appended), so adding a new
+  // specialist server-side never silently hides it here.
+  const order = ['analogs','petrophysics','economics','regulatory','operations','equipment']
+  const specialistsRender = info?.specialists ? (() => {
+    const byPref = order.map(id => info.specialists.find(s => s.id === id)).filter(Boolean) as SpecialistInfo[]
+    const extras = info.specialists.filter(s => !order.includes(s.id))
+    return [...byPref, ...extras]
+  })() : []
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -176,14 +188,14 @@ export default function SupervisorTab() {
         border: '1px solid var(--border)', borderRadius: 10, padding: 18,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-          <span style={{ fontSize: 22 }}>🧠</span>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{info?.name || 'Subsurface Supervisor'}</div>
+          <span style={{ fontSize: 33 }}>🧠</span>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{info?.name || 'Subsurface Supervisor'}</div>
           <span style={{
-            fontSize: 10, fontFamily: 'monospace', padding: '2px 9px', borderRadius: 10,
+            fontSize: 15, fontFamily: 'monospace', padding: '2px 9px', borderRadius: 10,
             background: 'var(--blue-dim)', color: 'var(--blue)', border: '1px solid var(--blue)',
           }}>multi-agent · plans → routes → synthesizes</span>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+        <div style={{ fontSize: 18, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
           Pick one of the operator's NA wells. Five Databricks AI services fire in parallel:
           <b> Vector Search</b> pulls global ADME analogs from the OSDU catalog, <b>Model Serving</b> cross-checks
           petrophysics against the analog, <b>UC Functions</b> rate economics, the <b>ADME legal-tag</b> gate
@@ -197,8 +209,8 @@ export default function SupervisorTab() {
         background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
         padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', color: '#4dabf7' }}>CHOICE · COST · CONTROL</span>
-        <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>pick a model — the Supervisor routes to it, no code change · governed by AI Gateway · price = $/1M tokens:</span>
+        <span style={{ fontSize: 15.8, fontWeight: 700, letterSpacing: '0.05em', color: '#4dabf7' }}>CHOICE · COST · CONTROL</span>
+        <span style={{ fontSize: 15.8, color: 'var(--text-muted)' }}>pick a model — the Supervisor routes to it, no code change · governed by AI Gateway · price = $/1M tokens:</span>
         {(models.length ? models : [{ id: 'databricks-claude-sonnet-4-5', label: 'Claude Sonnet 4.5', family: 'Anthropic', inPerM: 3, outPerM: 15, tier: '$$' }]).map(m => {
           const active = m.id === model
           const tierColor = m.tier === '$$$' ? '#E67E22' : m.tier === '$$' ? '#F39C12' : '#27AE60'
@@ -209,9 +221,9 @@ export default function SupervisorTab() {
               border: `1px solid ${active ? '#4dabf7' : 'var(--border)'}`, borderRadius: 6, padding: '4px 9px',
             }}>
               <span style={{ width: 6, height: 6, borderRadius: 3, background: active ? '#4dabf7' : 'var(--text-muted)' }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: active ? '#4dabf7' : 'var(--text-secondary)' }}>{m.label || MODEL_LABEL[m.id] || m.id}</span>
-              <span style={{ fontSize: 8.5, fontWeight: 700, color: m.family === 'Open' ? '#27AE60' : '#9254de' }}>{m.family || (isOpen(m.id) ? 'Open' : 'Anthropic')}</span>
-              {m.tier && <span style={{ fontSize: 9, fontWeight: 800, color: tierColor, letterSpacing: '0.5px' }}>{m.tier}</span>}
+              <span style={{ fontSize: 16.5, fontWeight: 600, color: active ? '#4dabf7' : 'var(--text-secondary)' }}>{m.label || MODEL_LABEL[m.id] || m.id}</span>
+              <span style={{ fontSize: 12.8, fontWeight: 700, color: m.family === 'Open' ? '#27AE60' : '#9254de' }}>{m.family || (isOpen(m.id) ? 'Open' : 'Anthropic')}</span>
+              {m.tier && <span style={{ fontSize: 13.5, fontWeight: 800, color: tierColor, letterSpacing: '0.5px' }}>{m.tier}</span>}
             </button>
           )
         })}
@@ -228,7 +240,12 @@ export default function SupervisorTab() {
           </div>
           <div>
             <Label>Operator well</Label>
-            <select value={wellId} onChange={e => setWellId(e.target.value)} style={inp(running)} disabled={running}>
+            <select value={wellId} onChange={e => {
+              const id = e.target.value
+              setWellId(id)
+              // Regenerate the question to match the newly selected well.
+              setQ(presetQuestions(wells.find(w => w.well_id === id))[0])
+            }} style={inp(running)} disabled={running}>
               {wells.length === 0 && <option value={wellId}>{wellId}</option>}
               {wells.map(w => (
                 <option key={w.well_id} value={w.well_id}>{w.well_id} · {w.basin || '—'}</option>
@@ -242,24 +259,24 @@ export default function SupervisorTab() {
           <button onClick={running ? cancel : ask} disabled={!running && !question.trim()} style={{
             background: running ? 'var(--red)' : 'var(--blue)',
             color: 'white', border: 'none', borderRadius: 6, padding: '11px 14px',
-            fontSize: 12, fontWeight: 700, cursor: running ? 'pointer' : (question.trim() ? 'pointer' : 'not-allowed'),
+            fontSize: 18, fontWeight: 700, cursor: running ? 'pointer' : (question.trim() ? 'pointer' : 'not-allowed'),
             letterSpacing: '0.02em',
           }}>
             {running ? '◼ Cancel' : '▶ Run supervisor'}
           </button>
         </div>
         <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {PRESET_QUESTIONS.map((p, i) => (
-            <button key={i} onClick={() => { setQ(p.q); setWellId(p.well) }} disabled={running} style={{
-              fontSize: 11, padding: '5px 10px', borderRadius: 12,
+          {presetQuestions(wells.find(w => w.well_id === wellId)).map((q, i) => (
+            <button key={i} onClick={() => setQ(q)} disabled={running} style={{
+              fontSize: 16.5, padding: '5px 10px', borderRadius: 12,
               background: 'var(--bg-panel)', color: 'var(--text-secondary)',
               border: '1px solid var(--border)', cursor: running ? 'default' : 'pointer',
-            }}>{p.q.slice(0, 70)}{p.q.length > 70 ? '…' : ''}</button>
+            }}>{q.slice(0, 70)}{q.length > 70 ? '…' : ''}</button>
           ))}
         </div>
         {runMeta && (runMeta.well_name || runMeta.analog_well_id) && (
           <div style={{
-            marginTop: 10, padding: '8px 12px', fontSize: 11, color: 'var(--text-secondary)',
+            marginTop: 10, padding: '8px 12px', fontSize: 16.5, color: 'var(--text-secondary)',
             background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 6,
             display: 'flex', gap: 14, flexWrap: 'wrap',
           }}>
@@ -268,7 +285,7 @@ export default function SupervisorTab() {
             {runMeta.analog_well_id && <span>ADME analog · <b style={{ color: 'var(--teal)' }}>{runMeta.analog_well_id}</b> ({runMeta.analog_field})</span>}
           </div>
         )}
-        {err && <div style={{ marginTop: 10, color: 'var(--red)', fontSize: 11 }}>⚠ {err}</div>}
+        {err && <div style={{ marginTop: 10, color: 'var(--red)', fontSize: 16.5 }}>⚠ {err}</div>}
       </div>
 
       {/* Orchestration plan — supervisor decided which agents this question needs */}
@@ -278,28 +295,28 @@ export default function SupervisorTab() {
           border: '1px solid #4dabf7', borderRadius: 10, padding: '14px 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.06em', color: '#4dabf7' }}>ORCHESTRATION PLAN</span>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>supervisor decided which agents this question needs</span>
-            {plan.plan_ms != null && <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{plan.plan_ms} ms</span>}
+            <span style={{ fontSize: 15.8, fontWeight: 800, letterSpacing: '0.06em', color: '#4dabf7' }}>ORCHESTRATION PLAN</span>
+            <span style={{ fontSize: 15, color: 'var(--text-muted)' }}>supervisor decided which agents this question needs</span>
+            {plan.plan_ms != null && <span style={{ fontSize: 15, color: 'var(--text-muted)', marginLeft: 'auto' }}>{plan.plan_ms} ms</span>}
           </div>
-          <div style={{ fontSize: 12.5, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: 10 }}>{plan.strategy}</div>
+          <div style={{ fontSize: 18.8, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: 10 }}>{plan.strategy}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--blue-dim)',
-              border: '1px solid #4dabf7', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#4dabf7',
+              border: '1px solid #4dabf7', borderRadius: 8, padding: '4px 10px', fontSize: 16.5, fontWeight: 700, color: '#4dabf7',
             }}>🧠 Supervisor</span>
-            <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>→</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 21 }}>→</span>
             {plan.route.map(r => (
               <span key={r.id} title={r.reason} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 background: r.engage ? 'rgba(39,174,96,0.12)' : 'var(--bg-panel)',
                 border: `1px solid ${r.engage ? 'rgba(39,174,96,0.5)' : 'var(--border)'}`,
-                borderRadius: 8, padding: '4px 10px', fontSize: 11,
+                borderRadius: 8, padding: '4px 10px', fontSize: 16.5,
                 color: r.engage ? '#27AE60' : 'var(--text-muted)',
                 textDecoration: r.engage ? 'none' : 'line-through', opacity: r.engage ? 1 : 0.75,
               }}>
                 {r.engage ? '✓' : '○'} {r.name}
-                {r.reason && <span style={{ fontSize: 9.5, fontWeight: 400, color: r.engage ? 'rgba(39,174,96,0.8)' : 'var(--text-muted)' }}>· {r.reason}</span>}
+                {r.reason && <span style={{ fontSize: 14.2, fontWeight: 400, color: r.engage ? 'rgba(39,174,96,0.8)' : 'var(--text-muted)' }}>· {r.reason}</span>}
               </span>
             ))}
           </div>
@@ -325,42 +342,42 @@ export default function SupervisorTab() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {rec.cost && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: '#F39C12', marginBottom: 8 }}>💰 COST · THIS RUN</div>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.06em', color: '#F39C12', marginBottom: 8 }}>💰 COST · THIS RUN</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: 24, fontWeight: 800, color: '#F39C12' }}>
+                <span style={{ fontSize: 36, fontWeight: 800, color: '#F39C12' }}>
                   {rec.cost.usd < 0.01 ? `${(rec.cost.usd * 100).toFixed(3)}¢` : `$${rec.cost.usd.toFixed(4)}`}
                 </span>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{rec.cost.calls} model call{rec.cost.calls === 1 ? '' : 's'}</span>
+                <span style={{ fontSize: 15, color: 'var(--text-muted)' }}>{rec.cost.calls} model call{rec.cost.calls === 1 ? '' : 's'}</span>
               </div>
-              <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.7, fontFamily: 'monospace' }}>
+              <div style={{ fontSize: 15.8, color: 'var(--text-secondary)', lineHeight: 1.7, fontFamily: 'monospace' }}>
                 <div>in: {rec.cost.prompt_tokens.toLocaleString()} tok × ${rec.cost.in_per_m}/1M</div>
                 <div>out: {rec.cost.completion_tokens.toLocaleString()} tok × ${rec.cost.out_per_m}/1M</div>
               </div>
-              <div style={{ fontSize: 9.5, color: 'var(--text-muted)', marginTop: 6 }}>Switch to a cheaper model above — same orchestration, lower cost per run.</div>
+              <div style={{ fontSize: 14.2, color: 'var(--text-muted)', marginTop: 6 }}>Switch to a cheaper model above — same orchestration, lower cost per run.</div>
             </div>
           )}
           {rec.governance && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: 'var(--teal)', marginBottom: 8 }}>🛡️ GOVERNANCE</div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 6 }}>{rec.governance.gateway}</div>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.06em', color: 'var(--teal)', marginBottom: 8 }}>🛡️ GOVERNANCE</div>
+              <div style={{ fontSize: 17.2, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 6 }}>{rec.governance.gateway}</div>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
                 {rec.governance.guardrails.map(g => (
-                  <span key={g} style={{ fontSize: 9.5, color: 'var(--teal)', background: 'var(--blue-dim)', border: '1px solid var(--border)', borderRadius: 6, padding: '2px 7px' }}>{g}</span>
+                  <span key={g} style={{ fontSize: 14.2, color: 'var(--teal)', background: 'var(--blue-dim)', border: '1px solid var(--border)', borderRadius: 6, padding: '2px 7px' }}>{g}</span>
                 ))}
               </div>
-              <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              <div style={{ fontSize: 15.8, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                 <div>📋 {rec.governance.audit}</div>
                 <div>🔒 {rec.governance.data}</div>
               </div>
               {rec.governance.visibility && (
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed var(--border)' }}>
-                  <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 4 }}>UNIFIED VISIBILITY</div>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 4 }}>UNIFIED VISIBILITY</div>
+                  <div style={{ fontSize: 15.8, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                     <div>📈 {rec.governance.visibility.total_tokens.toLocaleString()} tokens · ${rec.governance.visibility.usd.toFixed(5)} this run</div>
                     <div style={{ color: rec.governance.visibility.fallbacks ? 'var(--amber, #d48806)' : 'var(--text-secondary)' }}>
                       {rec.governance.visibility.fallbacks ? '↪️' : '✅'} {rec.governance.visibility.summary}
                     </div>
-                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>Metrics logged to Unity Catalog by {rec.governance.gateway}.</div>
+                    <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 2 }}>Metrics logged to Unity Catalog by {rec.governance.gateway}.</div>
                   </div>
                 </div>
               )}
@@ -375,8 +392,8 @@ export default function SupervisorTab() {
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16,
       }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>How this works</div>
-        <ol style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>How this works</div>
+        <ol style={{ margin: 0, paddingLeft: 18, fontSize: 16.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
           <li><b>Plan:</b> the supervisor first reasons about your question and routes to only the specialists it needs (shown in the Orchestration Plan). Skipped agents are dimmed.</li>
           <li><b>Fan-out + stream:</b> the engaged specialists run concurrently; results stream to this UI via Server-Sent Events as each completes — no waiting on the slowest.</li>
           <li><b>Synthesise:</b> a final call on the chosen model (<code>{model}</code>) takes the engaged outputs and produces the recommendation with citations.</li>
@@ -414,28 +431,28 @@ function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
         {/* Verdict badge */}
         <div style={{ flexShrink: 0 }}>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+          <div style={{ fontSize: 13.5, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
             Verdict
           </div>
           {hasRec ? (
             <div style={{
               display: 'inline-block', padding: '14px 24px',
               background: style.color, color: 'white',
-              borderRadius: 8, fontSize: 28, fontWeight: 800, letterSpacing: '0.04em',
+              borderRadius: 8, fontSize: 42, fontWeight: 800, letterSpacing: '0.04em',
               boxShadow: `0 4px 24px ${style.bg}`,
             }}>{v}</div>
           ) : (
             <div style={{
               display: 'inline-block', padding: '14px 24px',
               background: 'var(--bg-panel)', border: '1px dashed var(--border)',
-              borderRadius: 8, fontSize: 24, fontWeight: 800, color: 'var(--text-muted)',
+              borderRadius: 8, fontSize: 36, fontWeight: 800, color: 'var(--text-muted)',
             }}>{running ? '…' : '—'}</div>
           )}
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
+          <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 6 }}>
             {hasRec ? style.sub : (running ? 'awaiting specialist results' : 'submit a question to run')}
           </div>
           {hasRec && rec?.model && (
-            <div style={{ fontSize: 10, color: '#4dabf7', marginTop: 4, fontFamily: 'monospace' }}>
+            <div style={{ fontSize: 15, color: '#4dabf7', marginTop: 4, fontFamily: 'monospace' }}>
               model: {rec.model}
             </div>
           )}
@@ -444,17 +461,17 @@ function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; 
         {/* Reasoning */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Supervisor reasoning</div>
-            {hasRec && <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>synthesised in {rec.total_ms}ms</span>}
+            <div style={{ fontSize: 19.5, fontWeight: 700, color: 'var(--text-primary)' }}>Supervisor reasoning</div>
+            {hasRec && <span style={{ fontSize: 15, color: 'var(--text-muted)', fontFamily: 'monospace' }}>synthesised in {rec.total_ms}ms</span>}
           </div>
           {!hasRec && !running && (
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pick a well and submit a question above. The supervisor fans 5 specialists out in parallel then synthesises here.</div>
+            <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>Pick a well and submit a question above. The supervisor fans its specialists out in parallel then synthesises here.</div>
           )}
           {!hasRec && running && (
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Specialists are working… synthesis happens once all 5 land.</div>
+            <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>Specialists are working… synthesis happens once all 5 land.</div>
           )}
           {hasRec && (
-            <div style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+            <div style={{ fontSize: 19.5, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
               {typeof rec.text === 'string' ? rec.text : JSON.stringify(rec.text)}
             </div>
           )}
@@ -486,18 +503,18 @@ function SpecialistCard({ info, status, result }: { info: SpecialistInfo; status
           width: 8, height: 8, borderRadius: 4, background: c.dot,
           animation: status === 'running' ? 'pulse 1.2s infinite' : 'none',
         }} />
-        <div style={{ fontSize: 10, fontFamily: 'monospace', color: c.dot, letterSpacing: '0.04em' }}>{c.label}</div>
+        <div style={{ fontSize: 15, fontFamily: 'monospace', color: c.dot, letterSpacing: '0.04em' }}>{c.label}</div>
       </div>
-      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>{info.name}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>{info.name}</div>
       <span style={{
-        fontSize: 9, fontFamily: 'monospace', padding: '2px 6px', borderRadius: 4, alignSelf: 'flex-start',
+        fontSize: 13.5, fontFamily: 'monospace', padding: '2px 6px', borderRadius: 4, alignSelf: 'flex-start',
         background: 'var(--blue-dim)', color: 'var(--blue)',
       }}>{info.feature}</span>
-      {info.endpoint && <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', wordBreak: 'break-all' }}>{info.endpoint}</div>}
+      {info.endpoint && <div style={{ fontSize: 13.5, color: 'var(--text-muted)', fontFamily: 'monospace', wordBreak: 'break-all' }}>{info.endpoint}</div>}
 
       <div style={{
         flex: 1, marginTop: 4, padding: 8, borderRadius: 4,
-        background: 'var(--bg-panel)', fontSize: 10, color: 'var(--text-secondary)',
+        background: 'var(--bg-panel)', fontSize: 15, color: 'var(--text-secondary)',
         whiteSpace: 'pre-wrap', overflow: 'auto', maxHeight: 280, lineHeight: 1.5,
       }}>
         {status === 'idle'    && <span style={{ color: 'var(--text-muted)' }}>{info.desc || 'awaiting question…'}</span>}
@@ -507,7 +524,7 @@ function SpecialistCard({ info, status, result }: { info: SpecialistInfo; status
         {status === 'error'   && <span style={{ color: 'var(--red)' }}>{result?.error || 'failed'}</span>}
       </div>
       {result?.question && status === 'done' && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', fontStyle: 'italic' }}>Q: {result.question}</div>
+        <div style={{ fontSize: 13.5, color: 'var(--text-muted)', fontStyle: 'italic' }}>Q: {result.question}</div>
       )}
     </div>
   )
@@ -525,17 +542,17 @@ function Skeleton() {
 }
 
 function Label({ children }: { children: any }) {
-  return <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{children}</div>
+  return <div style={{ fontSize: 15, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{children}</div>
 }
 
 const txt = (disabled: boolean): any => ({
   width: '100%', padding: '8px 10px', borderRadius: 6,
   background: 'var(--bg-panel)', color: 'var(--text-primary)',
-  border: '1px solid var(--border)', fontSize: 12, fontFamily: 'inherit',
+  border: '1px solid var(--border)', fontSize: 18, fontFamily: 'inherit',
   resize: 'vertical', opacity: disabled ? 0.6 : 1,
 })
 const inp = (disabled: boolean): any => ({
   width: '100%', padding: '9px 10px', borderRadius: 6,
   background: 'var(--bg-panel)', color: 'var(--text-primary)',
-  border: '1px solid var(--border)', fontSize: 12, opacity: disabled ? 0.6 : 1,
+  border: '1px solid var(--border)', fontSize: 18, opacity: disabled ? 0.6 : 1,
 })

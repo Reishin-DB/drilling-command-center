@@ -110,11 +110,11 @@ export default function GovernanceTab() {
               borderRadius: 6, padding: '10px 12px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 8,
             }}>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{b.label}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{b.detail}</div>
+                <div style={{ fontSize: 16.5, fontWeight: 600, color: 'var(--text-primary)' }}>{b.label}</div>
+                <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 2 }}>{b.detail}</div>
               </div>
               <span style={{
-                fontSize: 10, fontWeight: 700, fontFamily: 'monospace',
+                fontSize: 15, fontWeight: 700, fontFamily: 'monospace',
                 padding: '3px 8px', borderRadius: 10,
                 background: 'var(--green-dim)', color: 'var(--green)', whiteSpace: 'nowrap',
               }}>✓ {b.status}</span>
@@ -131,14 +131,14 @@ export default function GovernanceTab() {
                 background: 'var(--bg-panel)', border: '1px solid var(--border)',
                 borderRadius: 8, padding: 14, position: 'relative',
               }}>
-                <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>STEP {i + 1}</div>
-                <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 14 }}>{s.step}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-primary)', marginTop: 4, fontWeight: 600 }}>{s.title}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>{s.detail}</div>
+                <div style={{ fontSize: 13.5, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>STEP {i + 1}</div>
+                <div style={{ fontWeight: 700, color: 'var(--teal)', fontSize: 21 }}>{s.step}</div>
+                <div style={{ fontSize: 18, color: 'var(--text-primary)', marginTop: 4, fontWeight: 600 }}>{s.title}</div>
+                <div style={{ fontSize: 16.5, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>{s.detail}</div>
                 <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   {s.examples.map(ex => (
                     <span key={ex} style={{
-                      fontSize: 10, padding: '2px 7px', borderRadius: 4,
+                      fontSize: 15, padding: '2px 7px', borderRadius: 4,
                       background: 'var(--bg-card)', color: 'var(--text-muted)',
                       fontFamily: 'monospace',
                     }}>{ex}</span>
@@ -163,10 +163,10 @@ export default function GovernanceTab() {
                   border: `1px solid ${active === p.persona ? 'var(--blue)' : 'var(--border)'}`,
                   borderRadius: 6, cursor: 'pointer',
                 }}>
-                  <div style={{ fontWeight: 600, color: active === p.persona ? 'var(--blue)' : 'var(--text-primary)', fontSize: 13 }}>
+                  <div style={{ fontWeight: 600, color: active === p.persona ? 'var(--blue)' : 'var(--text-primary)', fontSize: 19.5 }}>
                     {p.label}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.4 }}>{p.description}</div>
+                  <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.4 }}>{p.description}</div>
                 </button>
               ))}
             </div>
@@ -183,22 +183,22 @@ export default function GovernanceTab() {
                 <div style={{
                   padding: 8, marginBottom: 10, borderRadius: 6,
                   background: 'var(--amber-dim)', border: '1px solid var(--amber)',
-                  fontSize: 11, color: 'var(--amber)', fontFamily: 'monospace',
+                  fontSize: 16.5, color: 'var(--amber)', fontFamily: 'monospace',
                 }}>
                   Row filter: {view.row_filter}
                 </div>
               )}
               <div style={{ overflow: 'auto', maxHeight: 380 }}>
-                <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', fontSize: 16.5, borderCollapse: 'collapse' }}>
                   <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)' }}>
                     <tr>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>well_id</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>well_name</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>basin</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>status</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>notes</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>lat/lon</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10 }}>API #</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>well_id</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>well_name</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>basin</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>status</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>notes</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>lat/lon</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15 }}>API #</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -224,20 +224,20 @@ export default function GovernanceTab() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <Panel title="ADME legal tags" subtitle={`Live from ${legal?.source || `${'<catalog>'}.<schema>`}.gov_legal_tags`}>
           {!legal ? <Skeleton lines={4} /> : legal.error ? (
-            <div style={{ fontSize: 11, color: 'var(--amber)' }}>⚠️ {legal.error}</div>
+            <div style={{ fontSize: 16.5, color: 'var(--amber)' }}>⚠️ {legal.error}</div>
           ) : legal.legal_tags?.length ? (
             <div style={{ maxHeight: 220, overflow: 'auto' }}>
               {legal.legal_tags.map((t: any, i: number) => (
                 <div key={i} style={{ padding: '6px 8px', borderBottom: '1px solid var(--border-dim)' }}>
-                  <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--teal)' }}>
+                  <div style={{ fontSize: 16.5, fontFamily: 'monospace', color: 'var(--teal)' }}>
                     {t.legal_tag_name} {t.is_valid ? '✓' : '✗'}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t.description}</div>
+                  <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>{t.description}</div>
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>No legal tag data yet</div>
+            <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>No legal tag data yet</div>
           )}
         </Panel>
         <Panel title={`ADME entitlements${legal?.total_groups ? ` (${legal.total_groups})` : ''}`} subtitle="group membership drives ADME record ACL">
@@ -245,13 +245,13 @@ export default function GovernanceTab() {
             <div style={{ maxHeight: 220, overflow: 'auto' }}>
               {legal.entitlement_groups.map((g: any, i: number) => (
                 <div key={i} style={{ padding: '6px 8px', borderBottom: '1px solid var(--border-dim)' }}>
-                  <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--purple)' }}>{g.group_name || g.group_id}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{g.description}</div>
+                  <div style={{ fontSize: 16.5, fontFamily: 'monospace', color: 'var(--purple)' }}>{g.group_name || g.group_id}</div>
+                  <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>{g.description}</div>
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>No entitlement group data yet</div>
+            <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>No entitlement group data yet</div>
           )}
         </Panel>
       </div>
@@ -259,11 +259,11 @@ export default function GovernanceTab() {
       {/* Sensitive columns inventory */}
       <Panel title="Sensitive columns inventory" subtitle="Column-level masking rules enforced by Unity Catalog per persona">
         <div style={{ overflow: 'auto' }}>
-          <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: 16.5, borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 {['Column', 'Classification', 'Masking rule', 'Bound to'].map(h => (
-                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10, borderBottom: '1px solid var(--border)' }}>{h}</th>
+                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15, borderBottom: '1px solid var(--border)' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -287,14 +287,14 @@ export default function GovernanceTab() {
         subtitle={audit?.synthetic ? 'Synthetic demo events · grant SELECT ON system.access.audit to wire live' : `Live · ${audit?.source ?? 'system.access.audit'}`}
       >
         {!audit ? <Skeleton lines={5} /> : audit.events.length === 0 ? (
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>No recent events</div>
+          <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>No recent events</div>
         ) : (
           <div style={{ maxHeight: 280, overflow: 'auto' }}>
-            <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', fontSize: 16.5, borderCollapse: 'collapse' }}>
               <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)' }}>
                 <tr>
                   {['Time', 'Actor', 'Action', 'Service', 'Status', 'Target'].map(h => (
-                    <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 10, borderBottom: '1px solid var(--border)' }}>{h}</th>
+                    <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 15, borderBottom: '1px solid var(--border)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -336,7 +336,7 @@ export default function GovernanceTab() {
               return co2.rows.map(r => {
                 const pct = max ? ((r.co2_kt || 0) / max) * 100 : 0
                 return (
-                  <div key={r.country_code} style={{ display: 'grid', gridTemplateColumns: '180px 1fr 110px', gap: 10, alignItems: 'center', padding: '4px 0', fontSize: 11 }}>
+                  <div key={r.country_code} style={{ display: 'grid', gridTemplateColumns: '180px 1fr 110px', gap: 10, alignItems: 'center', padding: '4px 0', fontSize: 16.5 }}>
                     <span style={{ color: 'var(--text-primary)' }}>
                       <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{r.country_code}</span>{' '}
                       {r.country_name}
@@ -351,13 +351,13 @@ export default function GovernanceTab() {
                 )
               })
             })()}
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
               CO₂ emissions in kilotons, World Bank indicator EN.ATM.CO2E.KT. Same Unity Catalog governance plane as
               the ADME data — grants, tags, and column masks apply uniformly.
             </div>
           </div>
         ) : (
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>
             CO₂ data isn't wired yet. Install the World Bank CO₂ Marketplace listing and grant the app SP SELECT.
           </div>
         )}
@@ -378,9 +378,9 @@ function formatTime(iso: string) {
 function Kpi({ label, value, sub, color }: { label: string; value: any; sub: string; color: string }) {
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 14px' }}>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color, marginTop: 4 }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 33, fontWeight: 700, color, marginTop: 4 }}>{value}</div>
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
     </div>
   )
 }
@@ -440,11 +440,11 @@ function PersonaMaskProof() {
   const Table = ({ title, sub, color, rows, isExt }: { title: string; sub: string; color: string; rows: MaskWell[]; isExt: boolean }) => (
     <div style={{ flex: 1, minWidth: 0, background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${color}`, borderRadius: 6, overflow: 'hidden' }}>
       <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ fontWeight: 700, fontSize: 12.5, color }}>{title}</div>
-        <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>{sub}</div>
+        <div style={{ fontWeight: 700, fontSize: 18.8, color }}>{title}</div>
+        <div style={{ fontSize: 15.8, color: 'var(--text-muted)' }}>{sub}</div>
       </div>
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10.5, fontFamily: 'monospace' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15.8, fontFamily: 'monospace' }}>
           <thead><tr>
             <th style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>well_id</th>
             {MASK_COLS.map(c => <th key={c.label} style={{ textAlign: 'left', padding: '4px 8px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>{c.label}</th>)}
@@ -477,7 +477,7 @@ function PersonaMaskProof() {
         <Table title="Drilling Operator" sub="allowed_fields = all · full PII" color="#27AE60" rows={opWells} isExt={false} />
         <Table title="External Partner (JV)" sub={`lat / lon / api masked · row-filtered${ext ? ` · ${ext.redacted_count ?? 0} rows hidden` : ''}`} color="#E74C3C" rows={opWells} isExt={true} />
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
         Left is the operator view. Right is the JV partner asking the identical question — lat, lon, and API number come back
         masked, and rows outside their entitlement are dropped by the row filter. No app logic decides this at query time; it is
         the Unity Catalog grant bound to the persona, and it applies to Genie's SQL and the Supervisor's tool calls the same way.
@@ -520,8 +520,8 @@ function ControlCostChoice() {
 
         {/* CONTROL */}
         <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.control}`, borderRadius: 4, padding: '12px 14px' }}>
-          <div style={{ fontWeight: 700, fontSize: 12, color: col.control, letterSpacing: '0.04em', marginBottom: 8 }}>CONTROL</div>
-          <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+          <div style={{ fontWeight: 700, fontSize: 18, color: col.control, letterSpacing: '0.04em', marginBottom: 8 }}>CONTROL</div>
+          <ul style={{ margin: 0, paddingLeft: 16, fontSize: 17.2, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
             <li>Safety + PII guardrails on every prompt &amp; response</li>
             <li>Agents run as the user (OBO) — not a privileged SP</li>
             <li>UC row filters + column masks apply to AI answers too</li>
@@ -529,34 +529,34 @@ function ControlCostChoice() {
           </ul>
           <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             {['safety', 'pii_detection', 'OBO', 'UC lineage'].map(t => (
-              <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'var(--bg-card)', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{t}</span>
+              <span key={t} style={{ fontSize: 15, padding: '2px 7px', borderRadius: 4, background: 'var(--bg-card)', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{t}</span>
             ))}
           </div>
         </div>
 
         {/* COST */}
         <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.cost}`, borderRadius: 4, padding: '12px 14px' }}>
-          <div style={{ fontWeight: 700, fontSize: 12, color: col.cost, letterSpacing: '0.04em', marginBottom: 8 }}>COST</div>
+          <div style={{ fontWeight: 700, fontSize: 18, color: col.cost, letterSpacing: '0.04em', marginBottom: 8 }}>COST</div>
           {[
             ['Rate limit', '50 QPM · 100K TPM'],
             ['Pricing', 'pay-per-token · no idle GPU'],
             ['Usage tracking', 'per user + per app'],
             ['Budget alerts', 'on spend thresholds'],
           ].map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, padding: '3px 0', borderBottom: '1px solid var(--border)' }}>
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17.2, padding: '3px 0', borderBottom: '1px solid var(--border)' }}>
               <span style={{ color: 'var(--text-muted)' }}>{k}</span>
               <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{v}</span>
             </div>
           ))}
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 15.8, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
             Enforced + metered by the Databricks AI Gateway. Per-run tokens, spend, and the serving endpoint are logged to Unity Catalog. Same plane governs the SQL warehouse spend.
           </div>
         </div>
 
         {/* CHOICE */}
         <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.choice}`, borderRadius: 4, padding: '12px 14px' }}>
-          <div style={{ fontWeight: 700, fontSize: 12, color: col.choice, letterSpacing: '0.04em', marginBottom: 4 }}>CHOICE</div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 8 }}>Pick the model — the Gateway routes to it, no code change:</div>
+          <div style={{ fontWeight: 700, fontSize: 18, color: col.choice, letterSpacing: '0.04em', marginBottom: 4 }}>CHOICE</div>
+          <div style={{ fontSize: 15.8, color: 'var(--text-muted)', marginBottom: 8 }}>Pick the model — the Gateway routes to it, no code change:</div>
           <div style={{ display: 'grid', gap: 4, maxHeight: 168, overflowY: 'auto' }}>
             {MODEL_CHOICES.map(m => {
               const active = m.id === model
@@ -568,24 +568,24 @@ function ControlCostChoice() {
                 }}>
                   <span style={{ width: 7, height: 7, borderRadius: 4, background: active ? col.choice : 'var(--text-muted)', flexShrink: 0 }} />
                   <span style={{ flex: 1 }}>
-                    <span style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: active ? col.choice : 'var(--text-primary)' }}>{m.label}</span>
-                    <span style={{ display: 'block', fontSize: 9.5, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{m.id} · {m.note}</span>
+                    <span style={{ display: 'block', fontSize: 17.2, fontWeight: 600, color: active ? col.choice : 'var(--text-primary)' }}>{m.label}</span>
+                    <span style={{ display: 'block', fontSize: 14.2, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{m.id} · {m.note}</span>
                   </span>
-                  <span style={{ fontSize: 8.5, color: m.family === 'Open' ? '#27AE60' : '#9254de', fontWeight: 700 }}>{m.family}</span>
+                  <span style={{ fontSize: 12.8, color: m.family === 'Open' ? '#27AE60' : '#9254de', fontWeight: 700 }}>{m.family}</span>
                 </button>
               )
             })}
           </div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 15.8, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
             Active: <span style={{ color: col.choice, fontFamily: 'monospace' }}>{model}</span>{saving ? ' · saving…' : ''} · the Supervisor now calls this endpoint. Anthropic + open-weight, one governed API.
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed var(--border)' }}>
+          <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed var(--border)' }}>
             ↪️ <strong>Failover:</strong> if the active endpoint errors, the Gateway auto-reroutes to a backup model so a run never dies on one provider. New endpoints are discovered + permissioned centrally in Unity Catalog — no per-app config.
           </div>
         </div>
       </div>
 
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 12, lineHeight: 1.5 }}>
         Switch persona below and ask the Genie sidebar the same question — masked columns (lat, lon, api_number) stay
         masked in the AI answer, because the model queries through the user's Unity Catalog grants, not a privileged
         service account.
@@ -601,8 +601,8 @@ function Panel({ title, subtitle, children }: { title: string; subtitle?: string
       padding: 16,
     }}>
       <div style={{ marginBottom: 10 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+        <div style={{ fontWeight: 600, fontSize: 19.5, color: 'var(--text-primary)' }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
       </div>
       {children}
     </div>

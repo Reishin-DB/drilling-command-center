@@ -316,7 +316,7 @@ async def tool_query_genie(question: str) -> str:
 
 class DecideReq(BaseModel):
     question: str
-    well_id:   str = "BAKER-001"      # operator's NA well
+    well_id:   str = "SANJUAN-01"      # operator's NA well
     wti_price: float = 75.0
     # Optional overrides — if not supplied we use las.well_economics for the well
     capex_musd:     float | None = None
@@ -665,38 +665,110 @@ async def specialist_operations(req: DecideReq, ctx: dict) -> dict:
     }
 
 
+async def specialist_equipment(req: DecideReq, ctx: dict) -> dict:
+    """Equipment Integrity / Metallurgy gate. Turns the well's H2S profile into
+    the sour-service equipment consequence: which components degrade, the NACE
+    MR0175 spec they need, the capex premium, the lead time, and the ESP run-life
+    hit. Deterministic (server.equipment) so the tab, Genie, and this agent agree."""
+    t0 = time.time()
+    from ..equipment import assess_well, specialist_text
+    h2s = ctx.get("h2s") or {}
+    well = ctx.get("well") or {}
+    # Fold in identity so the engine can label the well even if the H2S row is thin.
+    h2s = {**h2s, "well_name": well.get("well_name") or h2s.get("well_name"),
+           "basin": well.get("basin") or h2s.get("basin")}
+    assessment = assess_well(well.get("well_id", req.well_id), h2s)
+    return {
+        "id": "equipment",
+        "name": "Equipment Integrity & Metallurgy",
+        "feature": "NACE MR0175 engine · well_h2s_profile",
+        "endpoint": f"{CATALOG}.{SCHEMA}.well_equipment_integrity · f_equipment_spec_for_well",
+        "ms": _ms(t0),
+        "result": specialist_text(assessment),
+    }
+
+
 SPECIALISTS = [
     specialist_analogs,
     specialist_petrophysics,
     specialist_economics,
     specialist_regulatory,
     specialist_operations,
+    specialist_equipment,
 ]
 
 SYNTHESIS_SYSTEM = (
-    "You are the Subsurface Supervisor. Five specialists have returned findings about a single "
+    "You are the Subsurface Supervisor. A team of specialists has returned findings about a single "
     "operator well in North America (with ADME analog data from the ADME global catalog). "
-    "Produce a 1-paragraph recommendation (DRILL · HOLD · DE-SCOPE · ABANDON), then a bullet "
-    "list of the 3 strongest supporting facts and 1 line on the top risk. Always cite specific "
+    "FIRST LINE MUST BE EXACTLY 'VERDICT: X' where X is one of DRILL, HOLD, DE-SCOPE, ABANDON "
+    "(nothing else on that line). Then a 1-paragraph recommendation consistent with that verdict, "
+    "then a bullet list of the 3 strongest supporting facts and 1 line on the top risk. The verdict "
+    "on the first line MUST match what the paragraph recommends. Always cite specific "
     "numbers (NPV, break-even, porosity, perm, NPT hours) and the analog well name. Be terse "
     "and confident. No preamble, no apologies. "
     "SAFETY OVERRIDE: if the HSE gate reports an H2S hazard (sour classification or measured ppm "
     "above the monitor alarm), you MUST call it out explicitly — cite the ppm and required "
     "controls (PPE level, EEBA, continuous monitoring, NACE MR0175) — and make the recommendation "
     "conditional on those controls being in place. A strong economic case never overrides an "
-    "unmitigated H2S hazard."
+    "unmitigated H2S hazard. "
+    "EQUIPMENT IMPACT: if the Equipment Integrity gate reports sour-service upgrades, fold the "
+    "equipment consequence into the recommendation and economics — name the highest-risk "
+    "components and their required specs (e.g. L80 controlled-hardness tubulars, HNBR/Aflas "
+    "elastomers, sour-trim wellhead, upgraded ESP metallurgy), state the added sour-service capex "
+    "and critical-path lead time, and note any ESP run-life impact. Treat that capex + lead time "
+    "as part of the decision, not a footnote."
 )
 
 
 def _extract_verdict(rec_text: str) -> str:
-    """Pull the headline verdict (DRILL · HOLD · DE-SCOPE · ABANDON) from the model output."""
+    """Pull the headline verdict (DRILL · HOLD · DE-SCOPE · ABANDON) from the model output.
+
+    The synthesis prompt requires the first line to be 'VERDICT: X', so we parse
+    THAT line rather than substring-scanning the whole paragraph — otherwise an
+    incidental word (e.g. "do not drill", "drilling operations") would be
+    misread as the verdict and disagree with the recommendation text."""
     if not rec_text:
         return "REVIEW"
-    upper = rec_text.upper()
-    for v in ("DRILL", "DE-SCOPE", "DESCOPE", "HOLD", "ABANDON"):
-        if v in upper:
-            return "DE-SCOPE" if v in ("DE-SCOPE", "DESCOPE") else v
+
+    def canon(tok: str) -> str | None:
+        t = tok.strip().upper().replace("DESCOPE", "DE-SCOPE")
+        return t if t in ("DRILL", "HOLD", "DE-SCOPE", "ABANDON") else None
+
+    # 1) Preferred: explicit "VERDICT: X" line anywhere in the output.
+    for line in rec_text.splitlines():
+        s = line.strip()
+        if s.upper().startswith("VERDICT"):
+            after = s.split(":", 1)[1] if ":" in s else s[len("VERDICT"):]
+            # take the first word after the label
+            word = after.strip().split()[0] if after.strip() else ""
+            v = canon(word)
+            if v:
+                return v
+
+    # 2) Fallback: first verdict keyword that appears as a WHOLE WORD, scanning
+    #    top-to-bottom (the recommendation states its verdict up front).
+    import re
+    for line in rec_text.splitlines():
+        up = line.upper()
+        for v in ("DE-SCOPE", "DESCOPE", "ABANDON", "HOLD", "DRILL"):
+            if re.search(rf"\b{re.escape(v)}\b", up):
+                return "DE-SCOPE" if v in ("DE-SCOPE", "DESCOPE") else v
     return "REVIEW"
+
+
+def _strip_verdict_line(rec_text: str) -> str:
+    """Remove a leading 'VERDICT: X' line so the paragraph reads cleanly under
+    the verdict badge. Only strips it if it's the first non-empty line."""
+    if not rec_text:
+        return rec_text
+    lines = rec_text.splitlines()
+    for i, line in enumerate(lines):
+        if not line.strip():
+            continue
+        if line.strip().upper().startswith("VERDICT"):
+            return "\n".join(lines[i + 1:]).lstrip("\n")
+        break
+    return rec_text
 
 
 # ── Planner / router — the "omnigent" orchestration step ─────────────────────
@@ -708,6 +780,7 @@ SPECIALIST_FN_BY_ID = {
     "economics":    specialist_economics,
     "regulatory":   specialist_regulatory,
     "operations":   specialist_operations,
+    "equipment":    specialist_equipment,
 }
 SPECIALIST_CATALOG = [
     {"id": "analogs",      "name": "Subsurface Analog Retriever", "when": "finding comparable/offset wells or analog fields for the play"},
@@ -715,34 +788,76 @@ SPECIALIST_CATALOG = [
     {"id": "economics",    "name": "Economics Evaluator",         "when": "NPV, break-even, WTI sensitivity, capex/opex, the money case"},
     {"id": "regulatory",   "name": "Regulatory & HSE Gate",       "when": "compliance, legal tags, permits, emissions / ESG, H2S / sour-gas safety, PPE, monitoring, NACE"},
     {"id": "operations",   "name": "Drilling Operations",         "when": "rig, NPT, BHA/casing status, supply chain, execution feasibility"},
+    {"id": "equipment",    "name": "Equipment Integrity & Metallurgy", "when": "equipment/metallurgy impact of H2S/sour service — tubulars, wellhead, packers, ESP, valves/BOP, flowlines, corrosion, degradation, required specs, sour-service capex + lead time"},
 ]
 NAME_BY_ID = {s["id"]: s["name"] for s in SPECIALIST_CATALOG}
 
-PLAN_SYSTEM = (
-    "You are a multi-agent orchestrator for a drilling decision-support system. Given the user's "
-    "question about an operator well, decide which specialist agents to engage to answer it well. "
-    "Engage ONLY the relevant ones (usually 2-4, rarely all 5). Reply with STRICT JSON only, no prose:\n"
-    '{"strategy":"<one-sentence plan>","route":[{"id":"<agent id>","engage":true,"reason":"<max 8 words>"}]}\n'
-    "Include EVERY agent id in route with engage true or false."
-)
+# Count-aware, no hardcoded numbers or "rarely all" bias — the planner engages
+# whatever the question + well data actually calls for, up to all agents.
+def _plan_system() -> str:
+    n = len(SPECIALIST_CATALOG)
+    return (
+        "You are a multi-agent orchestrator for a drilling decision-support system. Given the user's "
+        f"question about an operator well, decide which of the {n} specialist agents to engage. "
+        "Engage every agent whose expertise is relevant to THIS question and well; skip only the ones "
+        "that are clearly not needed. A focused question may need just 2-3 agents; a broad "
+        f"drill/complete decision may legitimately need all {n}. Do not skip an agent to save cost, and "
+        "do not pad with irrelevant ones — decide purely on relevance to the question and the well's data. "
+        "Reply with STRICT JSON only, no prose:\n"
+        '{"strategy":"<one-sentence plan>","route":[{"id":"<agent id>","engage":true,"reason":"<max 8 words>"}]}\n'
+        "Include EVERY agent id in route with engage true or false."
+    )
 
 def _fallback_route() -> list[dict]:
     return [{"id": s["id"], "name": s["name"], "engage": True, "reason": "default engage"} for s in SPECIALIST_CATALOG]
+
+def _coerce_engage(val: Any) -> bool | None:
+    """Read an 'engage' flag from a model that may emit bool, string, or number.
+    Returns None if it can't be interpreted (so we don't guess)."""
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return bool(val)
+    if isinstance(val, str):
+        t = val.strip().lower()
+        if t in ("true", "yes", "y", "1", "engage", "engaged"):
+            return True
+        if t in ("false", "no", "n", "0", "skip", "skipped"):
+            return False
+    return None
+
 
 async def plan_route(req: "DecideReq") -> dict:
     agent_lines = "\n".join(f"- {s['id']} ({s['name']}): engage when {s['when']}." for s in SPECIALIST_CATALOG)
     user = f"QUESTION: {req.question}\nWell: {req.well_id} · WTI ${req.wti_price:.0f}/bbl\n\nAGENTS:\n{agent_lines}"
     try:
-        raw = await asyncio.to_thread(_claude_text, PLAN_SYSTEM, user, 300)
+        raw = await asyncio.to_thread(_claude_text, _plan_system(), user, 400)
         blob = json.loads(raw[raw.index("{"): raw.rindex("}") + 1])
+        model_route = blob.get("route", [])
+        # How many agent ids did the model actually return a readable decision for?
+        # If it gave us almost nothing parseable, that's a real parse failure →
+        # fall back to all agents. If it gave real decisions, HONOR them (that is
+        # the genuine, data-driven routing the demo wants — including all 6).
+        decided = 0
         route = []
         for s in SPECIALIST_CATALOG:
-            found = next((r for r in blob.get("route", []) if r.get("id") == s["id"]), None)
+            found = next((r for r in model_route if isinstance(r, dict) and r.get("id") == s["id"]), None)
+            eng = _coerce_engage(found.get("engage")) if found else None
+            if eng is not None:
+                decided += 1
             route.append({
                 "id": s["id"], "name": s["name"],
-                "engage": bool(found["engage"]) if found and "engage" in found else True,
-                "reason": (str(found.get("reason")) if found else "")[:60] or "relevant to question",
+                # Default a missing/unreadable single agent to engaged (safer to run
+                # than to silently drop), but track that it wasn't a real decision.
+                "engage": eng if eng is not None else True,
+                "reason": (str(found.get("reason")) if found and found.get("reason") else "")[:60]
+                          or ("relevant to question" if (eng is None or eng) else "not needed for this question"),
             })
+        # Only treat as a failed plan (→ engage all) if the model decided for
+        # essentially none of the agents. A valid selective plan is respected.
+        if decided < 2:
+            return {"strategy": "Planner output unclear — engaging all specialists.", "route": _fallback_route()}
+        # Never let a real plan collapse to <2 engaged (a lone agent can't cross-check).
         if sum(1 for r in route if r["engage"]) < 2:
             route = _fallback_route()
         strategy = (str(blob.get("strategy") or "")[:200]) or "Engaging the specialists relevant to this question."
@@ -818,6 +933,7 @@ async def decide(req: DecideReq):
                 {"id": "economics",    "name": "Economics Evaluator",         "feature": "UC Functions"},
                 {"id": "regulatory",   "name": "Regulatory & HSE Gate",       "feature": "Legal Tags · H2S"},
                 {"id": "operations",   "name": "Drilling Operations",         "feature": "Lakebase"},
+                {"id": "equipment",    "name": "Equipment Integrity & Metallurgy", "feature": "NACE MR0175"},
             ],
         })
 
@@ -830,6 +946,11 @@ async def decide(req: DecideReq):
                 if r["id"] == "regulatory" and not r["engage"]:
                     r["engage"] = True
                     r["reason"] = "H2S hazard — HSE gate mandatory"
+                # A sour well also always engages the Equipment Integrity gate:
+                # the metallurgy consequence must never be routed away.
+                if r["id"] == "equipment" and not r["engage"]:
+                    r["engage"] = True
+                    r["reason"] = "sour service — equipment metallurgy mandatory"
         yield _sse("plan", {"strategy": plan["strategy"], "route": plan["route"],
                             "model": _current_model(), "plan_ms": _ms(t0)})
 
@@ -870,6 +991,9 @@ async def decide(req: DecideReq):
         except Exception as e:
             rec = f"(synthesis failed: {e})"
         verdict = _extract_verdict(rec)
+        # The verdict is shown as its own badge in the UI, so strip the leading
+        # "VERDICT: X" line from the paragraph to avoid rendering it twice.
+        rec = _strip_verdict_line(rec)
         model_now = _current_model()
         cost = _cost_for_run(model_now)
         # Unified Visibility — a human line describing which endpoints served the run
@@ -936,6 +1060,7 @@ async def info():
             {"id": "economics",    "name": "Economics Evaluator",         "feature": "UC Functions",          "endpoint": f"{CATALOG}.{SCHEMA}.calculate_npv10 · calculate_break_even", "desc": "Governed NPV₁₀ + break-even + ±$10 WTI sensitivity via Unity Catalog SQL functions."},
             {"id": "regulatory",   "name": "Regulatory & HSE Gate",       "feature": "ADME Legal Tags · H2S",  "endpoint": f"{CATALOG}.{SCHEMA}.gov_legal_tags · well_h2s_profile", "desc": "Legal-tag lookup (ACL inherited from ADME to UC) plus H2S / sour-gas safety gate: ppm vs monitor alarm, sour classification, PPE, NACE/EEBA, audit status."},
             {"id": "operations",   "name": "Drilling Operations",         "feature": "Lakebase · drilling_operations", "endpoint": "las.drilling_operations", "desc": "Rig, NPT, supply-chain, casing status, BHA health from the operator's Lakebase ops feed."},
+            {"id": "equipment",    "name": "Equipment Integrity & Metallurgy", "feature": "NACE MR0175 engine · H2S", "endpoint": f"{CATALOG}.{SCHEMA}.well_equipment_integrity · f_equipment_spec_for_well", "desc": "Turns the well's H2S profile into sour-service equipment impact: per-component degradation (SSC/HIC/corrosion), required NACE MR0175 specs across tubulars, wellhead, packers, ESP, valves/BOP and flowlines, plus added capex, lead time, and ESP run-life."},
         ],
     }
 

@@ -17,8 +17,10 @@ const BUSINESS_CASE = [
 const WHAT_WE_PROVE = [
   'Live OSDU wellbore, reservoir, and economics data lands governed in Unity Catalog — one plane, no ETL sprawl.',
   'Any engineer queries the portfolio in plain English via Genie, now backed by a governed ontology (metric views + certified functions) so answers are consistent and correct.',
-  'The Subsurface Supervisor fans out five specialists and synthesises a recommendation with citations — everyday to technical, in one surface.',
+  'The Subsurface Supervisor fans out its specialists and synthesises a recommendation with citations — everyday to technical, in one surface.',
+  'An H2S finding flows straight into equipment reality: the same governed NACE MR0175 engine drives the Supervisor gate, the Oilfield Equipment tab, and Genie — so the metallurgy, capex, and lead-time answer is identical everywhere.',
   'Governance covers data AND AI: persona row/column masks apply to Genie answers too, because agents run as the user under Unity Catalog.',
+  'The ontology is governed Unity Catalog objects you own (comments, PK/FK graph, metric views, certified functions) — not a proprietary graph in a separate platform you copy data into. That is the wedge vs Cognite.',
 ]
 
 const PLATFORM_PIECES = [
@@ -58,8 +60,8 @@ const STEPS: Step[] = [
   },
   {
     num: 4, title: 'Ask in plain English — ontology-backed Genie', tab: 'Genie', tabId: 'genie', duration: '60s',
-    talkTrack: 'Now the payoff. Ask Genie in plain English — "which basin has the highest total live NPV", or "what is the nearest well to BAKER-001". It answers with governed SQL over the Unity Catalog tables (operator_wells, well_economics, well_distances, gov tables), with the SQL shown. One-click sample questions are on the left, and follow-ups work because it remembers the conversation.',
-    pointAt: ['Natural-language question → governed SQL + result', 'Economics questions over well_economics', 'Spacing/distance questions over well_distances', 'Sample-question chips + conversational follow-ups'],
+    talkTrack: 'Now the payoff. Ask "rank our wells by NPV and show which are economic at 50 dollar WTI." Watch what the ontology enforces without being asked: it uses LIVE NPV (a governed rule, never the original underwriting number), it returns five wells not six because one well\'s data is unverified and the ontology quarantines it automatically, and "economic at 50" correctly means breakeven below 50. A generic chatbot writing SQL from scratch gets one of those wrong and you\'d never know. Click Show SQL — fully auditable, over the governed Unity Catalog tables, because the data never left the platform.',
+    pointAt: ['LIVE NPV used automatically (governed rule, not the base number)', '5 trusted wells not 6 — unverified data quarantined by the ontology', 'Governed SQL shown + lineage back to Unity Catalog', 'Sample-question chips + conversational follow-ups'],
     features: ['Genie', 'Unity Catalog', 'Governed NL→SQL'],
   },
   {
@@ -69,15 +71,21 @@ const STEPS: Step[] = [
     features: ['Omnigent orchestration', 'Choice · Cost · Governance (AI Gateway)', 'Vector Search + UC Functions'],
   },
   {
-    num: 6, title: 'Govern data AND AI', tab: 'Governance', tabId: 'governance', duration: '60s',
+    num: 6, title: 'Turn H2S into an equipment decision', tab: 'Oilfield Equipment', tabId: 'equipment', duration: '60s',
+    talkTrack: 'The Supervisor just flagged H2S. So what does that actually cost us? This tab turns each well\'s governed H2S profile into the equipment consequence, component by component, under NACE MR0175. Pick the sour well: tubulars go from P110 to L80 controlled-hardness against Sulfide Stress Cracking, the wellhead needs sour trim, packer and ESP elastomers move to HNBR/Aflas, flowlines get a corrosion allowance. Each row shows the degradation mechanism, a risk score, the added capex, and the procurement lead time — and the ESP run-life hit if you skip the upgrade. Critically, this is the SAME NACE engine the Supervisor gate and the Genie space use, so the number in the recommendation, the number on this tab, and the answer Genie gives are identical. One governed source of truth, three surfaces.',
+    pointAt: ['Fleet ranked by sour severity; KPI strip (sour wells, sour-service capex, longest lead)', 'Per-component required spec vs baseline, with SSC/HIC/corrosion mechanism', 'Added capex + critical-path lead time per component', 'ESP run-life impact if sour metallurgy is skipped'],
+    features: ['NACE MR0175 engine', 'well_equipment_integrity', 'f_equipment_spec_for_well'],
+  },
+  {
+    num: 7, title: 'Govern data AND AI', tab: 'Governance', tabId: 'governance', duration: '60s',
     talkTrack: 'Switch persona and ask the same question. Masked columns — lat, lon, API number — stay masked in the AI answer, because Genie and the Supervisor run as the user under Unity Catalog, fronted by the AI Gateway. This is governing AI for all users, not just dashboards.',
     pointAt: ['Persona toggle → live row/column masking', 'AI Governance panel (Gateway, guardrails, model choice)', 'OBO agent identity + UC lineage', 'ADME legal tags + entitlements'],
     features: ['Unity Catalog masks', 'Databricks AI Gateway', 'OBO auth'],
   },
   {
-    num: 7, title: 'Show how it\'s built + the context graph', tab: 'Data Flow', tabId: 'dataflow', duration: '45s',
-    talkTrack: 'Finally, the whole stack on one view: OSDU → Bronze → Silver → Gold, Genie and the Supervisor on top, Unity Catalog governing everything. Scroll to the Genie Ontology — the self-improving context graph of entities, relationships, metric views, and certified functions that made step 4 correct.',
-    pointAt: ['Source → medallion → agents flow', 'Unity Catalog governance boundary', 'Genie Ontology context graph', 'Metric views + certified functions'],
+    num: 8, title: 'Show how it\'s built + the context graph', tab: 'Data Flow', tabId: 'dataflow', duration: '45s',
+    talkTrack: 'Finally, the whole stack on one view: OSDU → Bronze → Silver → Gold, Genie and the Supervisor on top, Unity Catalog governing everything. Scroll to the Genie Ontology, the governed context graph that made step 4 correct. operator_wells is the hub; four foreign-key edges bind to it — economics, H2S safety, and the well-distance table on BOTH ends (that\'s how the system knows well spacing is a real relationship). Then the metric views (one canonical NPV definition) and certified functions. This is the point vs Cognite: this ontology is governed objects IN the lakehouse you already own, not a proprietary graph in a second platform you have to copy your data into.',
+    pointAt: ['Source → medallion → agents flow', 'Relationship graph: 4 FK edges into the operator_wells hub', 'Metric views (canonical NPV) + certified functions', 'Ontology = governed UC objects you own, not a separate platform'],
     features: ['Lakeflow', 'Unity Catalog', 'Ontology'],
   },
 ]
@@ -88,6 +96,16 @@ const CLOSING_PIVOTS = [
   { audience: 'Data / Platform', pitch: 'One Databricks platform: ADME/OSDU, Lakeflow, Genie, Foundation Models, Vector Search, AI Gateway, all under Unity Catalog. Governance covers data and AI alike.' },
 ]
 
+// The strategic wedge for a room already being pitched Cognite.
+const VS_COGNITE = [
+  { dim: 'Where the ontology lives', cognite: 'A separate contextualization platform', dbx: 'Native Unity Catalog objects, where your data already is' },
+  { dim: 'Your data', cognite: 'Copied / replicated into their system', dbx: 'One governed copy, no second silo' },
+  { dim: 'The knowledge graph', cognite: 'Proprietary, closed to their tooling', dbx: 'Open objects: tables, PK/FK constraints, metric views, SQL functions' },
+  { dim: 'Governance', cognite: 'A second control plane to reconcile', dbx: 'One plane over data, BI, and AI' },
+  { dim: 'Lock-in', cognite: 'Their platform owns your context', dbx: 'You own the ontology in open formats' },
+]
+const COGNITE_LINE = 'Cognite\'s model: give us a copy of your data, we build the knowledge graph in our platform. That is a second system to license, a second copy to secure, a second place your context gets locked. Databricks flips it: the ontology IS governed objects in the lakehouse you already run. Your context is an asset you own, feeding one AI, one BI layer, one governance model.'
+
 const CY = '#00E5FF', AM = '#F39C12', DBR = '#FF3621'
 
 export default function DemoGuideTab({ onNavigate }: Props) {
@@ -95,20 +113,20 @@ export default function DemoGuideTab({ onNavigate }: Props) {
     <div style={{ maxWidth: 1100, margin: '0 auto', color: 'var(--text-primary)' }}>
       <div style={{ marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 6 }}>
-          <h1 style={{ color: CY, margin: 0, fontSize: 26, fontWeight: 700 }}>Demo Guide</h1>
-          <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>~6 min · 7 steps</span>
+          <h1 style={{ color: CY, margin: 0, fontSize: 39, fontWeight: 700 }}>Demo Guide</h1>
+          <span style={{ color: 'var(--text-muted)', fontSize: 21 }}>~7 min · 8 steps</span>
         </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55, margin: 0, maxWidth: 820 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 21, lineHeight: 1.55, margin: 0, maxWidth: 820 }}>
           A point-and-click script for running the Drilling Command Center demo end-to-end. Read the talk track, click{' '}
           <strong style={{ color: CY }}>Open {'<tab>'}</strong> to jump to the right view, deliver the moment, then come back here for the next step.
         </p>
       </div>
 
       <Panel label="THE SCENE" col={CY}>
-        <div style={{ color: 'var(--text-secondary)', fontSize: 13.5, lineHeight: 1.65, marginBottom: 10 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 20.2, lineHeight: 1.65, marginBottom: 10 }}>
           <strong style={{ color: 'var(--text-primary)' }}>Customer.</strong> {SCENE.customer}
         </div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: 13.5, lineHeight: 1.65 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 20.2, lineHeight: 1.65 }}>
           <strong style={{ color: 'var(--text-primary)' }}>Today.</strong> {SCENE.today}
         </div>
       </Panel>
@@ -117,34 +135,34 @@ export default function DemoGuideTab({ onNavigate }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
           {BUSINESS_CASE.map(b => (
             <div key={b.label} style={{ background: 'var(--bg-panel)', border: `1px solid ${DBR}33`, borderRadius: 6, padding: 12 }}>
-              <div style={{ color: AM, fontSize: 17, fontWeight: 700, marginBottom: 3 }}>{b.metric}</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.4 }}>{b.label}</div>
+              <div style={{ color: AM, fontSize: 25.5, fontWeight: 700, marginBottom: 3 }}>{b.metric}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 18, lineHeight: 1.4 }}>{b.label}</div>
             </div>
           ))}
         </div>
       </Panel>
 
       <Panel label="WHAT WE'LL PROVE" col={CY}>
-        <ol style={{ color: 'var(--text-secondary)', fontSize: 13.5, lineHeight: 1.65, margin: 0, paddingLeft: 20 }}>
+        <ol style={{ color: 'var(--text-secondary)', fontSize: 20.2, lineHeight: 1.65, margin: 0, paddingLeft: 20 }}>
           {WHAT_WE_PROVE.map(p => <li key={p} style={{ marginBottom: 6 }}>{p}</li>)}
         </ol>
       </Panel>
 
       <Panel label="THE DATABRICKS STORY — ONE PLATFORM" col={DBR}>
-        <div style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 12 }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 18, marginBottom: 12 }}>
           Every box below is real Databricks product, wired together and governed end-to-end. Name them as they come up.
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 }}>
           {PLATFORM_PIECES.map(p => (
             <div key={p.name} style={{ background: 'var(--bg-panel)', border: `1px solid ${DBR}44`, borderRadius: 6, padding: 10 }}>
-              <div style={{ color: AM, fontSize: 12.5, fontWeight: 700, marginBottom: 3 }}>{p.name}</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: 11.5, lineHeight: 1.5 }}>{p.role}</div>
+              <div style={{ color: AM, fontSize: 18.8, fontWeight: 700, marginBottom: 3 }}>{p.name}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 17.2, lineHeight: 1.5 }}>{p.role}</div>
             </div>
           ))}
         </div>
       </Panel>
 
-      <div style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700, letterSpacing: 1, margin: '20px 0 12px', paddingLeft: 4 }}>
+      <div style={{ color: 'var(--text-secondary)', fontSize: 18, fontWeight: 700, letterSpacing: 1, margin: '20px 0 12px', paddingLeft: 4 }}>
         ───── THE WALKTHROUGH ─────
       </div>
 
@@ -155,30 +173,30 @@ export default function DemoGuideTab({ onNavigate }: Props) {
         }}>
           <div style={{
             width: 44, height: 44, borderRadius: '50%', background: `${CY}18`, border: `2px solid ${CY}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: CY,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 700, color: CY,
           }}>{step.num}</div>
 
           <div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
-              <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: 16, fontWeight: 600 }}>{step.title}</h3>
-              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>~ {step.duration}</span>
+              <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: 24, fontWeight: 600 }}>{step.title}</h3>
+              <span style={{ color: 'var(--text-muted)', fontSize: 18 }}>~ {step.duration}</span>
             </div>
             <div style={{
               background: 'var(--bg-panel)', borderLeft: `3px solid ${CY}`, padding: '10px 14px', borderRadius: 4,
-              marginBottom: 12, color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55, fontStyle: 'italic',
+              marginBottom: 12, color: 'var(--text-secondary)', fontSize: 19.5, lineHeight: 1.55, fontStyle: 'italic',
             }}>"{step.talkTrack}"</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
-                <div style={{ color: 'var(--text-muted)', fontSize: 10.5, fontWeight: 700, marginBottom: 4, letterSpacing: 0.5 }}>POINT AT</div>
-                <ul style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.6, margin: 0, paddingLeft: 16 }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: 15.8, fontWeight: 700, marginBottom: 4, letterSpacing: 0.5 }}>POINT AT</div>
+                <ul style={{ color: 'var(--text-secondary)', fontSize: 18, lineHeight: 1.6, margin: 0, paddingLeft: 16 }}>
                   {step.pointAt.map(p => <li key={p}>{p}</li>)}
                 </ul>
               </div>
               <div>
-                <div style={{ color: AM, fontSize: 10.5, fontWeight: 700, marginBottom: 4, letterSpacing: 0.5 }}>DATABRICKS</div>
+                <div style={{ color: AM, fontSize: 15.8, fontWeight: 700, marginBottom: 4, letterSpacing: 0.5 }}>DATABRICKS</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   {step.features.map(f => (
-                    <span key={f} style={{ background: `${DBR}18`, border: `1px solid ${DBR}44`, color: AM, fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 3 }}>{f}</span>
+                    <span key={f} style={{ background: `${DBR}18`, border: `1px solid ${DBR}44`, color: AM, fontSize: 15.8, fontWeight: 600, padding: '2px 7px', borderRadius: 3 }}>{f}</span>
                   ))}
                 </div>
               </div>
@@ -187,18 +205,35 @@ export default function DemoGuideTab({ onNavigate }: Props) {
 
           <button onClick={() => onNavigate(step.tabId)} style={{
             background: CY, color: '#08131a', border: 'none', padding: '10px 14px', borderRadius: 6,
-            fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+            fontSize: 19.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
           }}>Open {step.tab} →</button>
         </div>
       ))}
 
+      <Panel label="THE WEDGE — WHY WE BEAT COGNITE" col={DBR} mt>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 18.8, lineHeight: 1.55, margin: '0 0 12px 0' }}>{COGNITE_LINE}</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1.3fr', gap: 0, border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden', fontSize: 17.2 }}>
+          <div style={{ background: 'var(--bg-panel)', padding: '7px 10px', fontWeight: 700, color: 'var(--text-muted)' }}></div>
+          <div style={{ background: 'var(--bg-panel)', padding: '7px 10px', fontWeight: 700, color: 'var(--text-muted)' }}>Cognite</div>
+          <div style={{ background: `${DBR}18`, padding: '7px 10px', fontWeight: 700, color: AM }}>Databricks</div>
+          {VS_COGNITE.map(r => (
+            <div key={r.dim} style={{ display: 'contents' }}>
+              <div style={{ padding: '7px 10px', borderTop: '1px solid var(--border)', color: 'var(--text-primary)', fontWeight: 600 }}>{r.dim}</div>
+              <div style={{ padding: '7px 10px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>{r.cognite}</div>
+              <div style={{ padding: '7px 10px', borderTop: '1px solid var(--border)', background: `${DBR}0d`, color: 'var(--text-secondary)' }}>{r.dbx}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: 15.8, marginTop: 8, fontStyle: 'italic' }}>Cognite claims characterized at the architectural level; verify against current Cognite Data Fusion positioning before presenting.</div>
+      </Panel>
+
       <Panel label="CLOSING — PICK YOUR LANDING" col={CY} mt>
-        <p style={{ color: 'var(--text-muted)', fontSize: 12.5, margin: '0 0 12px 0' }}>End on the pivot that matches who's in the room:</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 18.8, margin: '0 0 12px 0' }}>End on the pivot that matches who's in the room:</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
           {CLOSING_PIVOTS.map(p => (
             <div key={p.audience} style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 6, padding: 14 }}>
-              <div style={{ color: CY, fontSize: 12.5, fontWeight: 700, marginBottom: 6 }}>{p.audience}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: 12.5, lineHeight: 1.55 }}>{p.pitch}</div>
+              <div style={{ color: CY, fontSize: 18.8, fontWeight: 700, marginBottom: 6 }}>{p.audience}</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: 18.8, lineHeight: 1.55 }}>{p.pitch}</div>
             </div>
           ))}
         </div>
@@ -210,7 +245,7 @@ export default function DemoGuideTab({ onNavigate }: Props) {
 function Panel({ label, col, children, mt }: { label: string; col: string; children: React.ReactNode; mt?: boolean }) {
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: 18, marginBottom: 12, marginTop: mt ? 20 : 0 }}>
-      <div style={{ color: col, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, marginBottom: 10 }}>{label}</div>
+      <div style={{ color: col, fontSize: 18, fontWeight: 700, letterSpacing: 0.5, marginBottom: 10 }}>{label}</div>
       {children}
     </div>
   )

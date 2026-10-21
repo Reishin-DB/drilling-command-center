@@ -79,11 +79,11 @@ export default function EconomicsTab({ wellId }: { wellId: string }) {
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={priceSeries} margin={{ left: -6, right: 6, top: 6, bottom: 0 }}>
             <CartesianGrid stroke="var(--border-dim)" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} minTickGap={50} />
-            <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} domain={['auto', 'auto']} width={44} />
-            <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 12 }} />
+            <XAxis dataKey="date" tick={{ fontSize: 15, fill: 'var(--text-muted)' }} minTickGap={50} />
+            <YAxis tick={{ fontSize: 15, fill: 'var(--text-muted)' }} domain={['auto', 'auto']} width={44} />
+            <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 18 }} />
             <Line type="monotone" dataKey="price" stroke="var(--gold)" strokeWidth={1.6} dot={false} />
-            <ReferenceLine y={data.wti_spot} stroke="var(--green)" strokeDasharray="4 4" label={{ value: `spot $${data.wti_spot.toFixed(0)}`, fill: 'var(--green)', fontSize: 10 }} />
+            <ReferenceLine y={data.wti_spot} stroke="var(--green)" strokeDasharray="4 4" label={{ value: `spot $${data.wti_spot.toFixed(0)}`, fill: 'var(--green)', fontSize: 15 }} />
           </LineChart>
         </ResponsiveContainer>
       </Panel>
@@ -93,9 +93,9 @@ export default function EconomicsTab({ wellId }: { wellId: string }) {
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={topNpv} margin={{ left: -6, right: 10, top: 10, bottom: 30 }}>
               <CartesianGrid stroke="var(--border-dim)" vertical={false} />
-              <XAxis dataKey="well_id" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} angle={-35} textAnchor="end" interval={0} height={50} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-              <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 12 }} />
+              <XAxis dataKey="well_id" tick={{ fontSize: 13.5, fill: 'var(--text-muted)' }} angle={-35} textAnchor="end" interval={0} height={50} />
+              <YAxis tick={{ fontSize: 15, fill: 'var(--text-muted)' }} />
+              <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 18 }} />
               <Bar dataKey="npv10_base_musd" fill="var(--blue)" name="base $M" />
               <Bar dataKey="npv10_live_musd" fill="var(--green)" name="live $M" />
             </BarChart>
@@ -111,10 +111,10 @@ export default function EconomicsTab({ wellId }: { wellId: string }) {
                 cum: curve.cumulative_musd[i],
               }))} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
                 <CartesianGrid stroke="var(--border-dim)" vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                <YAxis yAxisId="l" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 12 }} />
+                <XAxis dataKey="year" tick={{ fontSize: 15, fill: 'var(--text-muted)' }} />
+                <YAxis yAxisId="l" tick={{ fontSize: 15, fill: 'var(--text-muted)' }} />
+                <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 15, fill: 'var(--text-muted)' }} />
+                <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 18 }} />
                 <Line yAxisId="l" type="monotone" dataKey="rate" name="BOPD" stroke="var(--teal)" strokeWidth={2} dot={false} />
                 <Line yAxisId="r" type="monotone" dataKey="cum" name="Cum $M" stroke="var(--green)" strokeWidth={2} strokeDasharray="4 3" dot={false} />
               </LineChart>
@@ -125,7 +125,7 @@ export default function EconomicsTab({ wellId }: { wellId: string }) {
 
       <Panel title="Portfolio economics" subtitle="Click a row to focus the production curve">
         <div style={{ overflow: 'auto' }}>
-          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: 18, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-panel)', color: 'var(--text-muted)' }}>
                 {['Well', 'Basin', 'Status', 'Peak BOPD', 'Break-even', 'Margin $/bbl', 'CAPEX $M', 'NPV₁₀ live', 'IRR %', 'Payback yr', 'CO₂ t/yr'].map(h =>
@@ -142,7 +142,7 @@ export default function EconomicsTab({ wellId }: { wellId: string }) {
                   <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: 'var(--blue)' }}>{w.well_id}</td>
                   <td style={{ padding: '7px 10px' }}>{w.basin || '—'}</td>
                   <td style={{ padding: '7px 10px' }}>
-                    <span style={{ padding: '1px 8px', borderRadius: 10, fontSize: 10, fontWeight: 600,
+                    <span style={{ padding: '1px 8px', borderRadius: 10, fontSize: 15, fontWeight: 600,
                       background: w.status === 'gold' ? 'var(--green-dim)' : 'var(--bg-panel)',
                       color: w.status === 'gold' ? 'var(--green)' : 'var(--text-muted)',
                     }}>{w.status}</span>
@@ -175,9 +175,9 @@ function Kpi({ label, value, sub, color }: { label: string; value: string; sub: 
       background: 'var(--bg-card)', border: '1px solid var(--border)',
       borderRadius: 8, padding: '12px 14px',
     }}>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color, marginTop: 4 }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 33, fontWeight: 700, color, marginTop: 4 }}>{value}</div>
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
     </div>
   )
 }
@@ -189,8 +189,8 @@ function Panel({ title, subtitle, children }: { title: string; subtitle?: string
       padding: 16,
     }}>
       <div style={{ marginBottom: 10 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+        <div style={{ fontWeight: 600, fontSize: 19.5, color: 'var(--text-primary)' }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
       </div>
       {children}
     </div>

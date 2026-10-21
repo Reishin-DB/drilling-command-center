@@ -141,7 +141,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
             : 'Subsurface Supervisor · no runs yet'}
         >
           {(!lastDecision || lastDecision.empty) ? (
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>
+            <div style={{ fontSize: 18, color: 'var(--text-muted)', padding: '8px 0' }}>
               Run the Subsurface Supervisor to populate this card. The most recent verdict appears here.
             </div>
           ) : (
@@ -149,19 +149,19 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
               <div style={{
                 padding: '10px 18px', borderRadius: 8,
                 background: verdictColor[lastDecision.verdict || 'REVIEW'] || verdictColor.REVIEW,
-                color: 'white', fontSize: 22, fontWeight: 800, letterSpacing: '0.04em',
+                color: 'white', fontSize: 33, fontWeight: 800, letterSpacing: '0.04em',
                 boxShadow: `0 4px 18px ${verdictColor[lastDecision.verdict || 'REVIEW']}55`,
                 flexShrink: 0,
               }}>{lastDecision.verdict || 'REVIEW'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>
+                <div style={{ fontSize: 18, color: 'var(--text-primary)', fontWeight: 600 }}>
                   {lastDecision.well_name || lastDecision.well_id}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>
                   synthesised in {lastDecision.total_ms}ms · click below to re-run
                 </div>
                 <div style={{
-                  fontSize: 11, color: 'var(--text-secondary)', marginTop: 6,
+                  fontSize: 16.5, color: 'var(--text-secondary)', marginTop: 6,
                   display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                   overflow: 'hidden', lineHeight: 1.5,
                 }}>{(lastDecision.text || '').split('\n')[0]}</div>
@@ -175,7 +175,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
           subtitle={`${alerts.length} active · ${criticalCount} critical · from las.drilling_operations`}
         >
           {alerts.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>
+            <div style={{ fontSize: 18, color: 'var(--text-muted)', padding: '8px 0' }}>
               All wells nominal · no NPT, BHA, supply chain, or incident flags.
             </div>
           ) : (
@@ -188,13 +188,13 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
                     display: 'grid', gridTemplateColumns: '12px 70px 1fr', gap: 8, alignItems: 'center',
                     padding: '5px 8px', borderRadius: 4,
                     background: 'var(--bg-panel)', border: '1px solid var(--border)',
-                    cursor: 'pointer', fontSize: 11,
+                    cursor: 'pointer', fontSize: 16.5,
                   }}>
                     <span style={{
                       width: 8, height: 8, borderRadius: 4, background: col,
                       animation: a.severity === 'critical' ? 'genie-pulse 1.1s infinite' : 'none',
                     }} />
-                    <span style={{ color: col, fontFamily: 'monospace', fontSize: 10, fontWeight: 600 }}>{a.kind}</span>
+                    <span style={{ color: col, fontFamily: 'monospace', fontSize: 15, fontWeight: 600 }}>{a.kind}</span>
                     <span style={{ color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <b style={{ color: 'var(--blue)', fontFamily: 'monospace' }}>{a.well_id}</b> · {a.msg}
                     </span>
@@ -289,21 +289,21 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
               </ZoomableGroup>
             </ComposableMap>
             <div style={{
-              position: 'absolute', top: 10, right: 10, fontSize: 10, fontFamily: 'monospace',
+              position: 'absolute', top: 10, right: 10, fontSize: 15, fontFamily: 'monospace',
               background: 'rgba(13,17,23,0.85)', border: '1px solid var(--border-dim)', borderRadius: 4,
               padding: '6px 9px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: 3,
             }}>
               <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#27AE60', marginRight: 6 }} />gold</div>
               <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#F39C12', marginRight: 6 }} />corrected</div>
               <div><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: '#E74C3C', marginRight: 6 }} />critical</div>
-              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)', fontSize: 9, color: '#8794ad' }}>SPATIAL SQL (GA)</div>
+              <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)', fontSize: 13.5, color: '#8794ad' }}>SPATIAL SQL (GA)</div>
               <button onClick={() => setShowAoi(v => !v)} style={{
                 marginTop: 2, background: showAoi ? '#4dabf722' : 'transparent', color: showAoi ? '#4dabf7' : 'var(--text-muted)',
-                border: `1px solid ${showAoi ? '#4dabf7' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 9, cursor: 'pointer', textAlign: 'left',
+                border: `1px solid ${showAoi ? '#4dabf7' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 13.5, cursor: 'pointer', textAlign: 'left',
               }}>{showAoi ? 'Basin AOI on' : 'Basin AOI off'} · ConvexHull+Buffer</button>
               <button onClick={() => setShowSpacing(v => !v)} style={{
                 marginTop: 2, background: showSpacing ? '#e46b8b22' : 'transparent', color: showSpacing ? '#e46b8b' : 'var(--text-muted)',
-                border: `1px solid ${showSpacing ? '#e46b8b' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 9, cursor: 'pointer', textAlign: 'left',
+                border: `1px solid ${showSpacing ? '#e46b8b' : 'var(--border)'}`, borderRadius: 4, padding: '2px 8px', fontSize: 13.5, cursor: 'pointer', textAlign: 'left',
               }}>{showSpacing ? 'Spacing on' : 'Spacing off'} · ST_Distance</button>
               <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-dim)' }}>scroll to zoom · drag to pan · ◆ Cushing = WTI hub</div>
             </div>
@@ -320,13 +320,13 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" hide />
-              <YAxis tick={{ fontSize: 9, fill: 'var(--text-muted)' }} width={40} />
-              <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 13.5, fill: 'var(--text-muted)' }} width={40} />
+              <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', fontSize: 16.5 }} />
               <Area type="monotone" dataKey="price" stroke="var(--gold)" strokeWidth={2} fill="url(#wtiGrad)" />
             </AreaChart>
           </ResponsiveContainer>
           {econ && (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+            <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 6 }}>
               Spot <b style={{ color: 'var(--gold)' }}>${econ.wti_spot.toFixed(2)}</b> · portfolio re-rated to <b style={{ color: 'var(--green)' }}>${econ.total_npv_live_musd.toFixed(0)}M</b>
             </div>
           )}
@@ -375,7 +375,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
       {/* Well list with drill-in */}
       <Panel title="Fleet status" subtitle="Click a row to open the Log Viewer · operator wells in NA + ADME analog wells from the global OSDU catalog">
         <div style={{ overflow: 'auto', maxHeight: 420 }}>
-          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: 18, borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)' }}>
               <tr>
                 {['Well', 'Name', 'Basin', 'Status', 'Quality', 'TD (ft)', 'Anomalies', 'Critical', 'Source'].map(h => (
@@ -405,7 +405,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
                     </td>
                     <td style={{ padding: '7px 10px' }}>
                       <span style={{
-                        fontSize: 10, padding: '2px 7px', borderRadius: 10,
+                        fontSize: 15, padding: '2px 7px', borderRadius: 10,
                         background: isOsdu ? 'var(--blue-dim)' : 'var(--bg-panel)',
                         color: isOsdu ? 'var(--blue)' : 'var(--text-muted)',
                       }}>{isOsdu ? 'ADME live' : 'Operator'}</span>
@@ -445,14 +445,14 @@ function SpatialSQLPanel() {
 
   return (
     <Panel title="Spatial SQL · GA" subtitle="Real Databricks H3 + ST_ spatial functions over the live OSDU well set">
-      {loading && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Running spatial queries…</div>}
-      {err && <div style={{ fontSize: 12, color: 'var(--red)' }}>{err}</div>}
+      {loading && <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>Running spatial queries…</div>}
+      {err && <div style={{ fontSize: 18, color: 'var(--red)' }}>{err}</div>}
       {!loading && !err && (
         <>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
             {results.map(r => (
               <button key={r.key} onClick={() => setActive(r.key)} style={{
-                fontSize: 11, padding: '4px 10px', borderRadius: 4, cursor: 'pointer',
+                fontSize: 16.5, padding: '4px 10px', borderRadius: 4, cursor: 'pointer',
                 background: active === r.key ? 'var(--blue-dim)' : 'var(--bg-panel)',
                 color: active === r.key ? 'var(--blue)' : 'var(--text-muted)',
                 border: `1px solid ${active === r.key ? 'var(--blue)' : 'var(--border)'}`,
@@ -461,17 +461,17 @@ function SpatialSQLPanel() {
           </div>
           {cur && (
             <>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{cur.description}</div>
+              <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginBottom: 8 }}>{cur.description}</div>
               <pre style={{
-                fontFamily: 'monospace', fontSize: 10.5, color: 'var(--text-secondary)', background: 'var(--bg-panel)',
+                fontFamily: 'monospace', fontSize: 15.8, color: 'var(--text-secondary)', background: 'var(--bg-panel)',
                 border: '1px solid var(--border)', borderRadius: 6, padding: '8px 10px', margin: 0,
                 whiteSpace: 'pre-wrap', maxHeight: 120, overflowY: 'auto',
               }}>{cur.sql}</pre>
               {cur.error ? (
-                <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 8 }}>{cur.error}</div>
+                <div style={{ fontSize: 16.5, color: 'var(--red)', marginTop: 8 }}>{cur.error}</div>
               ) : (
                 <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: 8 }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16.5 }}>
                     <thead><tr>{cols.map(c => (
                       <th key={c} style={{ textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600, padding: '3px 6px', borderBottom: '1px solid var(--border)', fontFamily: 'monospace' }}>{c}</th>
                     ))}</tr></thead>
@@ -488,7 +488,7 @@ function SpatialSQLPanel() {
             </>
           )}
           {fns.length > 0 && (
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10, fontFamily: 'monospace' }}>functions: {fns.join(' · ')}</div>
+            <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 10, fontFamily: 'monospace' }}>functions: {fns.join(' · ')}</div>
           )}
         </>
       )}
@@ -502,9 +502,9 @@ function Kpi({ label, value, sub, color }: { label: string; value: string; sub: 
       background: 'var(--bg-card)', border: '1px solid var(--border)',
       borderRadius: 8, padding: '12px 14px',
     }}>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color, marginTop: 4 }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 33, fontWeight: 700, color, marginTop: 4 }}>{value}</div>
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
     </div>
   )
 }
@@ -512,15 +512,15 @@ function Kpi({ label, value, sub, color }: { label: string; value: string; sub: 
 function Pill({ value }: { value?: string }) {
   const color = value === 'gold' ? 'var(--green)' : value === 'corrected' ? 'var(--amber)' : value === 'raw' ? 'var(--red)' : 'var(--text-muted)'
   const bg = value === 'gold' ? 'var(--green-dim)' : value === 'corrected' ? 'var(--amber-dim)' : value === 'raw' ? 'var(--red-dim)' : 'var(--bg-panel)'
-  return <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: bg, color }}>{value || '—'}</span>
+  return <span style={{ fontSize: 15, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: bg, color }}>{value || '—'}</span>
 }
 
 function Panel({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: 16 }}>
       <div style={{ marginBottom: 10 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
+        <div style={{ fontWeight: 600, fontSize: 19.5, color: 'var(--text-primary)' }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</div>}
       </div>
       {children}
     </div>
