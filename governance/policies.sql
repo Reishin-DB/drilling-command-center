@@ -10,8 +10,8 @@
 
 CREATE TABLE IF NOT EXISTS ${schema}.access_personas (
   principal     STRING NOT NULL COMMENT 'current_user() value: user email or service principal application id',
-  persona       STRING NOT NULL COMMENT 'jv_partner is restricted; anyone not listed gets the operator view',
-  allowed_basin STRING COMMENT 'basin a jv_partner may see; one row per basin',
+  persona       STRING NOT NULL COMMENT 'jv_partner is restricted, anyone not listed gets the operator view',
+  allowed_basin STRING COMMENT 'basin a jv_partner may see, one row per basin',
   note          STRING
 ) COMMENT 'Persona mapping read by the row filters and column masks on the gold tables.';
 
@@ -30,5 +30,5 @@ CREATE OR REPLACE FUNCTION ${schema}.basin_filter(basin STRING)
 
 CREATE OR REPLACE FUNCTION ${schema}.mask_interpretation(v DOUBLE)
   RETURNS DOUBLE
-  COMMENT 'Column mask: hides the operator''s interpreted saturation and hydrocarbon volume from JV partners.'
+  COMMENT 'Column mask: hides operator-interpreted saturation and hydrocarbon volume from JV partners.'
   RETURN CASE WHEN ${schema}.is_jv_partner() THEN NULL ELSE v END;
