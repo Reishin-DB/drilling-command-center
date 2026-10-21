@@ -1,0 +1,133 @@
+{
+  "model": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
+  "model_version": "2",
+  "endpoint": "subsurface-synthetic-sonic",
+  "champion": "linear_all_curves",
+  "champion_rule": "lowest leave-one-well-out MAE; within 2% the simpler model wins",
+  "evaluation": "leave-one-well-out",
+  "n_wells": 13,
+  "n_samples": 31189,
+  "units": "us/ft",
+  "pooled": {
+    "gardner_textbook": {
+      "mae": 17.232,
+      "rmse": 22.2468,
+      "r2": -1.5415,
+      "bias": 10.9306
+    },
+    "gardner_calibrated": {
+      "mae": 10.6833,
+      "rmse": 12.3358,
+      "r2": 0.2186,
+      "bias": -0.9184
+    },
+    "faust_calibrated": {
+      "mae": 6.6418,
+      "rmse": 8.6566,
+      "r2": 0.6152,
+      "bias": -0.5353
+    },
+    "linear_all_curves": {
+      "mae": 3.0026,
+      "rmse": 3.7626,
+      "r2": 0.9273,
+      "bias": -0.0053
+    },
+    "model": {
+      "mae": 3.0457,
+      "rmse": 3.8147,
+      "r2": 0.9253,
+      "bias": -0.0057
+    }
+  },
+  "per_well_mae": {
+    "gardner_textbook": {
+      "EASTTEXAS-05": 16.781,
+      "ET-OFFSET-08": 16.709,
+      "GR-OFFSET-04": 18.954,
+      "GR-OFFSET-05": 16.728,
+      "PB-OFFSET-06": 15.678,
+      "PB-OFFSET-07": 17.633,
+      "PERMIAN-04": 16.818,
+      "PERMIAN-06": 19.055,
+      "SANJUAN-01": 18.547,
+      "SANJUAN-02": 15.151,
+      "SJ-OFFSET-01": 17.663,
+      "SJ-OFFSET-02": 16.486,
+      "SJ-OFFSET-03": 17.807
+    },
+    "gardner_calibrated": {
+      "EASTTEXAS-05": 10.266,
+      "ET-OFFSET-08": 10.239,
+      "GR-OFFSET-04": 10.895,
+      "GR-OFFSET-05": 10.44,
+      "PB-OFFSET-06": 9.907,
+      "PB-OFFSET-07": 10.888,
+      "PERMIAN-04": 10.792,
+      "PERMIAN-06": 10.443,
+      "SANJUAN-01": 11.164,
+      "SANJUAN-02": 11.547,
+      "SJ-OFFSET-01": 10.85,
+      "SJ-OFFSET-02": 10.321,
+      "SJ-OFFSET-03": 11.135
+    },
+    "faust_calibrated": {
+      "EASTTEXAS-05": 6.084,
+      "ET-OFFSET-08": 6.165,
+      "GR-OFFSET-04": 6.601,
+      "GR-OFFSET-05": 6.336,
+      "PB-OFFSET-06": 6.245,
+      "PB-OFFSET-07": 5.976,
+      "PERMIAN-04": 5.877,
+      "PERMIAN-06": 7.232,
+      "SANJUAN-01": 8.29,
+      "SANJUAN-02": 7.761,
+      "SJ-OFFSET-01": 8.432,
+      "SJ-OFFSET-02": 5.21,
+      "SJ-OFFSET-03": 6.164
+    },
+    "linear_all_curves": {
+      "EASTTEXAS-05": 2.938,
+      "ET-OFFSET-08": 3.393,
+      "GR-OFFSET-04": 3.357,
+      "GR-OFFSET-05": 2.541,
+      "PB-OFFSET-06": 2.623,
+      "PB-OFFSET-07": 2.527,
+      "PERMIAN-04": 2.642,
+      "PERMIAN-06": 2.816,
+      "SANJUAN-01": 2.606,
+      "SANJUAN-02": 4.497,
+      "SJ-OFFSET-01": 3.911,
+      "SJ-OFFSET-02": 2.719,
+      "SJ-OFFSET-03": 2.497
+    },
+    "model": {
+      "EASTTEXAS-05": 2.925,
+      "ET-OFFSET-08": 3.386,
+      "GR-OFFSET-04": 3.429,
+      "GR-OFFSET-05": 2.549,
+      "PB-OFFSET-06": 2.525,
+      "PB-OFFSET-07": 2.578,
+      "PERMIAN-04": 2.758,
+      "PERMIAN-06": 2.858,
+      "SANJUAN-01": 2.748,
+      "SANJUAN-02": 4.477,
+      "SJ-OFFSET-01": 4.034,
+      "SJ-OFFSET-02": 2.813,
+      "SJ-OFFSET-03": 2.547
+    }
+  },
+  "champion_scores": {
+    "mae": 3.0026,
+    "rmse": 3.7626,
+    "r2": 0.9273,
+    "bias": -0.0053
+  },
+  "method_labels": {
+    "gardner_textbook": "Gardner (published coefficients)",
+    "gardner_calibrated": "Gardner (refit on training wells)",
+    "faust_calibrated": "Faust (refit on training wells)",
+    "linear_all_curves": "Linear, all curves",
+    "model": "Gradient-boosted trees, all curves"
+  }
+}

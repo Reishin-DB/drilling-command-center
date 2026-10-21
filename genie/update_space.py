@@ -35,7 +35,8 @@ INSTRUCTIONS = MARKER + """
   curve, dt_model is the served synthetic_sonic champion, dt_gardner is the textbook Gardner transform.
   dt_source = 'synthetic' where the well never ran a sonic tool (GREENRIVER-03).
 - gold_sonic_model_metrics: leave-one-well-out evaluation, one row per method (mae, rmse, r2, bias in us/ft).
-  When asked whether the model can be trusted, compare method = 'model' to 'gardner_calibrated'.
+  When asked whether the model can be trusted, compare the is_champion row to 'gardner_calibrated'.
+  method 'model' is the gradient-boosted candidate, 'linear_all_curves' the linear one.
 - Well ids (SANJUAN-01, GREENRIVER-03, ...) are shared with operator_wells and well_economics:
   join on well_id to put net pay next to NPV.
 - JV partners see only their basins and NULL for avg_pay_sw and hc_pore_ft. A NULL there is a

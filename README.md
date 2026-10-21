@@ -14,7 +14,7 @@ The decision it supports: **which zones in which wells are worth completing, and
 |---|---|---|
 | Land | Well headers, formation tops, LAS-style log exports into a UC volume | `pipelines/generate_raw.py` |
 | Pipeline | Lakeflow SDP: bronze (Auto Loader) to QC'd silver to gold petrophysics and net pay | `pipelines/subsurface_pipeline.py` |
-| Model | Synthetic sonic: gradient-boosted trees on GR, RHOB, NPHI, RT, depth, formation | `ml/train_synthetic_sonic.py` |
+| Model | Synthetic sonic from GR, RHOB, NPHI, RT, depth, formation: linear and gradient-boosted candidates, champion by held-out MAE | `ml/train_synthetic_sonic.py` |
 | Serving | UC model `synthetic_sonic@champion` on endpoint `subsurface-synthetic-sonic`, behind AI Gateway | same |
 | Governance | Persona table, basin row filter, masks on interpreted columns, declared on the tables | `governance/policies.sql` |
 | Genie | Existing space extended with the gold tables, rules, and example SQL | `genie/update_space.py` |
@@ -53,9 +53,19 @@ The decision it supports: **which zones in which wells are worth completing, and
 
 **The bar.** What a petrophysicist does today without a model: Gardner's transform, both with the published coefficients and refit on the training wells (the fair comparison), plus Faust's resistivity transform and a linear fit on the same inputs as the model.
 
-METRICS_TABLE
+| Method (held-out wells) | MAE us/ft | RMSE us/ft | R2 | Bias us/ft |
+|---|---|---|---|---|
+| Gardner (published coefficients) | 17.23 | 22.25 | -1.542 | +10.93 |
+| Gardner (refit on training wells) | 10.68 | 12.34 | 0.219 | -0.92 |
+| Faust (refit on training wells) | 6.64 | 8.66 | 0.615 | -0.54 |
+| Gradient-boosted trees, all curves | 3.05 | 3.81 | 0.925 | -0.01 |
+| Linear, all curves **(champion)** | 3.00 | 3.76 | 0.927 | -0.01 |
 
-Read it this way: the published Gardner coefficients are biased for these rocks, and even a calibrated one-curve transform explains little of the sonic, because slowness here depends on porosity, shale, gas, and burial together. A multi-curve fit recovers most of it. The trees add a modest gain over the linear fit by capturing the non-linear velocity mixing. The residual floor is the sonic-only behaviour (cementation, pore pressure) that no other curve sees, which is also why the app shows the model next to Gardner and never as measured data.
+13 wells, 31,189 QC-passed samples, leave-one-well-out. Champion: `synthetic_sonic` v2 on `subsurface-synthetic-sonic`.
+
+Read it this way: the published Gardner coefficients over-predict slowness by about 11 us/ft on average for these rocks (worst in the low-density gas sand), and even a calibrated one-curve transform explains about a fifth of the sonic, because slowness here depends on porosity, shale, gas, and burial together. Using every curve cuts the error by about 3.5x against the fair bar (MAE 3.0 vs 10.7 us/ft).
+
+**Champion choice.** Gradient-boosted trees and the linear fit tie (3.05 vs 3.00 us/ft). Both sit at the noise floor set by sonic-only behaviour (cementation, pore pressure, tool noise) that no other curve sees, so no method can do better on these logs. The rule in the training job is lowest held-out MAE, and within 2% the simpler model wins. The linear model is the champion: cheaper to serve, readable coefficient by coefficient, and more predictable outside the training rocks. The trees stay in the evaluation so the comparison is re-run every build. The app shows the synthetic curve next to Gardner and never as measured data.
 
 ## Governance
 
@@ -65,7 +75,7 @@ Read it this way: the published Gardner coefficients are biased for these rocks,
 - `basin_filter(basin)`: JV partners only see rows for their basins.
 - `mask_interpretation(v)`: JV partners see net pay but not the operator's interpreted saturation or hydrocarbon pore feet.
 
-Because the rules live on the tables, they hold in the app, Genie, the SQL editor, and notebooks alike. GOVERNANCE_CHECK
+Because the rules live on the tables, they hold in the app, Genie, the SQL editor, and notebooks alike. Verified on the FEVM workspace: the operator view of `gold_zone_summary` returns 84 rows across 4 basins; the same query as a JV partner mapped to San Juan returns 30 rows, San Juan only, with `avg_pay_sw` and `hc_pore_ft` NULL and net pay visible. `gold_synthetic_sonic` filters the same way.
 
 ## Decisions
 

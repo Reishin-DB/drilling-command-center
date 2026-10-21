@@ -18,8 +18,13 @@ on the same held-out wells:
   gardner_textbook    rhob = 0.23 V^0.25, published coefficients
   gardner_calibrated  log DT on log RHOB, refit on the training wells (the fair bar)
   faust_calibrated    log DT on log(depth x RT), refit on the training wells
-  linear_all_curves   ordinary least squares on the same inputs as the model
+  linear_all_curves   ordinary least squares on the same inputs
   model               gradient-boosted trees on the same inputs
+
+Champion selection: the multi-curve candidate with the lowest held-out MAE,
+except that a candidate within TIE_TOLERANCE of a simpler one loses to it.
+Simpler wins ties: it is cheaper to serve, easier to explain to a
+petrophysicist, and extrapolates more predictably outside the training rocks.
 """
 from __future__ import annotations
 
@@ -42,6 +47,9 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 FEATURES = ["gr_api", "rhob_gcc", "nphi_vv", "log_rt", "md_ft", "zone_index"]
 TARGET = "dt_usft"
 ENDPOINT = "subsurface-synthetic-sonic"
+TIE_TOLERANCE = 0.02
+# multi-curve candidates, simplest first
+CANDIDATES = {"linear_all_curves": LinearRegression, "model": None}
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: 0))))
 
 
@@ -70,6 +78,18 @@ def gardner_cal():
 
 def faust_cal():
     return LogLinear(lambda d: d.md_ft.to_numpy() * 10 ** d.log_rt.to_numpy())
+
+
+def choose_champion(pooled: dict) -> str:
+    best = None
+    for name in CANDIDATES:  # simplest first
+        if best is None or pooled[name]["mae"] < pooled[best]["mae"] * (1 - TIE_TOLERANCE):
+            best = name
+    return best
+
+
+def build(name: str):
+    return LinearRegression() if name == "linear_all_curves" else new_model()
 
 
 def new_model():
@@ -162,7 +182,7 @@ def main():
 
     mlflow.set_registry_uri("databricks-uc")
     mlflow.set_experiment(args.experiment)
-    with mlflow.start_run(run_name="hgb-synthetic-sonic") as run:
+    with mlflow.start_run(run_name="synthetic-sonic") as run:
         evaluation, _ = leave_wells_out(train)
         for m, s in evaluation["pooled"].items():
             mlflow.log_metrics({f"{m}_{k}": v for k, v in s.items()})
@@ -171,7 +191,11 @@ def main():
         mlflow.log_params({"features": ",".join(FEATURES), "evaluation": "leave-one-well-out",
                            "n_wells": int(train.well_id.nunique()), "n_samples": int(len(train))})
 
-        model = new_model().fit(train[FEATURES], train[TARGET])
+        champion = choose_champion(evaluation["pooled"])
+        evaluation["champion"] = champion
+        mlflow.log_param("champion_method", champion)
+        print(f"champion: {champion} (ties within {TIE_TOLERANCE:.0%} go to the simpler model)")
+        model = build(champion).fit(train[FEATURES], train[TARGET])
         info = mlflow.sklearn.log_model(
             model, name="model", input_example=train[FEATURES].head(5),
             signature=infer_signature(train[FEATURES], model.predict(train[FEATURES].head(5))),
@@ -182,7 +206,7 @@ def main():
     print(f"registered {fq}.synthetic_sonic v{version} @champion (run {run.info.run_id})")
 
     best = evaluation["pooled"]
-    metrics_rows = [{"method": m, **{k: round(v, 4) for k, v in s.items()}, "model_version": version,
+    metrics_rows = [{"method": m, **{k: round(v, 4) for k, v in s.items()}, "model_version": version, "is_champion": m == champion,
                      "evaluation": "leave-one-well-out", "n_wells": int(train.well_id.nunique()),
                      "n_samples": int(len(train))} for m, s in best.items()]
     (spark.createDataFrame(pd.DataFrame(metrics_rows)).write.mode("overwrite")
