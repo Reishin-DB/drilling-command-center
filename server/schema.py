@@ -417,7 +417,11 @@ def _gen_log_samples(well_id: str, depth_start: float, depth_end: float, seed: i
     # Per-well offsets so neighbouring wells are similar but not identical.
     well_phi = rng.gauss(0, 0.012)
     well_vcl = rng.gauss(0, 0.04)
-    z_phi = z_vcl = z_sw = 0.0
+    # Sonic-only effects the other curves cannot see (cementation, pore
+    # pressure, fractures): a per-well slowness factor and a depth-correlated
+    # residual. They set the floor any synthetic-sonic method can reach.
+    well_dt = 1.0 + rng.gauss(0, 0.025)
+    z_phi = z_vcl = z_sw = z_dt = 0.0
     innov = math.sqrt(1 - _AR1 ** 2)
 
     rows = []
@@ -431,6 +435,7 @@ def _gen_log_samples(well_id: str, depth_start: float, depth_end: float, seed: i
         z_phi = _AR1 * z_phi + innov * rng.gauss(0, 1)
         z_vcl = _AR1 * z_vcl + innov * (-0.5 * rng.gauss(0, 1) + 0.866 * rng.gauss(0, 1))
         z_sw = _AR1 * z_sw + innov * rng.gauss(0, 1)
+        z_dt = _AR1 * z_dt + innov * rng.gauss(0, 1)
         phi_mu, phi_s, vcl_mu, vcl_s, sw_mu, *_ = _ROCK[zname]
         vcl_t = max(0.0, min(1.0, vcl_mu + well_vcl + vcl_s * (z_vcl - 0.4 * z_phi)))
         phi_t = max(0.005, min(0.40, phi_mu + well_phi + phi_s * z_phi - 0.03 * (vcl_t - vcl_mu)))
@@ -443,7 +448,7 @@ def _gen_log_samples(well_id: str, depth_start: float, depth_end: float, seed: i
         rxo_raw  = round(max(0.01, rt_raw * rng.uniform(0.4, 1.8)), 4)
         rhob_raw = round(max(1.50, min(3.0, rock["rhob"] + rng.gauss(0, 0.015))), 4)
         nphi_raw = round(max(-0.05, min(0.60, rock["nphi"] + rng.gauss(0, 0.012))), 4)
-        dt_raw   = round(max(40.0, min(200.0, rock["dt"] + rng.gauss(0, 1.5))), 2) if has_dt else None
+        dt_raw   = round(max(40.0, min(200.0, rock["dt"] * well_dt + 2.5 * z_dt + rng.gauss(0, 1.5))), 2) if has_dt else None
         cali_raw = round(max(4.0, min(18.0, 8.5 + rng.gauss(0, 0.4))), 3)
         sp_raw   = round(sp_mu + rng.gauss(0, 4), 2)
         pef_raw  = round(max(0.1, pef_mu + rng.gauss(0, 0.2)), 3)
@@ -585,6 +590,18 @@ def _build_formation_tops(well_id: str) -> list:
     return tops
 
 
+# Depth-log generation per app well: (well_id, seed, has_dt, add_spikes).
+# Shared with pipelines/generate_raw.py so the lakehouse and the app hold the same logs.
+WELL_LOG_CONFIGS = [
+    ("SANJUAN-01",   42,  True,  True),
+    ("SANJUAN-02",   77,  True,  True),
+    ("GREENRIVER-03",   13,  False, True),
+    ("PERMIAN-04",99,  True,  True),
+    ("EASTTEXAS-05",    55,  True,  False),
+    ("PERMIAN-06", 31,  True,  True),
+]
+
+
 async def seed_data(conn):
     count = await conn.fetchval("SELECT COUNT(*) FROM las.wells")
     if count and count > 0:
@@ -634,15 +651,7 @@ async def seed_data(conn):
         "VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING"
     )
 
-    well_configs = [
-        # well_id, seed, has_dt, add_spikes
-        ("SANJUAN-01",   42,  True,  True),
-        ("SANJUAN-02",   77,  True,  True),
-        ("GREENRIVER-03",   13,  False, True),
-        ("PERMIAN-04",99,  True,  True),
-        ("EASTTEXAS-05",    55,  True,  False),
-        ("PERMIAN-06", 31,  True,  True),
-    ]
+    well_configs = WELL_LOG_CONFIGS
 
     for wdata in _WELLS:
         (wid, wname, field, basin, county, state, api, lat, lon, kb, td, spud,

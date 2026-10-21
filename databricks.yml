@@ -1,44 +1,91 @@
 bundle:
-  name: las-viewer
+  name: subsurface-command
 
 variables:
-  lakebase_instance:
-    description: "Lakebase PostgreSQL instance name"
-    default: las-viewer-db
+  catalog:
+    description: "Unity Catalog catalog"
+    default: "oil_pump_monitor_catalog"
+  schema:
+    description: "Schema for the pipeline tables, model, and volume"
+    default: "subsurface_command"
+
+# Only the code the pipeline and job need; the app deploys separately.
+sync:
+  exclude:
+    - frontend/**
+    - images/**
+    - icons/**
+    - tests/**
+    - _deploy/**
 
 resources:
-  apps:
-    las-viewer:
-      name: las-viewer
-      description: "LAS Viewer — Well Log Visualization & Petrophysics Platform"
-      source_code_path: .
+  volumes:
+    raw:
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      name: raw
+      volume_type: MANAGED
+      comment: "Landing zone for well headers, formation tops, and LAS-style log exports."
 
-      resources:
-        - name: database
-          description: "Lakebase Postgres for LAS well log storage and processing"
-          database:
-            instance: ${var.lakebase_instance}
+  pipelines:
+    subsurface:
+      name: subsurface-command-pipeline
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      channel: CURRENT
+      photon: true
+      libraries:
+        - file:
+            path: ./pipelines/subsurface_pipeline.py
+      configuration:
+        raw_root: /Volumes/${var.catalog}/${var.schema}/raw
+        policy_schema: ${var.catalog}.${var.schema}
 
-      env:
-        - name: PGHOST
-          value_from: database
-        - name: PGPORT
-          value_from: database
-        - name: PGDATABASE
-          value_from: database
-        - name: PGUSER
-          value_from: database
+  jobs:
+    build:
+      name: subsurface-command-build
+      description: "End to end: land raw logs -> UC policies -> SDP bronze/silver/gold -> train, register, serve, and score the synthetic-sonic model."
+      environments:
+        - environment_key: base
+          spec:
+            environment_version: "3"
+        - environment_key: ml
+          spec:
+            environment_version: "3"
+            dependencies:
+              - scikit-learn
+              - mlflow>=2.21
+              - databricks-sdk
+      tasks:
+        - task_key: land_raw
+          environment_key: base
+          spark_python_task:
+            python_file: ./pipelines/generate_raw.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}"]
+        - task_key: policies
+          environment_key: base
+          spark_python_task:
+            python_file: ./governance/create_policies.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}"]
+        - task_key: medallion
+          depends_on: [{ task_key: land_raw }, { task_key: policies }]
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.subsurface.id}
+            full_refresh: true
+        - task_key: train_serve_score
+          depends_on: [{ task_key: medallion }]
+          environment_key: ml
+          spark_python_task:
+            python_file: ./ml/train_synthetic_sonic.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}"]
 
+# The app itself deploys with `databricks apps deploy` from a clean _deploy/ copy
+# (see DEPLOY.md); the bundle owns the data and ML layer. No development-mode
+# name prefixing: the pipeline, volume path, and app all use the same schema.
 targets:
-  dev:
-    mode: development
+  fevm:
     default: true
-    workspace:
-      host: https://fevm-oil-pump-monitor.cloud.databricks.com
-      profile: fe-vm-oil-pump-monitor
-
-  prod:
-    mode: production
     workspace:
       host: https://fevm-oil-pump-monitor.cloud.databricks.com
       profile: fe-vm-oil-pump-monitor
