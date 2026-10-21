@@ -1,148 +1,108 @@
-[![Databricks](https://img.shields.io/badge/Databricks-Solution_Accelerator-FF3621?style=for-the-badge&logo=databricks)](https://databricks.com)
-[![Unity Catalog](https://img.shields.io/badge/Unity_Catalog-Enabled-00A1C9?style=for-the-badge)](https://docs.databricks.com/en/data-governance/unity-catalog/index.html)
-[![Serverless](https://img.shields.io/badge/Serverless-Compute-00C851?style=for-the-badge)](https://docs.databricks.com/en/compute/serverless.html)
+[![Databricks](https://img.shields.io/badge/Databricks-App-FF3621?style=for-the-badge&logo=databricks)](https://databricks.com)
+[![Unity Catalog](https://img.shields.io/badge/Unity_Catalog-Governed-00A1C9?style=for-the-badge)](https://docs.databricks.com/en/data-governance/unity-catalog/index.html)
+[![Lakeflow](https://img.shields.io/badge/Lakeflow-Declarative_Pipelines-00C851?style=for-the-badge)](https://docs.databricks.com/en/dlt/index.html)
 
-# LAS Viewer — Well Log Visualization & Petrophysics Platform
+# Subsurface Command
 
-An enterprise-grade well logging visualization and analysis platform built as a [Databricks App](https://docs.databricks.com/en/dev-tools/databricks-apps/index.html). LAS Viewer combines a React/TypeScript frontend with a FastAPI backend, Lakebase (managed PostgreSQL), and Foundation Model API to deliver interactive log curve viewing, automated QC, processing recipes, and AI-powered petrophysical advisory for upstream oil & gas operations.
+A subsurface command center for an onshore North America well program, built as a Databricks App. One governed lakehouse holds the wells, their logs, the interpretation, the economics, and the drilling and equipment context. The app reads it, Genie answers questions over it, and a multi-agent supervisor reasons across it.
 
-<img src="images/las_log_viewer.png" alt="LAS Viewer — Interactive Log Curve Display" width="100%">
+The decision it supports: **which zones in which wells are worth completing, and can we trust the rock properties behind that call when a well is missing a curve.** Geomechanics (pore pressure, wellbore stability, frac design) needs a sonic log. GREENRIVER-03 never ran one. The usual fix is Gardner's density transform. This build replaces it with a served model, measured against Gardner on wells it never saw.
 
-## Overview
+## What is in it
 
-LAS (Log ASCII Standard) files are the backbone of well log data exchange in the petroleum industry. LAS Viewer provides a complete workflow from raw log ingestion through quality control, environmental corrections, petrophysical derivations, and AI-assisted interpretation:
-
-- **Interactive Log Curve Viewer** — SVG-based multi-track display showing raw curves (GR, RT, RHOB, NPHI, DT, etc.), QC flags, corrected curves, and derived petrophysical properties with formation boundary overlays
-- **Automated Quality Control** — Spike detection, gap identification, range validation, and washout flagging with per-curve quality scores
-- **Processing Recipes** — Configurable workflows from corporate standard petrophysical processing to fast drilling turnaround to high-fidelity reservoir simulation
-- **Petrophysics AI Advisor** — Foundation Model API-powered recommendations for well completion and development strategies
-- **Data & AI Flow** — Interactive architecture diagram showing the medallion pipeline from LAS file ingestion through Bronze/Silver/Gold to serving
+| Layer | What | Where |
+|---|---|---|
+| Land | Well headers, formation tops, LAS-style log exports into a UC volume | `pipelines/generate_raw.py` |
+| Pipeline | Lakeflow SDP: bronze (Auto Loader) to QC'd silver to gold petrophysics and net pay | `pipelines/subsurface_pipeline.py` |
+| Model | Synthetic sonic: gradient-boosted trees on GR, RHOB, NPHI, RT, depth, formation | `ml/train_synthetic_sonic.py` |
+| Serving | UC model `synthetic_sonic@champion` on endpoint `subsurface-synthetic-sonic`, behind AI Gateway | same |
+| Governance | Persona table, basin row filter, masks on interpreted columns, declared on the tables | `governance/policies.sql` |
+| Genie | Existing space extended with the gold tables, rules, and example SQL | `genie/update_space.py` |
+| App | React + FastAPI: 3D voxel property model, spatial wells, logs, economics, equipment, governance, supervisor | `app.py`, `server/`, `frontend/` |
+| Orchestration | Bundle job `subsurface-command-build`: land, policies, pipeline, train/serve/score | `databricks.yml` |
 
 ## Architecture
 
-<img src="images/dataflow.png" alt="LAS Viewer — Data & AI Flow" width="100%">
-
-## Dashboard Tabs
-
-<img src="images/las_petrophysics_advisor.png" alt="LAS Viewer — Petrophysics AI Advisor" width="100%">
-
-| Tab | Description |
-|-----|-------------|
-| **Wells** | Browse 6 sample wells with metadata, location, depth, spud date, status, and quality scores |
-| **Log Viewer** | Interactive SVG multi-track display: raw curves, QC flags, corrected curves, derived petrophysical properties, and formation tops |
-| **QC** | Quality control dashboard with spike, gap, range, and washout anomaly detection per curve |
-| **Recipes** | Processing recipe management — Corporate Standard, Fast Drilling Turnaround, High-Fidelity Reservoir Sim |
-| **Advisor** | AI-powered petrophysics advisor using Foundation Model API for well completion recommendations |
-| **Data & AI Flow** | Interactive architecture diagram showing the end-to-end data pipeline |
-
-## Well Log Curves
-
-| Curve | Description | Unit |
-|-------|-------------|------|
-| GR | Gamma Ray | API |
-| RT | Deep Resistivity | ohm·m |
-| RXO | Shallow Resistivity | ohm·m |
-| RHOB | Bulk Density | g/cm³ |
-| NPHI | Neutron Porosity | v/v |
-| DT | Sonic (Compressional) | μs/ft |
-| CALI | Caliper | in |
-| SP | Spontaneous Potential | mV |
-| PEF | Photoelectric Factor | b/e |
-
-**Derived properties:** Clay Volume (VCl), Total Porosity (φ_total), Effective Porosity (φ_eff), Water Saturation (Sw via Archie equation)
-
-## Database Schema
-
-Seven tables in the `las` schema on Lakebase (PostgreSQL 16):
-
-| Table | Description |
-|-------|-------------|
-| `wells` | Well metadata — location, depth range, spud date, status, quality score |
-| `depth_logs` | Curve measurements at each depth with QC flags |
-| `formation_tops` | Geological formation boundaries (Entrada, Morrison, Todilto, etc.) |
-| `curve_quality` | Per-curve quality metrics — coverage %, spike count, gap count |
-| `qc_rules` | Configurable QC rule definitions (range checks, spike detection) |
-| `processing_recipes` | Predefined processing workflows with JSON step definitions |
-| `processing_runs` | Execution history of recipes with metrics |
-| `anomalies` | Detected data quality issues (washouts, karst, synthetic sonic needed) |
-
-## Getting Started
-
-### Prerequisites
-
-- A Databricks workspace with [Databricks Apps](https://docs.databricks.com/en/dev-tools/databricks-apps/index.html) and [Lakebase](https://docs.databricks.com/en/lakebase/index.html) enabled
-- Databricks CLI installed and configured
-- Node.js 18+ (for frontend build)
-
-### Build the Frontend
-
-```bash
-cd frontend
-npm install
-npm run build
-cd ..
+```
+ well master, tops, LAS exports
+          |
+          v
+ UC volume  /Volumes/oil_pump_monitor_catalog/subsurface_command/raw
+          |  Auto Loader
+          v
+ bronze_logs, bronze_well_header, bronze_formation_tops      (streaming tables, file lineage)
+          |  despike vs +-5 sample moving average, gap and range flags, formation tagging
+          v
+ silver_logs, silver_wells                                    (expectations record every rule)
+          |  Vcl (linear GR), density-neutron porosity, Archie Sw, pay cut-offs
+          v
+ gold_petrophysics, gold_zone_summary (row filter + masks), gold_sonic_features
+          |
+          +--> ml/train_synthetic_sonic.py --> UC model synthetic_sonic@champion
+          |                                     --> endpoint subsurface-synthetic-sonic (AI Gateway)
+          |                                     --> gold_synthetic_sonic, gold_sonic_model_metrics
+          v
+ Databricks App (OBO + service principal) , Genie space , Supervisor agents
 ```
 
-### Deploy as a Databricks App
+## The model, and how it is judged
 
-1. Import the app into your workspace:
-   ```bash
-   databricks workspace import-dir . /Workspace/Users/<your-email>/las-viewer --overwrite
-   ```
+**Task.** Predict compressional slowness (DT, us/ft) from the curves every well has: gamma ray, bulk density, neutron porosity, log10 deep resistivity, depth, and formation.
 
-2. Create and deploy:
-   ```bash
-   databricks apps create las-viewer --description "Well Log Visualization & Petrophysics Platform"
-   databricks apps deploy las-viewer --source-code-path /Workspace/Users/<your-email>/las-viewer
-   ```
+**Evaluation.** Leave-one-well-out. Neighbouring samples in a well share the same rock, so a random row split would leak and flatter every method. Each well is predicted by methods fit only on the other wells. All methods are scored on the same held-out samples.
 
-3. The app auto-creates the Lakebase database and seeds sample well data on first startup.
+**The bar.** What a petrophysicist does today without a model: Gardner's transform, both with the published coefficients and refit on the training wells (the fair comparison), plus Faust's resistivity transform and a linear fit on the same inputs as the model.
 
-### Run Locally
+METRICS_TABLE
+
+Read it this way: the published Gardner coefficients are biased for these rocks, and even a calibrated one-curve transform explains little of the sonic, because slowness here depends on porosity, shale, gas, and burial together. A multi-curve fit recovers most of it. The trees add a modest gain over the linear fit by capturing the non-linear velocity mixing. The residual floor is the sonic-only behaviour (cementation, pore pressure) that no other curve sees, which is also why the app shows the model next to Gardner and never as measured data.
+
+## Governance
+
+`governance/policies.sql` creates a persona mapping table and three functions. The pipeline declares a row filter and two column masks on `gold_zone_summary`; the training job applies the row filter to `gold_synthetic_sonic`.
+
+- `access_personas(principal, persona, allowed_basin)`: who is a JV partner and which basins they are party to.
+- `basin_filter(basin)`: JV partners only see rows for their basins.
+- `mask_interpretation(v)`: JV partners see net pay but not the operator's interpreted saturation or hydrocarbon pore feet.
+
+Because the rules live on the tables, they hold in the app, Genie, the SQL editor, and notebooks alike. GOVERNANCE_CHECK
+
+## Decisions
+
+- **Logs come from one rock model.** Every curve at a depth is derived from the same latent porosity, shale volume, and saturation, so density and neutron agree, GR tracks shale, the sonic slows with porosity and gas. Without that, a sonic model would be learning noise. The app's DuckDB seed and the lakehouse use the same generator and seeds, so both show the same logs.
+- **Offset wells only for training.** Eight offset wells (`role = training_offset`) give the hold-out enough wells. They are in the lakehouse, never in the app.
+- **QC in the pipeline, not the app.** Spikes are nulled and flagged, never smoothed over, and each expectation records how many samples it touched.
+- **Gas-corrected porosity.** Density-neutron porosity keeps the Westwater gas zone from reading as either tight (neutron) or over-porous (density).
+- **Policies on tables, not in the app.** The app's persona toggle demonstrates the same rules, but Unity Catalog enforces them.
+- **Fallback is labelled.** If the endpoint is cold or unreachable, `/api/sonic/{well}` answers with Gardner and returns `source = "gardner"`. The UI says which one you are looking at.
+
+## Known simplifications
+
+- **Synthetic data.** Wells, logs, economics, and telemetry are synthetic. The coupled rock model makes the logs behave like logs; it is not a field dataset.
+- **OSDU / ADME feeds are not live.** The OSDU reservoir, rock-and-fluid, and wellbore records come from a partner Azure ADME workspace that is currently unavailable. Panels that read them degrade gracefully and are labelled.
+- **Same zone stack in every basin.** For the demo, every well uses one stratigraphic column. Real basins would each carry their own.
+- **The voxel model is interpolated, not simulated.** It spreads well-log properties between wells inside each area of interest; it is a property model for visualisation and screening, not a reservoir simulation.
+
+## Run it
 
 ```bash
-pip install -r requirements.txt
-uvicorn app:app --host 0.0.0.0 --port 8000
+# data + ML layer (FEVM target)
+databricks bundle deploy -t fevm
+databricks bundle run build -t fevm
+
+# Genie space
+python genie/update_space.py --profile fe-vm-oil-pump-monitor
+
+# local sanity check of the sonic problem (numpy only)
+python ml/local_check.py
 ```
 
-## Tech Stack
+The app deploys from a clean `_deploy/` copy with `databricks apps deploy` (see `DEPLOY.md`). Env vars it reads: `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `SONIC_ENDPOINT`.
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18 + TypeScript 5.6 + Vite 5.4 + Recharts |
-| **Backend** | FastAPI + Uvicorn (async Python) |
-| **Database** | Lakebase (Databricks managed PostgreSQL 16) |
-| **AI** | Foundation Model API (Petrophysics Advisor) |
-| **Auth** | Databricks SDK with JWT token auto-refresh |
-| **Visualization** | Native SVG for log curve tracks |
+## Tech stack
 
-## Project Support
+FastAPI, DuckDB (in-process app state), React 18 with three.js and Recharts, Databricks SDK, Lakeflow Spark Declarative Pipelines, MLflow 3 with Unity Catalog models, Model Serving with AI Gateway, Genie, Unity Catalog row filters and column masks.
 
-Please note the code in this project is provided for your exploration only, and is not formally supported by Databricks with Service Level Agreements (SLAs). It is provided AS-IS and we do not make any guarantees of any kind. Please do not submit a support ticket relating to any issues arising from the use of this project.
+## License
 
-Any issues discovered through the use of this project should be filed as GitHub Issues on this repository. They will be reviewed on a best-effort basis but no formal SLA or support is guaranteed.
-
-## Third-Party Library Licenses
-
-(c) 2025 Databricks, Inc. All rights reserved. The source in this project is provided subject to the [Databricks License](LICENSE). All included or referenced third-party libraries are subject to the licenses set forth below.
-
-### Python
-
-| Library | License | Source |
-|---------|---------|--------|
-| fastapi | MIT | https://github.com/tiangolo/fastapi |
-| uvicorn | BSD 3-Clause | https://github.com/encode/uvicorn |
-| asyncpg | Apache 2.0 | https://github.com/MagicStack/asyncpg |
-| databricks-sdk | Databricks License | https://github.com/databricks/databricks-sdk-py |
-| numpy | BSD 3-Clause | https://github.com/numpy/numpy |
-| scipy | BSD 3-Clause | https://github.com/scipy/scipy |
-
-### JavaScript / TypeScript
-
-| Library | License | Source |
-|---------|---------|--------|
-| react | MIT | https://github.com/facebook/react |
-| react-dom | MIT | https://github.com/facebook/react |
-| recharts | MIT | https://github.com/recharts/recharts |
-| vite | MIT | https://github.com/vitejs/vite |
-| typescript | Apache 2.0 | https://github.com/microsoft/TypeScript |
+See `LICENSE` and `NOTICE`.
