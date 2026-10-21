@@ -499,7 +499,7 @@ const MODEL_CHOICES = [
 function ControlCostChoice() {
   const [model, setModel] = useState('databricks-claude-sonnet-4-5')
   const [saving, setSaving] = useState(false)
-  const col = { control: '#E74C3C', cost: '#F39C12', choice: '#4dabf7' }
+  const col = { control: '#E74C3C', cost: '#F39C12', choice: '#4fb3e8' }
 
   useEffect(() => {
     fetch('/api/model').then(r => r.json()).then(d => { if (d.model) setModel(d.model) }).catch(() => {})

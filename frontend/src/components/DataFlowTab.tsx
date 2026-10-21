@@ -112,7 +112,7 @@ const SERVING: NodeDef[] = [
   {
     id: 'vs', label: 'Vector Search', sub: 'subsurface-advisor-vs-endpoint',
     x: 290, y: 320, w: 150, h: 60,
-    color: '#4dabf7', badge: 'VS',
+    color: '#4fb3e8', badge: 'VS',
     detail: [
       'Δ-sync index wellbore_vs_index on wellbore_analogs (CDF)',
       'databricks-gte-large-en embeddings',
@@ -135,7 +135,7 @@ const SERVING: NodeDef[] = [
   {
     id: 'genie', label: 'Genie Space', sub: 'Subsurface Command — FEVM',
     x: 630, y: 320, w: 150, h: 60,
-    color: '#00E5FF', badge: 'GENIE',
+    color: '#4fb3e8', badge: 'GENIE',
     detail: [
       'space_id 01f17bdeaeee…',
       'NL → SQL over operator_wells, well_economics,',
@@ -197,7 +197,7 @@ const APPL: NodeDef[] = [
   {
     id: 'supervisor', label: 'Subsurface Supervisor', sub: 'omnigent · plans → routes → synthesises',
     x: 630, y: 480, w: 170, h: 60,
-    color: '#00E5FF', badge: 'MAS',
+    color: '#4fb3e8', badge: 'MAS',
     detail: [
       'PLANNER reasons which specialists the question needs (streams a plan event); skipped ones dimmed',
       'Engaged specialists run in parallel: analogs (Vector Search) · petrophysics (FM API)',
@@ -243,15 +243,15 @@ const EDGES: EdgeDef[] = [
   { from: 'silver',       to: 'gov_tables',   label: 'gov split',          color: '#8E9AAF', dashed: true },
   { from: 'gold',         to: 'vs',           label: 'Δ-sync · gte-large', color: '#F39C12' },
   { from: 'mkt_catalogs', to: 'uc_fn',        label: 'price + ESG read',   color: '#F39C12', dashed: true },
-  { from: 'genie',        to: 'fastapi',      label: 'Conversation API',   color: '#00E5FF', dashed: true },
+  { from: 'genie',        to: 'fastapi',      label: 'Conversation API',   color: '#4fb3e8', dashed: true },
   { from: 'duckdb',       to: 'fastapi',      label: 'fast reads',         color: '#2980B9' },
   { from: 'lakebase',     to: 'fastapi',      label: 'ops/journal',        color: '#16A085' },
-  { from: 'supervisor',   to: 'vs',           label: 'analogs',            color: '#00E5FF', dashed: true },
-  { from: 'supervisor',   to: 'uc_fn',        label: 'NPV / BE',           color: '#00E5FF', dashed: true },
-  { from: 'supervisor',   to: 'genie',        label: 'ops NL→SQL',         color: '#00E5FF', dashed: true },
-  { from: 'supervisor',   to: 'fmapi',        label: 'synthesise',         color: '#00E5FF', dashed: true },
-  { from: 'supervisor',   to: 'gov_tables',   label: 'legal-tag gate',     color: '#00E5FF', dashed: true },
-  { from: 'supervisor',   to: 'react',        label: 'SSE stream',         color: '#00E5FF' },
+  { from: 'supervisor',   to: 'vs',           label: 'analogs',            color: '#4fb3e8', dashed: true },
+  { from: 'supervisor',   to: 'uc_fn',        label: 'NPV / BE',           color: '#4fb3e8', dashed: true },
+  { from: 'supervisor',   to: 'genie',        label: 'ops NL→SQL',         color: '#4fb3e8', dashed: true },
+  { from: 'supervisor',   to: 'fmapi',        label: 'synthesise',         color: '#4fb3e8', dashed: true },
+  { from: 'supervisor',   to: 'gov_tables',   label: 'legal-tag gate',     color: '#4fb3e8', dashed: true },
+  { from: 'supervisor',   to: 'react',        label: 'SSE stream',         color: '#4fb3e8' },
   { from: 'fastapi',      to: 'react',        label: 'JSON REST',          color: '#16A085' },
   { from: 'react',        to: 'user',         label: 'browser',            color: '#73d13d' },
 ]
@@ -333,7 +333,7 @@ export default function DataFlowTab() {
           {ALL_NODES.map(n => (
             <g key={n.id} style={{ cursor: 'pointer' }} onClick={() => setSelected(n.id)}>
               <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="6"
-                    fill="var(--bg-card)" stroke={selected === n.id ? '#00E5FF' : n.color}
+                    fill="var(--bg-card)" stroke={selected === n.id ? '#4fb3e8' : n.color}
                     strokeWidth={selected === n.id ? 2 : 1.2} />
               {n.badge && (
                 <>
@@ -360,7 +360,7 @@ export default function DataFlowTab() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <span style={{
                 padding: '2px 8px', borderRadius: 3, background: sel.color, opacity: 0.85,
-                fontSize: 15, fontFamily: 'monospace', fontWeight: 700, color: '#0d0e11',
+                fontSize: 15, fontFamily: 'monospace', fontWeight: 700, color: '#07151a',
               }}>{sel.badge}</span>
               <div style={{ fontWeight: 700, fontSize: 22.5, color: 'var(--text-primary)' }}>{sel.label}</div>
               <div style={{ fontSize: 16.5, color: 'var(--text-muted)' }}>· {sel.sub}</div>
@@ -383,8 +383,8 @@ export default function DataFlowTab() {
               {[
                 { h: '1 · Ingest',       c: 'Operational data (wells, economics, drilling ops, reservoir, WTI) is generated in-process into DuckDB on startup — the app carries its own data, no external source needed.', col: '#27AE60' },
                 { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_h2s_profile, well_equipment_integrity, well_distances, gov_legal_tags/entitlements — plus certified UC functions (NPV, break-even, f_wells_within_km, f_equipment_spec_for_well).', col: '#CD6116' },
-                { h: '3 · Retrieve',     c: 'Vector Search (wellbore_vs_index, gte-large-en) does semantic analog-well matching; Genie owns NL→SQL over the UC tables for the sidebar + the Supervisor.', col: '#4dabf7' },
-                { h: '4 · Omnigent MAS', c: 'The Supervisor PLANS which specialists a question needs and ROUTES to only those (skipped ones dimmed); the engaged ones run in parallel and stream via SSE; it synthesises the verdict.', col: '#00E5FF' },
+                { h: '3 · Retrieve',     c: 'Vector Search (wellbore_vs_index, gte-large-en) does semantic analog-well matching; Genie owns NL→SQL over the UC tables for the sidebar + the Supervisor.', col: '#4fb3e8' },
+                { h: '4 · Omnigent MAS', c: 'The Supervisor PLANS which specialists a question needs and ROUTES to only those (skipped ones dimmed); the engaged ones run in parallel and stream via SSE; it synthesises the verdict.', col: '#4fb3e8' },
                 { h: 'Choice · Cost · Governance', c: 'Swap the model at runtime (no redeploy); each run meters real token cost × the model rate; every call is Databricks AI Gateway governed (guardrails, rate limits, multi-endpoint failover) and audit-logged with per-run token + spend visibility in Unity Catalog.', col: '#9254de' },
                 { h: 'Geospatial (GA)',  c: 'Per-basin AOI (ST_ConvexHull + ST_Buffer + ST_Area) and nearest-offset spacing (ST_Distance) on the Overview map, straight from Spatial SQL over operator_wells.', col: '#73d13d' },
                 { h: 'Governance plane', c: 'Unity Catalog grants gate every table + function to the app SP; the Governance tab shows legal tags, entitlements, and persona-masked views. OBO forwards the user token for SQL/Genie.', col: '#F39C12' },
@@ -412,7 +412,7 @@ export default function DataFlowTab() {
 interface OntCol { name: string; pk?: boolean; fk?: string }
 interface OntEntity { table: string; group: string; cols: OntCol[] }
 const ONT_GROUP_COLOR: Record<string, string> = {
-  HUB: '#4dabf7', ECONOMICS: '#27AE60', SAFETY: '#e64980', REFERENCE: '#F39C12', GOVERNANCE: '#f97316',
+  HUB: '#4fb3e8', ECONOMICS: '#27AE60', SAFETY: '#e64980', REFERENCE: '#F39C12', GOVERNANCE: '#f97316',
 }
 const ONT_ENTITIES: OntEntity[] = [
   { table: 'operator_wells', group: 'HUB', cols: [
@@ -451,7 +451,7 @@ const ONT_FUNCTIONS = [
 // ─── Knowledge-graph nodes/edges (the ontology drawn as a graph) ─────────────
 interface GNode { id: string; label: string; sub: string; x: number; y: number; w: number; h: number; kind: 'hub'|'entity'|'ref'|'gov'|'metric'|'fn'; color: string }
 const G_NODES: GNode[] = [
-  { id: 'operator_wells',   label: 'operator_wells',   sub: 'HUB · well_id PK',        x: 292, y: 210, w: 160, h: 48, kind: 'hub',    color: '#4dabf7' },
+  { id: 'operator_wells',   label: 'operator_wells',   sub: 'HUB · well_id PK',        x: 292, y: 210, w: 160, h: 48, kind: 'hub',    color: '#4fb3e8' },
   { id: 'well_economics',   label: 'well_economics',   sub: 'FK → operator_wells',     x: 297, y: 96,  w: 150, h: 40, kind: 'entity', color: '#27AE60' },
   { id: 'well_h2s_profile', label: 'well_h2s_profile', sub: 'FK → operator_wells',     x: 297, y: 332, w: 150, h: 40, kind: 'entity', color: '#e64980' },
   { id: 'well_equipment_integrity', label: 'well_equipment_integrity', sub: 'derives from H2S', x: 285, y: 408, w: 174, h: 40, kind: 'entity', color: '#e64980' },
@@ -492,7 +492,7 @@ function gBorder(n: GNode, tx: number, ty: number): [number, number] {
   const s = Math.min(sx, sy)
   return [cx + dx * s, cy + dy * s]
 }
-const G_EDGE_COLOR: Record<GEdge['kind'], string> = { fk: '#4dabf7', derives: '#2ec26a', reads: '#b37feb' }
+const G_EDGE_COLOR: Record<GEdge['kind'], string> = { fk: '#4fb3e8', derives: '#2ec26a', reads: '#b37feb' }
 
 function OntologyGraph() {
   return (
@@ -539,10 +539,10 @@ function OntologyGraph() {
         ))}
       </svg>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 15, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-        <span><span style={{ color: '#4dabf7' }}>──</span> foreign key (RELY)</span>
+        <span><span style={{ color: '#4fb3e8' }}>──</span> foreign key (RELY)</span>
         <span><span style={{ color: '#2ec26a' }}>╌╌</span> metric view defines over</span>
         <span><span style={{ color: '#b37feb' }}>╌╌</span> certified function reads</span>
-        <span style={{ color: '#4dabf7' }}>● hub</span>
+        <span style={{ color: '#4fb3e8' }}>● hub</span>
         <span style={{ color: '#F39C12' }}>◌ reference (no FK)</span>
       </div>
     </div>
@@ -574,7 +574,7 @@ function OntologyView() {
                   <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 16.5, fontFamily: 'monospace', color: 'var(--text-secondary)', padding: '2px 0' }}>
                     <span>{c.name}</span>
                     {c.pk && <span style={{ fontSize: 12.8, color: '#F39C12', border: '1px solid #F39C1255', borderRadius: 3, padding: '0 4px' }}>PK</span>}
-                    {c.fk && <span style={{ fontSize: 15, color: '#4dabf7' }}>→ {c.fk}</span>}
+                    {c.fk && <span style={{ fontSize: 15, color: '#4fb3e8' }}>→ {c.fk}</span>}
                   </div>
                 ))}
               </div>
@@ -593,8 +593,8 @@ function OntologyView() {
         <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '18px 0 8px' }}>Certified functions · trusted answers</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 }}>
           {ONT_FUNCTIONS.map(f => (
-            <div key={f.name} style={{ background: 'var(--bg-panel)', border: '1px solid #4dabf744', borderLeft: '3px solid #4dabf7', borderRadius: 4, padding: '8px 12px' }}>
-              <div style={{ fontFamily: 'monospace', fontSize: 17.2, fontWeight: 700, color: '#4dabf7' }}>{f.name}</div>
+            <div key={f.name} style={{ background: 'var(--bg-panel)', border: '1px solid #4fb3e844', borderLeft: '3px solid #4fb3e8', borderRadius: 4, padding: '8px 12px' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: 17.2, fontWeight: 700, color: '#4fb3e8' }}>{f.name}</div>
               <div style={{ fontSize: 16.5, color: 'var(--text-secondary)', marginTop: 2 }}>{f.desc}</div>
             </div>
           ))}

@@ -220,8 +220,8 @@ export default function GenieTab() {
           ) : (
             <button type="submit" disabled={!q.trim()} style={{
               padding: '11px 18px', fontSize: 18, fontWeight: 700,
-              background: !q.trim() ? 'var(--bg-panel)' : 'linear-gradient(135deg, #00E5FF, #4dabf7)',
-              color: !q.trim() ? 'var(--text-muted)' : '#0d0e11',
+              background: !q.trim() ? 'var(--bg-panel)' : 'linear-gradient(135deg, #4fb3e8, #4fb3e8)',
+              color: !q.trim() ? 'var(--text-muted)' : '#07151a',
               border: 'none', borderRadius: 6, cursor: !q.trim() ? 'default' : 'pointer',
             }}>✨ Ask Genie</button>
           )}

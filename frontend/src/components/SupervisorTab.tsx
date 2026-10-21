@@ -209,7 +209,7 @@ export default function SupervisorTab() {
         background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
         padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 15.8, fontWeight: 700, letterSpacing: '0.05em', color: '#4dabf7' }}>CHOICE · COST · CONTROL</span>
+        <span style={{ fontSize: 15.8, fontWeight: 700, letterSpacing: '0.05em', color: '#4fb3e8' }}>CHOICE · COST · CONTROL</span>
         <span style={{ fontSize: 15.8, color: 'var(--text-muted)' }}>pick a model — the Supervisor routes to it, no code change · governed by AI Gateway · price = $/1M tokens:</span>
         {(models.length ? models : [{ id: 'databricks-claude-sonnet-4-5', label: 'Claude Sonnet 4.5', family: 'Anthropic', inPerM: 3, outPerM: 15, tier: '$$' }]).map(m => {
           const active = m.id === model
@@ -218,10 +218,10 @@ export default function SupervisorTab() {
             <button key={m.id} onClick={() => pickModel(m.id)} title={`${m.id}\n$${m.inPerM}/1M in · $${m.outPerM}/1M out`} style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer',
               background: active ? 'var(--blue-dim)' : 'var(--bg-panel)',
-              border: `1px solid ${active ? '#4dabf7' : 'var(--border)'}`, borderRadius: 6, padding: '4px 9px',
+              border: `1px solid ${active ? '#4fb3e8' : 'var(--border)'}`, borderRadius: 6, padding: '4px 9px',
             }}>
-              <span style={{ width: 6, height: 6, borderRadius: 3, background: active ? '#4dabf7' : 'var(--text-muted)' }} />
-              <span style={{ fontSize: 16.5, fontWeight: 600, color: active ? '#4dabf7' : 'var(--text-secondary)' }}>{m.label || MODEL_LABEL[m.id] || m.id}</span>
+              <span style={{ width: 6, height: 6, borderRadius: 3, background: active ? '#4fb3e8' : 'var(--text-muted)' }} />
+              <span style={{ fontSize: 16.5, fontWeight: 600, color: active ? '#4fb3e8' : 'var(--text-secondary)' }}>{m.label || MODEL_LABEL[m.id] || m.id}</span>
               <span style={{ fontSize: 12.8, fontWeight: 700, color: m.family === 'Open' ? '#27AE60' : '#9254de' }}>{m.family || (isOpen(m.id) ? 'Open' : 'Anthropic')}</span>
               {m.tier && <span style={{ fontSize: 13.5, fontWeight: 800, color: tierColor, letterSpacing: '0.5px' }}>{m.tier}</span>}
             </button>
@@ -292,10 +292,10 @@ export default function SupervisorTab() {
       {plan && (
         <div style={{
           background: 'linear-gradient(120deg, var(--bg-card), var(--bg-panel))',
-          border: '1px solid #4dabf7', borderRadius: 10, padding: '14px 16px',
+          border: '1px solid #4fb3e8', borderRadius: 10, padding: '14px 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 15.8, fontWeight: 800, letterSpacing: '0.06em', color: '#4dabf7' }}>ORCHESTRATION PLAN</span>
+            <span style={{ fontSize: 15.8, fontWeight: 800, letterSpacing: '0.06em', color: '#4fb3e8' }}>ORCHESTRATION PLAN</span>
             <span style={{ fontSize: 15, color: 'var(--text-muted)' }}>supervisor decided which agents this question needs</span>
             {plan.plan_ms != null && <span style={{ fontSize: 15, color: 'var(--text-muted)', marginLeft: 'auto' }}>{plan.plan_ms} ms</span>}
           </div>
@@ -303,7 +303,7 @@ export default function SupervisorTab() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--blue-dim)',
-              border: '1px solid #4dabf7', borderRadius: 8, padding: '4px 10px', fontSize: 16.5, fontWeight: 700, color: '#4dabf7',
+              border: '1px solid #4fb3e8', borderRadius: 8, padding: '4px 10px', fontSize: 16.5, fontWeight: 700, color: '#4fb3e8',
             }}>🧠 Supervisor</span>
             <span style={{ color: 'var(--text-muted)', fontSize: 21 }}>→</span>
             {plan.route.map(r => (
@@ -409,7 +409,7 @@ const VERDICT_STYLE: Record<string, { color: string; bg: string; sub: string }> 
   HOLD:     { color: '#F39C12', bg: 'rgba(243,156,18,0.12)', sub: 'Defer · revisit when conditions improve' },
   'DE-SCOPE': { color: '#CD6116', bg: 'rgba(205,97,22,0.14)',sub: 'Reduce scope · partial commitment only' },
   ABANDON:  { color: '#E74C3C', bg: 'rgba(231,76,60,0.12)',  sub: 'Walk away · economics or risk do not support' },
-  REVIEW:   { color: '#4dabf7', bg: 'rgba(77,171,247,0.12)', sub: 'Mixed signal · needs senior review' },
+  REVIEW:   { color: '#4fb3e8', bg: 'rgba(77,171,247,0.12)', sub: 'Mixed signal · needs senior review' },
 }
 
 function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; verdict?: string; model?: string } | null; running: boolean }) {
@@ -452,7 +452,7 @@ function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; 
             {hasRec ? style.sub : (running ? 'awaiting specialist results' : 'submit a question to run')}
           </div>
           {hasRec && rec?.model && (
-            <div style={{ fontSize: 15, color: '#4dabf7', marginTop: 4, fontFamily: 'monospace' }}>
+            <div style={{ fontSize: 15, color: '#4fb3e8', marginTop: 4, fontFamily: 'monospace' }}>
               model: {rec.model}
             </div>
           )}
