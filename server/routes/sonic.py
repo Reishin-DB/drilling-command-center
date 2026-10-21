@@ -43,9 +43,10 @@ def gardner(rhob):
 
 def _query_endpoint(rows: list) -> list:
     from databricks.sdk import WorkspaceClient
+    from databricks.sdk.service.serving import DataframeSplitInput
     w = WorkspaceClient()
-    r = w.serving_endpoints.query(name=ENDPOINT, dataframe_split={
-        "columns": FEATURES, "data": [[x[c] for c in FEATURES] for x in rows]})
+    r = w.serving_endpoints.query(name=ENDPOINT, dataframe_split=DataframeSplitInput(
+        columns=FEATURES, data=[[x[c] for c in FEATURES] for x in rows]))
     return [round(float(p), 2) for p in r.predictions]
 
 

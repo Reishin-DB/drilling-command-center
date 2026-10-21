@@ -9,16 +9,15 @@ interface SonicResp { well_id: string; source: 'model' | 'gardner'; endpoint?: s
 
 const MISSING_DT_WELL = 'GREENRIVER-03'
 
-// The metrics file is produced by the training job; read the common shapes.
-function scores(m: any): { name: string; mae?: number; rmse?: number; r2?: number }[] {
-  if (!m) return []
-  const pick = (o: any) => ({ mae: o?.mae ?? o?.MAE, rmse: o?.rmse ?? o?.RMSE, r2: o?.r2 ?? o?.R2 })
-  const src = m.holdout || m.evaluation || m.test || m
-  const out: { name: string; mae?: number; rmse?: number; r2?: number }[] = []
-  for (const [k, label] of [['model', 'Served model'], ['gbr', 'Served model'], ['gardner', 'Gardner (baseline)'], ['baseline', 'Gardner (baseline)'], ['faust', 'Faust']] as const) {
-    if (src?.[k] && typeof src[k] === 'object' && !out.find(o => o.name === label)) out.push({ name: label, ...pick(src[k]) })
-  }
-  return out
+// ml/metrics.json from the training job: pooled leave-one-well-out scores per
+// method, the champion (the served model), and display labels.
+type Score = { key: string; name: string; mae?: number; rmse?: number; r2?: number; served?: boolean }
+const ORDER = ['gardner_textbook', 'gardner_calibrated', 'faust_calibrated', 'model', 'linear_all_curves']
+function scores(m: any): Score[] {
+  if (!m?.pooled) return []
+  return ORDER.filter(k => m.pooled[k]).map(k => ({
+    key: k, name: m.method_labels?.[k] || k, ...m.pooled[k], served: k === m.champion,
+  }))
 }
 
 export default function SonicTab({ wellId, onWellChange, onNavigate }: { wellId: string; onWellChange: (w: string) => void; onNavigate: (tab: string) => void }) {
@@ -41,10 +40,12 @@ export default function SonicTab({ wellId, onWellChange, onNavigate }: { wellId:
 
   const pick = (w: string) => { setTarget(w); onWellChange(w) }
   const sc = scores(metrics || data?.metrics)
-  const model = sc.find(s => s.name === 'Served model'), base = sc.find(s => s.name.startsWith('Gardner'))
+  const model = sc.find(s => s.served), base = sc.find(s => s.key === 'gardner_calibrated')
   const hasActual = !!data?.rows.some(r => r.dt_actual != null)
   const rows = data?.rows || []
-  const nWells = metrics?.n_wells ?? metrics?.wells ?? metrics?.holdout?.n_wells
+  const m = metrics || data?.metrics
+  const nWells = m?.n_wells
+  const thisWell = (data as any)?.this_well as { n: number; model_mae: number; gardner_mae: number } | null
 
   return (
     <div style={{ display: 'grid', gap: 14 }}>
@@ -54,7 +55,7 @@ export default function SonicTab({ wellId, onWellChange, onNavigate }: { wellId:
           <div style={{ fontSize: 19.5, lineHeight: 1.45 }}>
             <b className="mono" style={{ color: 'var(--blue)' }}>{MISSING_DT_WELL}</b> was logged without a sonic (DT) curve, and geomechanics and seismic ties need one.
             {model && base?.mae != null && model.mae != null
-              ? <> On wells held out of training, the served model predicts DT with <b style={{ color: 'var(--green)' }}>{model.mae.toFixed(1)} µs/ft</b> mean error vs <b>{base.mae.toFixed(1)} µs/ft</b> for the Gardner relation used today.</>
+              ? <> On wells held out of training, the served model predicts DT with <b style={{ color: 'var(--green)' }}>{model.mae.toFixed(1)} µs/ft</b> mean error vs <b>{base.mae.toFixed(1)} µs/ft</b> for the Gardner relation calibrated on the same wells, about {(base.mae / model.mae).toFixed(1)}x lower.</>
               : <> A model trained on the wells that do have sonic predicts it from GR, density, neutron and resistivity, and is scored against the Gardner relation used today.</>}
           </div>
         </div>
@@ -98,19 +99,20 @@ export default function SonicTab({ wellId, onWellChange, onNavigate }: { wellId:
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15.8 }}>
                 <thead><tr style={{ color: 'var(--text-muted)', textAlign: 'left' }}><th style={th}>Method</th><th style={th}>MAE</th><th style={th}>RMSE</th><th style={th}>R²</th></tr></thead>
                 <tbody>{sc.map(s => (
-                  <tr key={s.name} style={{ borderTop: '1px solid var(--border-dim)', color: s.name === 'Served model' ? 'var(--green)' : 'var(--text-secondary)' }}>
-                    <td style={td}>{s.name}</td><td style={td}>{s.mae?.toFixed(2) ?? '–'}</td><td style={td}>{s.rmse?.toFixed(2) ?? '–'}</td><td style={td}>{s.r2?.toFixed(3) ?? '–'}</td>
+                  <tr key={s.key} style={{ borderTop: '1px solid var(--border-dim)', color: s.served ? 'var(--green)' : 'var(--text-secondary)', fontWeight: s.served ? 600 : 400 }}>
+                    <td style={td}>{s.name}{s.served && <span className="cs-prov cs-prov-live" style={{ marginLeft: 6 }}>served</span>}</td><td style={td}>{s.mae?.toFixed(2) ?? '–'}</td><td style={td}>{s.rmse?.toFixed(2) ?? '–'}</td><td style={td}>{s.r2?.toFixed(3) ?? '–'}</td>
                   </tr>))}</tbody>
               </table>
             ) : <div style={{ fontSize: 15, color: 'var(--text-muted)' }}>Metrics appear once the training job has run.</div>}
-            <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 8 }}>Errors in µs/ft. The baseline is Gardner's density-velocity relation inverted to slowness.</div>
+            <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 8 }}>Errors in µs/ft{m?.n_samples ? ` over ${m.n_samples.toLocaleString()} samples` : ''}. Champion rule: {m?.champion_rule || 'lowest held-out MAE'}.</div>
+            {thisWell && <div style={{ fontSize: 14.5, marginTop: 8, color: 'var(--text-secondary)' }}>On this well ({thisWell.n.toLocaleString()} samples with measured DT): model {thisWell.model_mae.toFixed(1)} vs Gardner {thisWell.gardner_mae.toFixed(1)} µs/ft.</div>}
           </div>
           <div className="card" style={{ padding: '14px 16px' }}>
             <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>How it is built</div>
             <ol style={{ paddingLeft: 20, fontSize: 15, lineHeight: 1.55, color: 'var(--text-secondary)', display: 'grid', gap: 4 }}>
               <li>Raw LAS-style curves land in a Unity Catalog volume.</li>
               <li>A Lakeflow declarative pipeline QCs them (despike, gaps, range) into silver and computes petrophysics in gold.</li>
-              <li>MLflow trains a gradient-boosted model on GR, RHOB, NPHI, log RT and depth, and registers it in Unity Catalog.</li>
+              <li>MLflow scores linear and gradient-boosted models on GR, RHOB, NPHI, log RT and depth against Gardner and Faust, and registers the champion in Unity Catalog. The two models tie, so the simpler one is served.</li>
               <li>Model Serving hosts it behind AI Gateway usage tracking; the app calls it as the app service principal and falls back to Gardner, labelled, if the endpoint is cold.</li>
             </ol>
           </div>
