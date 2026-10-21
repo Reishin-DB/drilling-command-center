@@ -115,7 +115,23 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
   </div>
   <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">5</span></div>
 </div><div class="s">
-  <div class="k">05 · How it is built</div>
+  <div class="k">05 · Value the step-out</div>
+  <h2>The proposed well, priced by the same certified function the whole platform uses</h2>
+  <div class="grid c3" style="margin-top:4px">
+    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Offset · SANJUAN-01</div><div class="v">$92.8M</div><div class="l">NPV10 re-priced from scratch · IRR 63% · break-even $37</div></div>
+    <div class="tile"><div class="k">Step-out · unrisked</div><div class="v a">$103.4M</div><div class="l">HCPT 253.0 ft (1.06x the offset) · IRR 68% · payback 1.2 yr</div></div>
+    <div class="tile" style="border-color:#12232E"><div class="k" style="color:#12232E">Step-out · risked</div><div class="v">$40.3M</div><div class="l">HCPT 167.5 ft (0.70x) · IRR 34% · break-even $53</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns: 1.3fr 1fr; gap: 22px; margin-top: 20px">
+    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/stepout_value.png" style="height:3.0in;object-position:center 12%">
+    <div>
+      <div class="card"><div class="k">How it is priced</div><p>The offset's type curve is scaled by the ratio of hydrocarbon pore thickness at the step-out to the offset, the way screening teams scale type curves. Capex ($58M), opex and decline are the offset's. Both wells are priced by <b>calculate_npv10</b> and <b>calculate_break_even</b> in Unity Catalog at $79.18 WTI, 10 years, 10% discount.</p></div>
+      <p style="font-size:14px;margin-top:10px"><span class="badge live">Live</span> HCPT, WTI, the certified functions. <span class="badge ill">Illustrative</span> same well design and cost as the offset; productivity proportional to HCPT. Even risked for distance from control, the well clears its $58M capex with a $53 break-even.</p>
+    </div>
+  </div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">6</span></div>
+</div><div class="s">
+  <div class="k">06 · How it is built</div>
   <h2>One pipeline, one registry, one governance layer</h2>
   <div class="uc" style="margin-top:14px"><span class="lbl">UNITY CATALOG · oil_pump_monitor_catalog.subsurface_command</span>
     <div class="row" style="margin-bottom:12px"><span class="lane">LAND</span>
@@ -138,9 +154,9 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
     </div>
   </div>
   <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command.</p>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">6</span></div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">7</span></div>
 </div><div class="s">
-  <div class="k">06 · Govern the data and the AI</div>
+  <div class="k">07 · Govern the data and the AI</div>
   <h2>The same policy holds in the app, in Genie, and in the SQL editor, because it lives in Unity Catalog</h2>
   <div class="grid c3" style="margin-top:6px">
     <div class="card"><div class="k">Row filter</div><h3>JV partners see only their basin</h3><p>gold_zone_summary: an operator sees 84 rows across 4 basins; mapped as a San Juan JV partner, the same query returns 30 rows, San Juan only.</p></div>
@@ -148,9 +164,9 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
     <div class="card"><div class="k">AI control</div><h3>Choice, cost, control</h3><p>Swap models through AI Gateway with no code change, see token cost per run, guardrails on every call, and agents running as the signed-in user.</p></div>
   </div>
   <div class="callout" style="margin-top:24px">Governance is not an app feature you have to trust; it is the platform. Ask Genie the same question as the partner and the masked columns stay masked.</div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">7</span></div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">8</span></div>
 </div><div class="s">
-  <div class="k">07 · What is real, and what is illustrative</div>
+  <div class="k">08 · What is real, and what is illustrative</div>
   <h2>Every screen says where its numbers come from</h2>
   <table style="margin-top:4px">
     <tr><th>Element</th><th>Status</th><th>Detail</th></tr>
@@ -161,9 +177,9 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
     <tr><td>Structural framework</td><td><span class="badge ill">Illustrative</span></td><td>Dip, closure and fault are modeled, honoured at the tops; a real horizon model plugs in</td></tr>
     <tr><td>OSDU analog panels</td><td><span class="badge ill">Offline</span></td><td>Fed by a partner ADME workspace that is not live; the panels say so</td></tr>
   </table>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">8</span></div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">9</span></div>
 </div><div class="s">
-  <div class="k">08 · The path, and the ask</div>
+  <div class="k">09 · The path, and the ask</div>
   <h2>Prove it on one field with your logs, then reuse the template</h2>
   <div class="grid c4" style="margin-top:6px">
     <div class="tile"><div class="k" style="color:#566874">Weeks 1–2</div><h3 style="margin:6px 0">Land</h3><div class="l">Your LAS files, tops and headers for one field into a UC volume; same pipeline, your data.</div></div>
@@ -175,15 +191,15 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
     <div class="card" style="border-color:#EBC48A"><div class="k">Ask 1 · business</div><h3>Name one field and the person who owns its next-well decision</h3><p>Success is a step-out your team agrees is credible, with its value, in weeks instead of a quarter.</p></div>
     <div class="card" style="border-color:#9FCFEA"><div class="k b">Ask 2 · technical</div><h3>A two-week working session with petrophysics and data</h3><p>Map your logs, tops and OSDU records to the pipeline, and agree the acceptance bar for the sonic model.</p></div>
   </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">9</span></div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">10</span></div>
 </div><div class="s">
   <div class="k">Appendix · the app</div>
   <h2>What you will see</h2>
   <div class="grid c2" style="gap:16px">
     <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/spatial_wells.png" style="height:2.75in">
     <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/sonic.png" style="height:2.75in">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/overview.png" style="height:2.75in">
+    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/stepout_value.png" style="height:2.75in">
     <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/voxel_model.png" style="height:2.75in;object-position:center 60%">
   </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">10</span></div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">11</span></div>
 </div></body></html>

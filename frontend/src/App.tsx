@@ -110,7 +110,7 @@ export default function App() {
           {view === '3d'         && <ThreeDViewerTab wellId={activeWell} onWellChange={setActiveWell} onNavigate={go} />}
           {view === 'viewer'     && <LogViewerTab    wellId={activeWell} onWellChange={setActiveWell} />}
           {view === 'sonic'      && <SonicTab        wellId={activeWell} onWellChange={setActiveWell} onNavigate={go} />}
-          {view === 'economics'  && <EconomicsTab    wellId={activeWell} />}
+          {view === 'economics'  && <EconomicsTab    wellId={activeWell} onNavigate={go} />}
           {view === 'equipment'  && <EquipmentTab    wellId={activeWell} onWellChange={setActiveWell} />}
           {view === 'governance' && <GovernanceTab />}
           {view === 'genie'      && <GenieTab />}

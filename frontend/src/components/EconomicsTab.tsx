@@ -1,3 +1,4 @@
+import StepOutValueCard from './StepOutValueCard'
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, ReferenceLine } from 'recharts'
 
@@ -28,7 +29,7 @@ interface Summary {
   wells: EconWell[]
 }
 
-export default function EconomicsTab({ wellId }: { wellId: string }) {
+export default function EconomicsTab({ wellId, onNavigate }: { wellId: string; onNavigate?: (tab: string) => void }) {
   const [data, setData]         = useState<Summary | null>(null)
   const [prices, setPrices]     = useState<{ date: string; price: number }[]>([])
   const [curve, setCurve]       = useState<any>(null)
@@ -65,6 +66,7 @@ export default function EconomicsTab({ wellId }: { wellId: string }) {
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
+      <StepOutValueCard wellId={wellId} onNavigate={onNavigate} />
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12,
       }}>

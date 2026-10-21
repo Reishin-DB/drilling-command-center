@@ -2,7 +2,8 @@
 Build the Subsurface Intelligence deck (HTML -> PDF via headless Chrome).
 
 Numbers come from ml/metrics.json (the training job) and docs/deck/stepouts.json
-(GET /api/voxels/stepouts on the deployed app), so the deck matches the latest
+(GET /api/voxels/stepouts on the deployed app) and docs/deck/stepout_value.json
+(GET /api/voxels/stepout_value/SANJUAN-01), so the deck matches the latest
 run:  python docs/deck/build_deck.py
 """
 import json
@@ -15,6 +16,8 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 M = json.loads((ROOT / "ml" / "metrics.json").read_text())
 STEPS = json.loads((HERE / "stepouts.json").read_text())["stepouts"]
 SO = next(s for s in STEPS if s["field"] == "Blanco")
+V = json.loads((HERE / "stepout_value.json").read_text())
+VC = V["cases"]
 
 P = M["pooled"]
 CH = M["champion_scores"]
@@ -65,8 +68,8 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
 """
 
 
-def foot(n):
-    return f'<div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">{n}</span></div>'
+def foot(_n=None):
+    return '<div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">@@PAGE@@</span></div>'
 
 
 def slides():
@@ -162,8 +165,26 @@ def slides():
   {foot(5)}
 </div>""")
 
+
     out.append(f"""<div class="s">
-  <div class="k">05 · How it is built</div>
+  <div class="k">05 · Value the step-out</div>
+  <h2>The proposed well, priced by the same certified function the whole platform uses</h2>
+  <div class="grid c3" style="margin-top:4px">
+    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Offset · {V['offset_well']}</div><div class="v">${VC['offset']['npv10_musd']:.1f}M</div><div class="l">NPV10 re-priced from scratch · IRR {VC['offset']['irr_pct']:.0f}% · break-even ${VC['offset']['break_even_wti']:.0f}</div></div>
+    <div class="tile"><div class="k">Step-out · unrisked</div><div class="v a">${VC['stepout']['npv10_musd']:.1f}M</div><div class="l">HCPT {V['hcpt']['stepout_ft']} ft ({V['hcpt']['scale']:.2f}x the offset) · IRR {VC['stepout']['irr_pct']:.0f}% · payback {VC['stepout']['payback_years']} yr</div></div>
+    <div class="tile" style="border-color:#12232E"><div class="k" style="color:#12232E">Step-out · risked</div><div class="v">${VC['risked']['npv10_musd']:.1f}M</div><div class="l">HCPT {V['hcpt']['risked_ft']} ft ({V['hcpt']['risked_scale']:.2f}x) · IRR {VC['risked']['irr_pct']:.0f}% · break-even ${VC['risked']['break_even_wti']:.0f}</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns: 1.3fr 1fr; gap: 22px; margin-top: 20px">
+    <img class="shot" src="{shots}/stepout_value.png" style="height:3.0in;object-position:center 12%">
+    <div>
+      <div class="card"><div class="k">How it is priced</div><p>The offset's type curve is scaled by the ratio of hydrocarbon pore thickness at the step-out to the offset, the way screening teams scale type curves. Capex (${VC['stepout']['capex_musd']:.0f}M), opex and decline are the offset's. Both wells are priced by <b>calculate_npv10</b> and <b>calculate_break_even</b> in Unity Catalog at ${V['wti']:.2f} WTI, 10 years, 10% discount.</p></div>
+      <p style="font-size:14px;margin-top:10px"><span class="badge live">Live</span> HCPT, WTI, the certified functions. <span class="badge ill">Illustrative</span> same well design and cost as the offset; productivity proportional to HCPT. Even risked for distance from control, the well clears its $58M capex with a ${VC['risked']['break_even_wti']:.0f} break-even.</p>
+    </div>
+  </div>
+  {foot()}
+</div>""")
+    out.append(f"""<div class="s">
+  <div class="k">06 · How it is built</div>
   <h2>One pipeline, one registry, one governance layer</h2>
   <div class="uc" style="margin-top:14px"><span class="lbl">UNITY CATALOG · oil_pump_monitor_catalog.subsurface_command</span>
     <div class="row" style="margin-bottom:12px"><span class="lane">LAND</span>
@@ -190,7 +211,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">06 · Govern the data and the AI</div>
+  <div class="k">07 · Govern the data and the AI</div>
   <h2>The same policy holds in the app, in Genie, and in the SQL editor, because it lives in Unity Catalog</h2>
   <div class="grid c3" style="margin-top:6px">
     <div class="card"><div class="k">Row filter</div><h3>JV partners see only their basin</h3><p>gold_zone_summary: an operator sees 84 rows across 4 basins; mapped as a San Juan JV partner, the same query returns 30 rows, San Juan only.</p></div>
@@ -202,7 +223,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">07 · What is real, and what is illustrative</div>
+  <div class="k">08 · What is real, and what is illustrative</div>
   <h2>Every screen says where its numbers come from</h2>
   <table style="margin-top:4px">
     <tr><th>Element</th><th>Status</th><th>Detail</th></tr>
@@ -217,7 +238,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">08 · The path, and the ask</div>
+  <div class="k">09 · The path, and the ask</div>
   <h2>Prove it on one field with your logs, then reuse the template</h2>
   <div class="grid c4" style="margin-top:6px">
     <div class="tile"><div class="k" style="color:#566874">Weeks 1–2</div><h3 style="margin:6px 0">Land</h3><div class="l">Your LAS files, tops and headers for one field into a UC volume; same pipeline, your data.</div></div>
@@ -238,7 +259,7 @@ def slides():
   <div class="grid c2" style="gap:16px">
     <img class="shot" src="{shots}/spatial_wells.png" style="height:2.75in">
     <img class="shot" src="{shots}/sonic.png" style="height:2.75in">
-    <img class="shot" src="{shots}/overview.png" style="height:2.75in">
+    <img class="shot" src="{shots}/stepout_value.png" style="height:2.75in">
     <img class="shot" src="{shots}/voxel_model.png" style="height:2.75in;object-position:center 60%">
   </div>
   {foot(10)}
@@ -247,7 +268,9 @@ def slides():
 
 
 def main():
-    html = f"<!doctype html><html><head><meta charset='utf-8'><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap' rel='stylesheet'><style>{CSS}</style></head><body>{''.join(slides())}</body></html>"
+    pages = slides()
+    pages = [p.replace("@@PAGE@@", str(i + 1)) for i, p in enumerate(pages)]
+    html = f"<!doctype html><html><head><meta charset='utf-8'><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap' rel='stylesheet'><style>{CSS}</style></head><body>{''.join(pages)}</body></html>"
     src = HERE / "deck.html"
     src.write_text(html)
     pdf = ROOT / "docs" / "Subsurface-Intelligence-Deck.pdf"

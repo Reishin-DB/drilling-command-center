@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
+import { useStepOutValue } from './StepOutValueCard'
 
 // ─────────── Types (GET /api/voxels/{well_id}) ─────────────────────────────
 interface Grid { nx: number; ny: number; nz: number; x0: number; y0: number; z0: number; dx: number; dy: number; dz: number }
@@ -85,6 +86,7 @@ export default function ThreeDViewerTab({ wellId, onWellChange, onNavigate }: {
   const [vex, setVex] = useState(4)
   const [showFault, setShowFault] = useState(true)
   const [hover, setHover] = useState('')
+  const value = useStepOutValue(wellId)
 
   const mount = useRef<HTMLDivElement>(null)
   const three = useRef<{
@@ -325,6 +327,7 @@ export default function ThreeDViewerTab({ wellId, onWellChange, onNavigate }: {
               The voxel model finds a step-out <b style={{ color: 'var(--amber)' }}>{sp.nearest_well_ft.toLocaleString()} ft</b> from the nearest well with
               {' '}<b style={{ color: 'var(--amber)' }}>{sp.hcpt_ft} ft</b> of hydrocarbon pore thickness, {uplift >= 0 ? `${uplift.toFixed(0)}% above` : `${(-uplift).toFixed(0)}% below`} the
               control wells ({sp.control_mean_hcpt_ft} ft). Risked for distance from control: <b>{sp.risked_hcpt_ft} ft</b>, uncertainty {sp.uncertainty.toFixed(2)}.
+              {value && <> Priced off {value.offset_well}: <b style={{ color: 'var(--amber)' }}>${value.cases.stepout.npv10_musd.toFixed(1)}M</b> NPV10 unrisked, <b>${value.cases.risked.npv10_musd.toFixed(1)}M</b> risked.</>}
             </div>
           ) : <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>{err || 'Building the voxel model from the well logs…'}</div>}
         </div>

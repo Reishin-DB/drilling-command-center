@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from server.db import db
+from server.stepout_value import stepout_value
 from server.voxels import build_model
 
 router = APIRouter()
@@ -27,6 +28,12 @@ async def stepouts():
             **{k: sp[k] for k in ("lat", "lon", "hcpt_ft", "risked_hcpt_ft", "control_mean_hcpt_ft", "nearest_well_ft", "uncertainty")},
         })
     return {"stepouts": out}
+
+
+@router.get("/voxels/stepout_value/{well_id}")
+async def value_stepout(well_id: str):
+    """Price the proposed step-out for the anchor well's field."""
+    return await stepout_value(well_id)
 
 
 @router.get("/voxels/{well_id}")

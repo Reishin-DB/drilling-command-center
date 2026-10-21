@@ -66,9 +66,9 @@ const STEPS: Step[] = [
     features: ['Geostatistics in the app', 'Live from logs', 'Vector Search analogs'],
   },
   {
-    num: 5, title: 'Value the well', tab: 'Value the Well', tabId: 'economics', duration: '45s',
-    talkTrack: 'Per-well NPV10, IRR and break-even against WTI, computed by certified Unity Catalog functions. "Which wells are underwater today" is a live answer, not a month-end report.',
-    pointAt: ['NPV10 / IRR / break-even per well', 'WTI vs break-even', 'Portfolio economics'],
+    num: 5, title: 'Value the step-out', tab: 'Value the Well', tabId: 'economics', duration: '1 min',
+    talkTrack: 'The proposed well, priced. The offset\'s type curve is scaled by the ratio of hydrocarbon pore thickness at the step-out to the offset, then both wells are priced from scratch by the certified Unity Catalog functions calculate_npv10 and calculate_break_even at today\'s WTI. Read the unrisked and risked NPV, IRR, payback and break-even; the Live and Illustrative tags say exactly what is assumed. Below it, the portfolio: which wells are underwater today is a live answer, not a month-end report.',
+    pointAt: ['Step-out card: offset vs unrisked vs risked', 'Show SQL: the certified function call', 'Live vs Illustrative assumptions', 'Portfolio NPV10 / IRR / break-even'],
     features: ['UC functions', 'Metric views'],
   },
   {

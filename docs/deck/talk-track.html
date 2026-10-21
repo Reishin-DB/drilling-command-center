@@ -15,7 +15,8 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <h2>0. Before you start (10 min ahead)</h2>
 <ul>
 <li><b>Warm the sonic endpoint.</b> It scales to zero. Open <i>Fill the Missing Sonic</i> once; the chip must read <code>Live · Model Serving · subsurface-synthetic-sonic</code>, not <code>Fallback · Gardner relation</code>. If it says fallback, wait 60 seconds and reload.</li>
-<li><b>Warm the voxel model.</b> Open <i>Model the Subsurface</i> with SANJUAN-01 as the active well. The banner should read <b>2,616 ft</b>, <b>253 ft</b>, <b>15% above</b>, <b>167.5 ft risked</b>.</li>
+<li><b>Warm the voxel model.</b> Open <i>Model the Subsurface</i> with SANJUAN-01 as the active well. The banner should read <b>2,616 ft</b>, <b>253 ft</b>, <b>15% above</b>, <b>167.5 ft risked</b>, and end with the price.</li>
+<li><b>Check the step-out price.</b> On <i>Value the Well</i> the card's chip must read <code>Live · certified UC function</code>. The dollar figures move with WTI each day: read them off the card, not from this page, if WTI has moved from <b>$79.18</b>.</li>
 <li><b>Open the app in a fresh browser window</b> so your session token carries the <code>sql</code> and Genie scopes. Check <i>Governance &amp; Audit</i>: the "As you" table must show 84 rows, not a scope message.</li>
 <li><b>Reset governance.</b> The policy button must read "Make me a San Juan JV partner"; if it reads "Restore operator view", click it.</li>
 <li><b>Have the deck open</b> on slide 2, and the two Genie questions ready to paste (section 3, step 8).</li>
@@ -37,12 +38,12 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Listen for, and reuse later:</b> the number of hand-offs, weeks or months of cycle time, wells drilled without sonic, distrust of black-box models, partners who need some data but not all. Play their words back at each step.</p>
 <h2>2. The value pitch (3 min) · deck slides 2 and 3</h2>
 <h3>The 30-second version</h3>
-<blockquote>The data to place the next well already exists: logs, tops, headers, economics. It just lives in five places, and every gap, like a well with no sonic, becomes a side project. We put it on one governed platform. The missing sonic is filled by a model that beats the relation your petrophysicists use today, <b>3.6 times lower error on wells it never saw</b>. The logs become a <b>voxel geomodel in under a second</b> that proposes a step-out, risked for how far it is from control. And everyone, including partners and AI assistants, sees only what they are entitled to.</blockquote>
+<blockquote>The data to place the next well already exists: logs, tops, headers, economics. It just lives in five places, and every gap, like a well with no sonic, becomes a side project. We put it on one governed platform. The missing sonic is filled by a model that beats the relation your petrophysicists use today, <b>3.6 times lower error on wells it never saw</b>. The logs become a <b>voxel geomodel in under a second</b> that proposes a step-out, risked for how far it is from control, and the platform's own certified NPV function prices it: <b>$103 million unrisked, $40 million risked</b>, against <b>$58 million</b> of capex. And everyone, including partners and AI assistants, sees only what they are entitled to.</blockquote>
 <h3>What is new here (say it this way)</h3>
 <blockquote>None of the techniques are exotic. Pseudo-sonic from other curves, kriging between wells, saturation-height functions: your team knows all of them. What is new is that they run <b>as one governed workflow on the platform where the data already is</b>: the pipeline, the model registry, the served model, the geomodel, the economics, and the AI, with Unity Catalog enforcing who sees what in every one of them.</blockquote>
 <p>Lead with "one governed workflow", not "a new algorithm". The first is hard to rebut; the second invites someone to name a vendor.</p>
 <h3>The value, in three levers</h3>
-<table><tr><th>Lever</th><th>What changes</th><th>The number</th></tr><tr><td><b>1. Fill the gaps</b></td><td>Missing sonic is predicted from the other curves, scored against Gardner on held-out wells</td><td><b>3.0 µs/ft</b> error vs <b>10.7</b> for Gardner refit on the same wells, <b>3.6x</b> lower, across <b>13 wells</b> and <b>31,189 samples</b> <b>[demo]</b></td></tr><tr><td><b>2. Place the well</b></td><td>The logs become a geomodel that ranks a step-out and states its uncertainty</td><td>Blanco step-out <b>2,616 ft</b> from SANJUAN-01 with <b>253 ft</b> of hydrocarbon pore thickness, <b>15%</b> above the control wells, <b>168 ft</b> after the uncertainty haircut <b>[demo]</b></td></tr><tr><td><b>3. Decide faster, safely</b></td><td>Question to governed answer in one sitting, partners see only their basin</td><td>How long does a step-out proposal take today <b>[yours]</b>? JV partner sees <b>30 of 84</b> zone rows, Sw and HC pore feet masked <b>[demo]</b></td></tr></table>
+<table><tr><th>Lever</th><th>What changes</th><th>The number</th></tr><tr><td><b>1. Fill the gaps</b></td><td>Missing sonic is predicted from the other curves, scored against Gardner on held-out wells</td><td><b>3.0 µs/ft</b> error vs <b>10.7</b> for Gardner refit on the same wells, <b>3.6x</b> lower, across <b>13 wells</b> and <b>31,189 samples</b> <b>[demo]</b></td></tr><tr><td><b>2. Place and price the well</b></td><td>The logs become a geomodel that ranks a step-out, states its uncertainty, and prices it with the certified UC function</td><td>Blanco step-out <b>2,616 ft</b> from SANJUAN-01 with <b>253 ft</b> of hydrocarbon pore thickness, <b>15%</b> above the control wells. <b>$103.4M NPV10 unrisked, $40.3M risked</b> (34% IRR, 2-year payback, <b>$53</b> break-even) on <b>$58M</b> capex at $79 WTI <b>[demo]</b></td></tr><tr><td><b>3. Decide faster, safely</b></td><td>Question to governed answer in one sitting, partners see only their basin</td><td>How long does a step-out proposal take today <b>[yours]</b>? JV partner sees <b>30 of 84</b> zone rows, Sw and HC pore feet masked <b>[demo]</b></td></tr></table>
 <h2>3. The demo (9 min)</h2>
 <p>Click path follows the left rail. For each step: <b>click</b>, <b>say</b>, <b>land the line</b>.</p>
 <h3>Start Here (20 s)</h3>
@@ -70,12 +71,14 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Click:</b> <b>Model uncertainty</b>.</p>
 <p><b>Say:</b> "And this is the part I'd want as an engineer: green at the wells, purple away from them. The model is honest about what it doesn't know."</p>
 <p><b>Click:</b> back to <b>Hydrocarbon pore volume</b>; drag to orbit once; hover a Westwater voxel.</p>
-<p><b>Say:</b> "The step-out it proposes is 2,616 feet from San Juan 01, with 253 feet of hydrocarbon pore thickness, 15% above what the two wells see. Risked for distance from control, 168. That's a candidate your geoscientists review, not a decision the model makes for them."</p>
+<p><b>Say:</b> "The step-out it proposes is 2,616 feet from San Juan 01, with 253 feet of hydrocarbon pore thickness, 15% above what the two wells see. Risked for distance from control, 168. And the banner already has the price, which is where we go next. It's a candidate your geoscientists review, not a decision the model makes for them."</p>
 <p><b>Land:</b> "A geomodel in the app, in seconds, that tells you where it is uncertain."</p>
-<h3>5. Value the Well (45 s)</h3>
-<p><b>Click:</b> <i>Value the Well</i>.</p>
-<p><b>Say:</b> "Per-well NPV, IRR and break-even at today's WTI, from certified Unity Catalog functions. San Juan 01 carries about <b>$51 million</b> of NPV10 at <b>32%</b> IRR in the demo. The step-out is the candidate you would price next with the same functions."</p>
-<p><b>Land:</b> "One governed definition of NPV, everywhere it appears."</p>
+<h3>5. Value the Well (1 min) · the business close</h3>
+<p><b>Click:</b> <i>Value the Well</i> (or <i>Value the well →</i> on the voxel banner). Let the top card read.</p>
+<p><b>Say (business persona):</b> "Here's what that location is worth. Unrisked, <b>$103 million</b> of NPV10. Risked for its distance from control, <b>$40 million</b>, a <b>34%</b> IRR, paying back in <b>two years</b>, and it still breaks even at <b>$53</b> oil. On <b>$58 million</b> of capex."</p>
+<p><b>Say (technical persona):</b> "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the <b>certified Unity Catalog function</b>, <code>calculate_npv10</code>, the same definition Genie and the Supervisor use." Click <b>Show SQL</b>.</p>
+<p><b>Point at:</b> the Live and Illustrative tags under the card: "HCPT, price and the function are live; same well design and cost as the offset is the assumption, and it says so."</p>
+<p><b>Land:</b> "From logs to a priced well in one sitting, with one governed definition of NPV."</p>
 <h3>6. Decide with AI (1.5 min)</h3>
 <p><b>Click:</b> <i>Decide with AI</i>. Ask about SANJUAN-01 or GREENRIVER-03; let the plan render.</p>
 <p><b>Say:</b> "The Supervisor first plans which specialists the question needs and greys out the rest with a reason, then runs those in parallel and synthesises one verdict with citations. Up here, I can swap between frontier and open-weight models through AI Gateway with no code change, and every run shows its cost and the guardrails that ran."</p>
@@ -109,7 +112,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><b>Every screen tags Live vs Illustrative.</b> Slide 7 lists exactly what is synthetic.</li>
 </ul>
 <h2>5. The ask (1 min) · deck slide 8</h2>
-<blockquote>Here's what I'd propose. <b>Business:</b> name one field and the person who owns its next-well decision. Success is a step-out your team agrees is credible, with its value, in weeks rather than a quarter. <b>Technical:</b> a two-week working session with petrophysics and data to map your logs, tops and OSDU records to this pipeline, and agree the bar the sonic model has to clear against your current method.</blockquote>
+<blockquote>Here's what I'd propose. <b>Business:</b> name one field and the person who owns its next-well decision. Success is a step-out your team agrees is credible, priced with your own type curves and costs, in weeks rather than a quarter. <b>Technical:</b> a two-week working session with petrophysics and data to map your logs, tops and OSDU records to this pipeline, and agree the bar the sonic model has to clear against your current method.</blockquote>
 <p>Then stop talking.</p>
 <h2>6. Objection handling</h2>
 <p><b>"This is synthetic data. Why should I believe it?"</b></p>
@@ -122,6 +125,10 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <blockquote>Because it tied. We tried gradient-boosted trees; on held-out wells they matched the linear model at 3.0. When two models tie, the simpler one is easier to explain, cheaper to serve, and harder to break. On your data we'd re-run the same bake-off.</blockquote>
 <p><b>"How do I know the model isn't overfit?"</b></p>
 <blockquote>Leave-one-well-out. Every score in that table is on a well the model never saw in training. On San Juan 01, which has measured sonic, it's within 2.6 microseconds per foot.</blockquote>
+<p><b>"Why scale production by pore thickness?"</b></p>
+<blockquote>It's the standard screening shortcut: the offset is the best evidence of how this rock produces, and the type curve is scaled by a reservoir-quality ratio. Pore thickness is a reasonable proxy here; with your data we'd use your type curves and your own scaling, kh if you have the permeability. The point is the workflow: the geomodel output flows straight into the governed economics.</blockquote>
+<p><b>"Why does the portfolio table show a different NPV for San Juan 01?"</b></p>
+<blockquote>Good catch. The table shows the original underwriting NPV re-rated for today's price. The step-out card re-prices both wells from scratch with the certified function so the comparison is like for like, and the card says that underneath.</blockquote>
 <p><b>"The OSDU panels say offline."</b></p>
 <blockquote>They're fed by a partner ADME workspace that isn't live right now, and the app says so instead of faking it. The connector pattern is the same; on your OSDU instance those panels light up.</blockquote>
 <p><b>"What does this cost to run?"</b></p>
@@ -133,6 +140,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><i>How are the logs QC'd?</i> Silver despikes, flags gaps and range violations with pipeline expectations; bad samples are excluded from training and from the model's inputs.</li>
 <li><i>What are the model inputs?</i> GR, RHOB, NPHI, log10 RT and depth.</li>
 <li><i>Where is the model?</i> <code>oil_pump_monitor_catalog.subsurface_command.synthetic_sonic</code>, alias <code>@champion</code>, served on <code>subsurface-synthetic-sonic</code>.</li>
+<li><i>How is the step-out priced?</i> Offset type curve scaled by HCPT ratio (1.06x unrisked, 0.70x risked), offset capex $58M, opex and 18%/yr decline, priced by <code>calculate_npv10</code> and <code>calculate_break_even</code> at today's WTI over 10 years at 10%. IRR and payback come from the same cash flows in the app.</li>
 <li><i>How is the step-out ranked?</i> Undrilled columns between 2,500 ft and one correlation range from control are ranked on kriged hydrocarbon pore thickness, times one minus half the column's kriging uncertainty.</li>
 <li><i>How do I rebuild it?</i> <code>databricks bundle deploy -t fevm</code> then run the <code>subsurface-command-build</code> job.</li>
 </ul>
