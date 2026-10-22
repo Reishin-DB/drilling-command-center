@@ -1,6 +1,8 @@
 """Economics endpoints — combines OSDU wells with live WTI prices to compute NPV/IRR."""
+import asyncio
 import time
 from fastapi import APIRouter
+from .. import dcf, prices
 from ..db import db
 
 router = APIRouter()
@@ -38,31 +40,37 @@ async def economics_summary():
         "JOIN las.wells w ON w.well_id = e.well_id "
         "ORDER BY e.npv10_musd DESC NULLS LAST"
     )
+    # Every well is priced from scratch at today's WTI by the certified UC
+    # functions (one warehouse statement), the same definition the step-out
+    # card, Genie and the Supervisor use. npv10_base stays the underwriting value.
+    cases = [{"capex_musd": float(r.get("capex_musd") or 0), "opex_musd_yr": float(r.get("opex_musd_yr") or 0),
+              "peak_rate_bopd": float(r.get("peak_rate_bopd") or 0), "decline_pct_yr": float(r.get("decline_pct_yr") or 0),
+              "wti": wti_now} for r in rows]
+    priced, priced_by, pricing_error = [], "none", None
+    if cases:
+        priced, priced_by, pricing_error = await asyncio.to_thread(dcf.price, cases)
     enriched = []
-    for r in rows:
-        be = float(r.get("wti_break_even") or 0)
-        # Margin-based re-rating: positive margin amplifies NPV; negative drags it.
-        margin_ratio = (wti_now - be) / max(be, 1.0) if be > 0 else 0.0
-        uplift = 1.0 + max(-0.6, min(0.8, margin_ratio))
-        base_npv = float(r.get("npv10_musd") or 0)
+    for r, c, p in zip(rows, cases, priced):
+        be = p["break_even_wti"] or 0.0
         enriched.append({
             "well_id":         r["well_id"],
             "well_name":       r["well_name"],
             "basin":           r.get("basin"),
             "status":          r.get("status"),
             "quality_score":   r.get("quality_score"),
-            "capex_musd":      float(r.get("capex_musd") or 0),
-            "opex_musd_yr":    float(r.get("opex_musd_yr") or 0),
-            "peak_rate_bopd":  float(r.get("peak_rate_bopd") or 0),
-            "decline_pct_yr":  float(r.get("decline_pct_yr") or 0),
+            "capex_musd":      c["capex_musd"],
+            "opex_musd_yr":    c["opex_musd_yr"],
+            "peak_rate_bopd":  c["peak_rate_bopd"],
+            "decline_pct_yr":  c["decline_pct_yr"],
             "wti_break_even":  be,
-            "npv10_base_musd": round(base_npv, 2),
-            "npv10_live_musd": round(base_npv * uplift, 2),
-            "irr_pct":         float(r.get("irr_pct") or 0),
-            "payback_years":   float(r.get("payback_years") or 0),
+            "npv10_base_musd": round(float(r.get("npv10_musd") or 0), 2),
+            "npv10_live_musd": p["npv10_musd"],
+            "irr_pct":         p["irr_pct"] or 0.0,
+            "payback_years":   p["payback_years"] or 0.0,
             "co2_tonnes_yr":   float(r.get("co2_tonnes_yr") or 0),
             "margin_per_bbl":  round(wti_now - be, 2),
         })
+    enriched.sort(key=lambda w: w["npv10_live_musd"], reverse=True)
 
     out = {
         "wti_spot": wti_now,
@@ -71,6 +79,9 @@ async def economics_summary():
         "total_npv_live_musd": round(sum(w["npv10_live_musd"] for w in enriched), 1),
         "total_co2_tonnes_yr": round(sum(w["co2_tonnes_yr"] for w in enriched)),
         "wells": enriched,
+        "priced_by": priced_by,
+        "pricing_error": pricing_error,
+        "wti_source": prices.SOURCE,
     }
     _cache_set("summary", out)
     return out

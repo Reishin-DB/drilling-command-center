@@ -32,13 +32,13 @@ Use the app SP's **application_id** (not its OAuth client id):
 ```bash
 cd frontend && npm install && npm run build && cd ..
 rm -rf _deploy && mkdir -p _deploy/frontend
-cp app.py requirements.txt _deploy/ && cp app.fevm.yaml _deploy/app.yaml
+cp app.py app.yaml requirements.txt _deploy/
 rsync -a --exclude __pycache__ server _deploy/ && cp -R frontend/dist _deploy/frontend/ && cp -R icons _deploy/
 databricks workspace import-dir _deploy /Workspace/Users/<you>/subsurface-command --overwrite
 databricks apps deploy subsurface-command --source-code-path /Workspace/Users/<you>/subsurface-command
 ```
 
-Deploy from the clean `_deploy/` copy: `import-dir` does not prune old files. The app seeds its in-process DuckDB on startup (about a minute) and reads `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `GENIE_HOST`, `VS_ENDPOINT`, `VS_INDEX` and `SONIC_ENDPOINT` from `app.fevm.yaml`. `user_api_scopes` (`sql`, `dashboards.genie`) give the Governance tab and Genie the signed-in user's identity.
+Deploy from the clean `_deploy/` copy: `import-dir` does not prune old files. The app seeds its in-process DuckDB on startup (about a minute) and reads `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `GENIE_HOST`, `VS_ENDPOINT`, `VS_INDEX` and `SONIC_ENDPOINT` from `app.yaml`. `user_api_scopes` (`sql`, `dashboards.genie`) give the Governance tab and Genie the signed-in user's identity.
 
 ## 4. Before a demo
 

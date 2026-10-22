@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import SpatialWellsMap from './SpatialWellsMap'
+import { wtiSourceLabel } from '../wti'
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
 
 interface OverviewProps {
@@ -70,7 +71,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
         <Kpi label="Operator fleet" value={`${operatorWells.length}`} sub={`+ ${admeAnalogs} ADME analogs`} color="var(--blue)" />
         <Kpi label="Gold wells" value={`${gold}`} sub={`${corrected} corrected`} color="var(--gold)" />
-        <Kpi label="WTI spot" value={econ ? `$${econ.wti_spot.toFixed(2)}` : '…'} sub="FRED live" color="var(--green)" />
+        <Kpi label="WTI spot" value={econ ? `$${econ.wti_spot.toFixed(2)}` : '…'} sub={wtiSourceLabel((econ as any)?.wti_source)} color="var(--green)" />
         <Kpi label="Portfolio NPV₁₀" value={econ ? `$${econ.total_npv_live_musd.toFixed(0)}M` : '…'} sub={econ ? `CAPEX $${econ.total_capex_musd.toFixed(0)}M` : ''} color="var(--teal)" />
         <Kpi label="Critical alerts" value={`${critical}`} sub={critical > 0 ? '⚠ action needed' : 'all clear'} color={critical > 0 ? 'var(--red)' : 'var(--green)'} />
         <Kpi label="Avg Quality" value={`${avgQ.toFixed(0)}`} sub="out of 100 · QC score" color="var(--purple)" />
@@ -81,7 +82,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
         <Panel
           title="Last AI decision"
           subtitle={lastDecision && !lastDecision.empty
-            ? `Subsurface Supervisor · ${lastDecision.well_id} (${lastDecision.basin || '—'})`
+            ? `Subsurface Supervisor · ${lastDecision.well_id} (${lastDecision.basin || '–'})`
             : 'Subsurface Supervisor · no runs yet'}
         >
           {(!lastDecision || lastDecision.empty) ? (
@@ -149,7 +150,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
             </div>
           )}
         </Panel>
-        <Panel title="WTI · last 120 days" subtitle="FRED DCOILWTICO (fallback if egress blocked)">
+        <Panel title="WTI · last 120 days" subtitle={wtiSourceLabel((econ as any)?.wti_source)}>
           <ResponsiveContainer width="100%" height={150}>
             <AreaChart data={priceWindow}>
               <defs>
@@ -175,7 +176,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
       <SpatialWellsMap wells={operatorWells} onOpenWell={onOpenWell} />
 
       {/* Ingest pipeline */}
-      <Panel title="OSDU Ingest Pipeline" subtitle="Medallion flow: live OSDU → Bronze → Silver → Gold → Serving">
+      <Panel title="OSDU Ingest Pipeline" subtitle="Medallion flow: OSDU → Bronze → Silver → Gold → Serving · the partner ADME workspace that feeds it is offline, so these records are not live">
         <svg width="100%" viewBox="0 0 1280 210" style={{ display: 'block' }}>
           <defs>
             <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
@@ -232,7 +233,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
                       style={{ cursor: 'pointer', borderBottom: '1px solid var(--border-dim)' }}>
                     <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: 'var(--blue)' }}>{w.well_id}</td>
                     <td style={{ padding: '7px 10px' }}>{w.well_name}</td>
-                    <td style={{ padding: '7px 10px' }}>{w.basin || '—'}</td>
+                    <td style={{ padding: '7px 10px' }}>{w.basin || '–'}</td>
                     <td style={{ padding: '7px 10px' }}>
                       <Pill value={w.status} />
                     </td>
@@ -249,7 +250,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
                         fontSize: 15, padding: '2px 7px', borderRadius: 10,
                         background: isOsdu ? 'var(--blue-dim)' : 'var(--bg-panel)',
                         color: isOsdu ? 'var(--blue)' : 'var(--text-muted)',
-                      }}>{isOsdu ? 'ADME live' : 'Operator'}</span>
+                      }}>{isOsdu ? 'ADME (offline feed)' : 'Operator'}</span>
                     </td>
                   </tr>
                 )
@@ -264,7 +265,7 @@ export default function OverviewTab({ onOpenWell }: OverviewProps) {
   )
 }
 
-// ── Spatial SQL · GA — real H3 + ST_ queries over operator_wells ────────────
+// ── Spatial SQL · GA, real H3 + ST_ queries over operator_wells ────────────
 interface SpatialResult { key: string; title: string; description: string; sql: string; rows: any[]; error: string | null }
 function SpatialSQLPanel() {
   const [results, setResults] = useState<SpatialResult[]>([])
@@ -285,7 +286,7 @@ function SpatialSQLPanel() {
   const cols = cur && cur.rows.length ? Object.keys(cur.rows[0]) : []
 
   return (
-    <Panel title="Spatial SQL · GA" subtitle="Real Databricks H3 + ST_ spatial functions over the live OSDU well set">
+    <Panel title="Spatial SQL · GA" subtitle="Real Databricks H3 + ST_ spatial functions over the governed operator_wells table">
       {loading && <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>Running spatial queries…</div>}
       {err && <div style={{ fontSize: 18, color: 'var(--red)' }}>{err}</div>}
       {!loading && !err && (
@@ -353,7 +354,7 @@ function Kpi({ label, value, sub, color }: { label: string; value: string; sub: 
 function Pill({ value }: { value?: string }) {
   const color = value === 'gold' ? 'var(--green)' : value === 'corrected' ? 'var(--amber)' : value === 'raw' ? 'var(--red)' : 'var(--text-muted)'
   const bg = value === 'gold' ? 'var(--green-dim)' : value === 'corrected' ? 'var(--amber-dim)' : value === 'raw' ? 'var(--red-dim)' : 'var(--bg-panel)'
-  return <span style={{ fontSize: 15, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: bg, color }}>{value || '—'}</span>
+  return <span style={{ fontSize: 15, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: bg, color }}>{value || '–'}</span>
 }
 
 function Panel({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {

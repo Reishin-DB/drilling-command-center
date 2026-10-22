@@ -65,7 +65,7 @@ export default function GovernanceTab() {
   const [audit, setAudit]       = useState<AuditResp | null>(null)
   const [wellsCount, setWellsCount] = useState<{ total: number; osdu: number } | null>(null)
 
-  // Each fetch resolves independently — no blocking gate.
+  // Each fetch resolves independently, no blocking gate.
   useEffect(() => { fetch('/api/governance/uc_chain').then(r => r.json()).then(setChain).catch(() => {}) }, [])
   useEffect(() => { fetch('/api/governance/personas').then(r => r.json()).then(setPersonas).catch(() => {}) }, [])
   useEffect(() => { fetch('/api/governance/legal_tags').then(r => r.json()).then(setLegal).catch(() => {}) }, [])
@@ -309,7 +309,7 @@ export default function GovernanceTab() {
                       <td style={{ padding: '6px 10px', fontFamily: 'monospace', color: 'var(--blue)' }}>{e.action}</td>
                       <td style={{ padding: '6px 10px', color: 'var(--text-secondary)' }}>{e.service}</td>
                       <td style={{ padding: '6px 10px', fontFamily: 'monospace', fontWeight: 600, color: ok ? 'var(--green)' : 'var(--red)' }}>{e.status}</td>
-                      <td style={{ padding: '6px 10px', color: 'var(--text-muted)' }}>{e.target || '—'}</td>
+                      <td style={{ padding: '6px 10px', color: 'var(--text-muted)' }}>{e.target || '–'}</td>
                     </tr>
                   )
                 })}
@@ -354,7 +354,7 @@ export default function GovernanceTab() {
             })()}
             <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
               CO₂ emissions in kilotons, World Bank indicator EN.ATM.CO2E.KT. Same Unity Catalog governance plane as
-              the ADME data — grants, tags, and column masks apply uniformly.
+              the ADME data, grants, tags, and column masks apply uniformly.
             </div>
           </div>
         ) : (
@@ -401,7 +401,7 @@ function Skeleton({ lines = 3 }: { lines?: number }) {
 
 function Td({ v, trunc }: { v: any; trunc?: number }) {
   const redacted = v === '🔒 redacted'
-  const val = v == null ? '—' : trunc && typeof v === 'string' && v.length > trunc ? v.slice(0, trunc) + '…' : String(v)
+  const val = v == null ? '–' : trunc && typeof v === 'string' && v.length > trunc ? v.slice(0, trunc) + '…' : String(v)
   return (
     <td style={{ padding: '5px 8px', color: redacted ? 'var(--red)' : 'var(--text-primary)', fontStyle: redacted ? 'italic' : 'normal' }}>
       {val}
@@ -433,7 +433,7 @@ function PersonaMaskProof() {
   const extById = new Map((ext?.wells || []).map(w => [w.well_id, w]))
 
   const cell = (v: any) => {
-    if (v == null || v === '') return <span style={{ color: 'var(--text-muted)' }}>—</span>
+    if (v == null || v === '') return <span style={{ color: 'var(--text-muted)' }}>–</span>
     if (isRedacted(v)) return <span style={{ color: '#E74C3C', fontWeight: 600 }}>🔒 masked</span>
     return <span style={{ color: 'var(--text-secondary)' }}>{String(v)}</span>
   }
@@ -473,13 +473,13 @@ function PersonaMaskProof() {
 
   return (
     <Panel title="Persona masking · live proof"
-           subtitle="The SAME query, two personas — Unity Catalog column masks + row filters. Genie and the Supervisor run as the signed-in user, so AI answers inherit exactly this.">
+           subtitle="The SAME query, two personas, Unity Catalog column masks + row filters. Genie and the Supervisor run as the signed-in user, so AI answers inherit exactly this.">
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <Table title="Drilling Operator" sub="allowed_fields = all · full PII" color="#27AE60" rows={opWells} isExt={false} />
         <Table title="External Partner (JV)" sub={`lat / lon / api masked · row-filtered${ext ? ` · ${ext.redacted_count ?? 0} rows hidden` : ''}`} color="#E74C3C" rows={opWells} isExt={true} />
       </div>
       <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
-        Left is the operator view. Right is the JV partner asking the identical question — lat, lon, and API number come back
+        Left is the operator view. Right is the JV partner asking the identical question, lat, lon, and API number come back
         masked, and rows outside their entitlement are dropped by the row filter. No app logic decides this at query time; it is
         the Unity Catalog grant bound to the persona, and it applies to Genie's SQL and the Supervisor's tool calls the same way.
       </div>
@@ -515,8 +515,8 @@ function ControlCostChoice() {
       .finally(() => setSaving(false))
   }
   return (
-    <Panel title="Control · Cost · Choice — the open platform for Data + AI"
-           subtitle="Governance, spend visibility, and model freedom for every agent and user. The Supervisor and Genie call a governed endpoint behind the Databricks AI Gateway — swap the model without touching code, with automatic failover if a provider goes down.">
+    <Panel title="Control · Cost · Choice, the open platform for Data + AI"
+           subtitle="Governance, spend visibility, and model freedom for every agent and user. The Supervisor and Genie call a governed endpoint behind the Databricks AI Gateway, swap the model without touching code, with automatic failover if a provider goes down.">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.1fr', gap: 12 }}>
 
         {/* CONTROL */}
@@ -524,7 +524,7 @@ function ControlCostChoice() {
           <div style={{ fontWeight: 700, fontSize: 18, color: col.control, letterSpacing: '0.04em', marginBottom: 8 }}>CONTROL</div>
           <ul style={{ margin: 0, paddingLeft: 16, fontSize: 17.2, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
             <li>Safety + PII guardrails on every prompt &amp; response</li>
-            <li>Agents run as the user (OBO) — not a privileged SP</li>
+            <li>Agents run as the user (OBO), not a privileged SP</li>
             <li>UC row filters + column masks apply to AI answers too</li>
             <li>Full lineage + audit of every table an agent reads</li>
           </ul>
@@ -557,7 +557,7 @@ function ControlCostChoice() {
         {/* CHOICE */}
         <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.choice}`, borderRadius: 4, padding: '12px 14px' }}>
           <div style={{ fontWeight: 700, fontSize: 18, color: col.choice, letterSpacing: '0.04em', marginBottom: 4 }}>CHOICE</div>
-          <div style={{ fontSize: 15.8, color: 'var(--text-muted)', marginBottom: 8 }}>Pick the model — the Gateway routes to it, no code change:</div>
+          <div style={{ fontSize: 15.8, color: 'var(--text-muted)', marginBottom: 8 }}>Pick the model, the Gateway routes to it, no code change:</div>
           <div style={{ display: 'grid', gap: 4, maxHeight: 168, overflowY: 'auto' }}>
             {MODEL_CHOICES.map(m => {
               const active = m.id === model
@@ -581,13 +581,13 @@ function ControlCostChoice() {
             Active: <span style={{ color: col.choice, fontFamily: 'monospace' }}>{model}</span>{saving ? ' · saving…' : ''} · the Supervisor now calls this endpoint. Anthropic + open-weight, one governed API.
           </div>
           <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed var(--border)' }}>
-            ↪️ <strong>Failover:</strong> if the active endpoint errors, the Gateway auto-reroutes to a backup model so a run never dies on one provider. New endpoints are discovered + permissioned centrally in Unity Catalog — no per-app config.
+            ↪️ <strong>Failover:</strong> if the active endpoint errors, the Gateway auto-reroutes to a backup model so a run never dies on one provider. New endpoints are discovered + permissioned centrally in Unity Catalog, no per-app config.
           </div>
         </div>
       </div>
 
       <div style={{ fontSize: 16.5, color: 'var(--text-muted)', marginTop: 12, lineHeight: 1.5 }}>
-        Switch persona below and ask the Genie sidebar the same question — masked columns (lat, lon, api_number) stay
+        Switch persona below and ask the Genie sidebar the same question, masked columns (lat, lon, api_number) stay
         masked in the AI answer, because the model queries through the user's Unity Catalog grants, not a privileged
         service account.
       </div>

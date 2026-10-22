@@ -98,7 +98,7 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
       <div class="box" style="flex:1">Row filters + column masks <small>enforced for app, Genie, SQL</small></div>
     </div>
   </div>
-  <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command. Cost stays visible: serverless pipeline, a scale-to-zero endpoint with usage tracking and inference tables, and per-run token cost on the Supervisor.</p>
+  <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command. Cost stays visible: serverless pipeline, a scale-to-zero endpoint with usage tracking and inference tables, and per-run token cost on the Supervisor. Every NPV you see, portfolio, step-out, Genie and Supervisor, comes from the certified <b>calculate_npv10</b> at today's WTI.</p>
   <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">4</span></div>
 </div><div class="s">
   <div class="k">04 · The path, and the ask</div>
@@ -121,7 +121,7 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
     <tr><th>Element</th><th>Status</th><th>Detail</th></tr>
     <tr><td>Pipeline, model, endpoint, policies, Genie</td><td><span class="badge live">Live</span></td><td>Running on Databricks; job, endpoint and policies verified</td></tr>
     <tr><td>Sonic predictions</td><td><span class="badge live">Live</span></td><td>Served model on every request; labelled Gardner fallback if cold</td></tr>
-    <tr><td>Voxel properties and step-out</td><td><span class="badge live">Live</span></td><td>Computed in the app from the wells' logs and tops on every load</td></tr>
+    <tr><td>Voxel properties, step-out and its price</td><td><span class="badge live">Live</span></td><td>Computed from the wells' logs and tops; priced by the certified UC function</td></tr>
     <tr><td>Well logs</td><td><span class="badge ill">Synthetic</span></td><td>Physically coupled rock model (porosity, shale, fluids); your logs replace them in the pilot</td></tr>
     <tr><td>Structural framework</td><td><span class="badge ill">Illustrative</span></td><td>Dip, closure and fault are modeled, honoured at the tops; a real horizon model plugs in</td></tr>
     <tr><td>OSDU analog panels</td><td><span class="badge ill">Offline</span></td><td>Fed by a partner ADME workspace that is not live; the panels say so</td></tr>

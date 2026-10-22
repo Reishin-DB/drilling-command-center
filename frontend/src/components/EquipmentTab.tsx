@@ -67,7 +67,7 @@ export default function EquipmentTab({ wellId, onWellChange }: { wellId: string;
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
           <div>
             <div style={{ fontWeight: 600, fontSize: 21, color: 'var(--text-primary)' }}>
-              Oilfield Equipment Integrity — sour-service impact
+              Oilfield Equipment Integrity, sour-service impact
             </div>
             <div style={{ fontSize: 17.2, color: 'var(--text-muted)', marginTop: 2 }}>
               Once the HSE gate finds H2S, every wetted component inherits a metallurgy consequence. This turns each
@@ -109,7 +109,7 @@ export default function EquipmentTab({ wellId, onWellChange }: { wellId: string;
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ display: 'block', fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{w.well_name}</span>
                     <span style={{ display: 'block', fontSize: 15, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                      {w.severity.ppm ? `${w.severity.ppm.toLocaleString()} ppm` : 'no H2S'} · {w.basin ?? '—'}
+                      {w.severity.ppm ? `${w.severity.ppm.toLocaleString()} ppm` : 'no H2S'} · {w.basin ?? '–'}
                     </span>
                   </span>
                   <span style={{
@@ -167,7 +167,7 @@ function WellDetail({ a }: { a: Assessment }) {
 
       {/* mini stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
-        <MiniStat label="H2S measured" value={a.severity.ppm ? `${a.severity.ppm.toLocaleString()} ppm` : '—'} />
+        <MiniStat label="H2S measured" value={a.severity.ppm ? `${a.severity.ppm.toLocaleString()} ppm` : '–'} />
         <MiniStat label="Upgrades" value={`${a.upgrade_count} components`} />
         <MiniStat label="Added capex" value={`$${a.total_capex_musd.toFixed(2)}M`} />
         <MiniStat label="Critical lead" value={`${a.critical_path_weeks} wk`} />
@@ -228,10 +228,10 @@ function ComponentRow({ c }: { c: Component }) {
         <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 2, textAlign: 'right' }}>risk {c.risk}</div>
       </div>
       <div style={{ fontSize: 15.8, fontFamily: 'monospace', color: c.capex_musd > 0 ? 'var(--gold)' : 'var(--text-muted)', textAlign: 'right' }}>
-        {c.capex_musd > 0 ? `+$${c.capex_musd.toFixed(2)}M` : '—'}
+        {c.capex_musd > 0 ? `+$${c.capex_musd.toFixed(2)}M` : '–'}
       </div>
       <div style={{ fontSize: 15.8, fontFamily: 'monospace', color: c.lead_weeks > 0 ? 'var(--blue)' : 'var(--text-muted)', textAlign: 'right' }}>
-        {c.lead_weeks > 0 ? `+${c.lead_weeks}wk` : '—'}
+        {c.lead_weeks > 0 ? `+${c.lead_weeks}wk` : '–'}
       </div>
     </div>
   )

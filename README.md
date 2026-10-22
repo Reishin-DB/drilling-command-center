@@ -109,6 +109,7 @@ Because the rules live on the tables, they hold in the app, Genie, the SQL edito
 - **Gas-corrected porosity.** Density-neutron porosity keeps the Westwater gas zone from reading as either tight (neutron) or over-porous (density).
 - **Policies on tables, not in the app.** The Governance tab runs the same query as the app service principal and as the signed-in user (OBO), and its JV-partner toggle only writes the persona mapping; Unity Catalog does the enforcing.
 - **Uncertainty is shown, not hidden.** The voxel model exposes the kriging standard deviation as an attribute, and the step-out ranking is haircut by it.
+- **One definition of NPV.** `server/dcf.py` prices every well, the step-out and the offset through the certified UC functions `calculate_npv10` and `calculate_break_even` in one warehouse statement, and the same values are written to the UC `well_economics` table Genie reads. IRR and payback come from the same cash flows. The original underwriting NPV is kept as its own column for plan-vs-actual.
 - **Price by type-curve scaling, not in-place volumes.** The synthetic Westwater is about 1,200 ft thick, so barrels from pore thickness and area would be unrealistic. The nearest offset's type curve is scaled by the ratio of hydrocarbon pore thickness (1.06x, 0.70x risked) and both wells are priced from scratch by the same certified function, so the comparison is like for like.
 - **Every screen tags Live vs Illustrative.** Numbers computed from the governed data are tagged Live; modelled assumptions are tagged Illustrative.
 - **Fallback is labelled.** If the endpoint is cold or unreachable, `/api/sonic/{well}` answers with Gardner and returns `source = "gardner"`. The UI says which one you are looking at.
@@ -120,7 +121,8 @@ Because the rules live on the tables, they hold in the app, Genie, the SQL edito
 - **Same zone stack in every basin.** For the demo, every well uses one stratigraphic column. Real basins would each carry their own.
 - **The voxel model is interpolated, not simulated.** It spreads well-log properties between wells inside each area of interest; it is a property model for visualisation and screening, not a reservoir simulation.
 - **The structural framework is modelled.** Dip, closure and the normal fault are a modelled framework honoured at the well tops; a real horizon model would plug in.
-- **Step-out economics borrow the offset's well design.** Same capex, opex and decline as the offset; productivity scales with hydrocarbon pore thickness. The portfolio table shows underwriting NPVs re-rated for price, so its figure for SANJUAN-01 differs from the from-scratch price on the step-out card.
+- **Step-out economics borrow the offset's well design.** Same capex, opex and decline as the offset; productivity scales with hydrocarbon pore thickness.
+- **WTI may be synthetic.** The app tries the FRED Marketplace share, then the public FRED CSV, then a synthetic series when it has no egress; every WTI label says which one it is using.
 
 ## Run it
 
@@ -136,7 +138,7 @@ python genie/update_space.py --profile fe-vm-oil-pump-monitor
 python ml/local_check.py
 ```
 
-The app deploys from a clean `_deploy/` copy with `databricks apps deploy` and `app.fevm.yaml` (see `DEPLOY.md`). Env vars it reads: `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `SONIC_ENDPOINT`.
+The app deploys from a clean `_deploy/` copy with `databricks apps deploy` (see `DEPLOY.md`). Env vars it reads: `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `SONIC_ENDPOINT`.
 
 ## How it was built
 

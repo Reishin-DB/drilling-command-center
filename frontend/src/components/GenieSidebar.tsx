@@ -262,7 +262,7 @@ function MsgBubble({ m }: { m: Msg }) {
                 <tr key={i} style={{ borderTop: '1px solid var(--border-dim)' }}>
                   {row.map((v: any, j: number) => (
                     <td key={j} style={{ padding: '3px 6px', color: 'var(--text-primary)' }}>
-                      {v == null ? '—' : typeof v === 'number' ? Number(v).toLocaleString() : String(v).slice(0, 60)}
+                      {v == null ? '–' : typeof v === 'number' ? Number(v).toLocaleString() : String(v).slice(0, 60)}
                     </td>
                   ))}
                 </tr>

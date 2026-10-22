@@ -1,3 +1,4 @@
+import { wtiSourceLabel } from '../wti'
 import StepOutValueCard from './StepOutValueCard'
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, ReferenceLine } from 'recharts'
@@ -70,14 +71,14 @@ export default function EconomicsTab({ wellId, onNavigate }: { wellId: string; o
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12,
       }}>
-        <Kpi label="WTI Spot (FRED)"     value={`$${data.wti_spot.toFixed(2)}`} sub={data.wti_date || ''} color="var(--gold)" />
+        <Kpi label="WTI Spot"            value={`$${data.wti_spot.toFixed(2)}`} sub={`${data.wti_date || ''} · ${wtiSourceLabel((data as any).wti_source)}`} color="var(--gold)" />
         <Kpi label="Portfolio NPV₁₀"     value={`$${data.total_npv_live_musd.toFixed(0)}M`} sub={`${data.wells.length} wells · live WTI`} color="var(--green)" />
         <Kpi label="Total CAPEX Committed" value={`$${data.total_capex_musd.toFixed(0)}M`} sub="across portfolio" color="var(--blue)" />
         <Kpi label="CO₂ (annual)"        value={`${(data.total_co2_tonnes_yr/1000).toFixed(0)}k t`} sub="tonnes CO₂ / year" color="var(--amber)" />
         <Kpi label="Avg Break-Even"      value={`$${(data.wells.reduce((s, w) => s + w.wti_break_even, 0) / Math.max(data.wells.length, 1)).toFixed(0)}`} sub="$ / bbl WTI" color="var(--purple)" />
       </div>
 
-      <Panel title="WTI spot · daily · 3-year window (FRED / DCOILWTICO)" subtitle="Live price drives portfolio NPV re-rating">
+      <Panel title="WTI spot · daily · 3-year window" subtitle={`${wtiSourceLabel((data as any).wti_source)} · today's price re-prices every well through calculate_npv10`}>
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={priceSeries} margin={{ left: -6, right: 6, top: 6, bottom: 0 }}>
             <CartesianGrid stroke="var(--border-dim)" vertical={false} />
@@ -91,7 +92,7 @@ export default function EconomicsTab({ wellId, onNavigate }: { wellId: string; o
       </Panel>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <Panel title="NPV₁₀ — live vs base" subtitle="Live uses current WTI spot, base uses book assumption">
+        <Panel title="NPV₁₀, live vs base" subtitle="Live uses current WTI spot, base uses book assumption">
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={topNpv} margin={{ left: -6, right: 10, top: 10, bottom: 30 }}>
               <CartesianGrid stroke="var(--border-dim)" vertical={false} />
@@ -104,7 +105,7 @@ export default function EconomicsTab({ wellId, onNavigate }: { wellId: string; o
           </ResponsiveContainer>
         </Panel>
 
-        <Panel title={`Production forecast — ${selected}`} subtitle="10-yr decline · rate and cumulative cashflow">
+        <Panel title={`Production forecast, ${selected}`} subtitle="10-yr decline · rate and cumulative cashflow">
           {curve && (
             <ResponsiveContainer width="100%" height={260}>
               <LineChart data={curve.years.map((y: number, i: number) => ({
@@ -142,7 +143,7 @@ export default function EconomicsTab({ wellId, onNavigate }: { wellId: string; o
                   background: selected === w.well_id ? 'var(--bg-hover)' : 'transparent',
                 }}>
                   <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: 'var(--blue)' }}>{w.well_id}</td>
-                  <td style={{ padding: '7px 10px' }}>{w.basin || '—'}</td>
+                  <td style={{ padding: '7px 10px' }}>{w.basin || '–'}</td>
                   <td style={{ padding: '7px 10px' }}>
                     <span style={{ padding: '1px 8px', borderRadius: 10, fontSize: 15, fontWeight: 600,
                       background: w.status === 'gold' ? 'var(--green-dim)' : 'var(--bg-panel)',

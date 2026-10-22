@@ -112,17 +112,24 @@ def _synthetic_series(years_back: int) -> list[tuple[datetime.date, float]]:
     return series
 
 
+SOURCE = "unknown"   # which feed the current series came from
+
+
 def fetch_wti_prices(years_back: int = 3) -> list[tuple[datetime.date, float]]:
     """Return [(date, price_usd), ...] for the last N years.
     Priority: Marketplace FRED share → public CSV → synthetic fallback."""
+    global SOURCE
     rows = _fetch_fred_marketplace(years_back)
     if rows:
         print(f"WTI: Marketplace FRED share returned {len(rows)} rows")
+        SOURCE = "fred_marketplace"
         return rows
     rows = _fetch_fred(years_back)
     if rows:
         print(f"WTI: FRED public CSV returned {len(rows)} rows")
+        SOURCE = "fred_csv"
         return rows
     rows = _synthetic_series(years_back)
     print(f"WTI: using synthetic fallback ({len(rows)} rows)")
+    SOURCE = "synthetic"
     return rows

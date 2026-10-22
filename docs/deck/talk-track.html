@@ -86,7 +86,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <h3>5. Value the Well (1 min) · the business close</h3>
 <p><b>Click:</b> <i>Value the Well</i> (or <i>Value the well →</i> on the voxel banner). Let the top card read.</p>
 <p><b>Say (business persona):</b> "Here's what that location is worth. Unrisked, <b>$103 million</b> of NPV10. Risked for its distance from control, <b>$40 million</b>, a <b>34%</b> IRR, paying back in <b>two years</b>, and it still breaks even at <b>$53</b> oil. On <b>$58 million</b> of capex."</p>
-<p><b>Say (technical persona):</b> "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the <b>certified Unity Catalog function</b>, <code>calculate_npv10</code>, the same definition Genie and the Supervisor use." Click <b>Show SQL</b>.</p>
+<p><b>Say (technical persona):</b> "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the <b>certified Unity Catalog function</b>, <code>calculate_npv10</code>, the same definition Genie, the Supervisor and the portfolio table below use: San Juan 01 shows <b>$92.8M</b> in both places." Click <b>Show SQL</b>.</p>
 <p><b>Point at:</b> the Live and Illustrative tags under the card: "HCPT, price and the function are live; same well design and cost as the offset is the assumption, and it says so."</p>
 <p><b>Land:</b> "From logs to a priced well in one sitting, with one governed definition of NPV."</p>
 <h3>6. Decide with AI (1.5 min)</h3>
@@ -141,8 +141,8 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <blockquote>Leave-one-well-out. Every score in that table is on a well the model never saw in training. On San Juan 01, which has measured sonic, it's within 2.6 microseconds per foot.</blockquote>
 <p><b>"Why scale production by pore thickness?"</b></p>
 <blockquote>It's the standard screening shortcut: the offset is the best evidence of how this rock produces, and the type curve is scaled by a reservoir-quality ratio. Pore thickness is a reasonable proxy here; with your data we'd use your type curves and your own scaling, kh if you have the permeability. The point is the workflow: the geomodel output flows straight into the governed economics.</blockquote>
-<p><b>"Why does the portfolio table show a different NPV for San Juan 01?"</b></p>
-<blockquote>Good catch. The table shows the original underwriting NPV re-rated for today's price. The step-out card re-prices both wells from scratch with the certified function so the comparison is like for like, and the card says that underneath.</blockquote>
+<p><b>"Is that the same NPV I'd get from Genie or the Supervisor?"</b></p>
+<blockquote>Yes, to the cent. Every NPV in the app, the step-out, its offset, the portfolio table, Genie's answers and the Supervisor's economics specialist, comes from the same certified Unity Catalog function at today's price. That's the point of governing the definition, not just the data.</blockquote>
 <p><b>"The OSDU panels say offline."</b></p>
 <blockquote>They're fed by a partner ADME workspace that isn't live right now, and the app says so instead of faking it. The connector pattern is the same; on your OSDU instance those panels light up.</blockquote>
 <p><b>"What does this cost to run?"</b></p>

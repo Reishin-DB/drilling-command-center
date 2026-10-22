@@ -122,7 +122,7 @@ export default function GenieTab() {
 
       {/* Left: sample questions + space info */}
       <div style={{ display: 'grid', gap: 16, position: 'sticky', top: 12 }}>
-        <Panel title="Genie space" subtitle={info?.name || 'Subsurface Command — Drilling & Economics'}>
+        <Panel title="Genie space" subtitle={info?.name || 'Subsurface Command, Drilling & Economics'}>
           <div style={{ display: 'grid', gap: 6, fontSize: 16.5 }}>
             <Row label="Wells"    value="operator_wells (6 NA wells · basin · lat/lon)" />
             <Row label="H2S"      value="well_h2s_profile · h2s_formation_risk (ppm · sour · PPE · NACE/EEBA · monitor alarm)" />
@@ -289,7 +289,7 @@ function MsgBubble({ m }: { m: Msg }) {
                 <tr key={i} style={{ borderTop: '1px solid var(--border-dim)' }}>
                   {row.map((v: any, j: number) => (
                     <td key={j} style={{ padding: '5px 10px', color: 'var(--text-primary)' }}>
-                      {v == null ? '—' : typeof v === 'number' ? Number(v).toLocaleString() : String(v).slice(0, 80)}
+                      {v == null ? '–' : typeof v === 'number' ? Number(v).toLocaleString() : String(v).slice(0, 80)}
                     </td>
                   ))}
                 </tr>

@@ -79,7 +79,7 @@ export default function StepOutValueCard({ wellId, onNavigate }: { wellId: strin
         <div>
           <span className="cs-prov cs-prov-live">Live</span> HCPT from the voxel model, WTI, the certified functions.{' '}
           <span className="cs-prov cs-prov-ill">Illustrative</span> same well design and cost as the offset; productivity proportional to HCPT.
-          The portfolio table below shows underwriting NPVs re-rated for price, so its figure for {v.offset_well} differs from this from-scratch price.
+          The portfolio table below prices every well the same way, so {v.offset_well} shows the same {usd(offset.npv10_musd)} there.
         </div>
       </div>
       {showSql && <pre className="mono" style={{ marginTop: 12, fontSize: 13.5, background: 'var(--bg-panel)', border: '1px solid var(--border-dim)', borderRadius: 6, padding: 12, whiteSpace: 'pre-wrap', color: 'var(--teal)' }}>{'-- the unrisked step-out case\n' + v.sql}</pre>}

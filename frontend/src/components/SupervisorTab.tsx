@@ -182,7 +182,7 @@ export default function SupervisorTab() {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
 
-      {/* Header — what & why */}
+      {/* Header, what & why */}
       <div style={{
         background: 'linear-gradient(120deg, var(--bg-card), var(--bg-panel))',
         border: '1px solid var(--border)', borderRadius: 10, padding: 18,
@@ -204,13 +204,13 @@ export default function SupervisorTab() {
         </div>
       </div>
 
-      {/* Control · Cost · Choice — live model picker (routes the Supervisor's FM calls) */}
+      {/* Control · Cost · Choice, live model picker (routes the Supervisor's FM calls) */}
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
         padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
       }}>
         <span style={{ fontSize: 15.8, fontWeight: 700, letterSpacing: '0.05em', color: '#4fb3e8' }}>CHOICE · COST · CONTROL</span>
-        <span style={{ fontSize: 15.8, color: 'var(--text-muted)' }}>pick a model — the Supervisor routes to it, no code change · governed by AI Gateway · price = $/1M tokens:</span>
+        <span style={{ fontSize: 15.8, color: 'var(--text-muted)' }}>pick a model, the Supervisor routes to it, no code change · governed by AI Gateway · price = $/1M tokens:</span>
         {(models.length ? models : [{ id: 'databricks-claude-sonnet-4-5', label: 'Claude Sonnet 4.5', family: 'Anthropic', inPerM: 3, outPerM: 15, tier: '$$' }]).map(m => {
           const active = m.id === model
           const tierColor = m.tier === '$$$' ? '#E67E22' : m.tier === '$$' ? '#F39C12' : '#27AE60'
@@ -248,7 +248,7 @@ export default function SupervisorTab() {
             }} style={inp(running)} disabled={running}>
               {wells.length === 0 && <option value={wellId}>{wellId}</option>}
               {wells.map(w => (
-                <option key={w.well_id} value={w.well_id}>{w.well_id} · {w.basin || '—'}</option>
+                <option key={w.well_id} value={w.well_id}>{w.well_id} · {w.basin || '–'}</option>
               ))}
             </select>
           </div>
@@ -288,7 +288,7 @@ export default function SupervisorTab() {
         {err && <div style={{ marginTop: 10, color: 'var(--red)', fontSize: 16.5 }}>⚠ {err}</div>}
       </div>
 
-      {/* Orchestration plan — supervisor decided which agents this question needs */}
+      {/* Orchestration plan, supervisor decided which agents this question needs */}
       {plan && (
         <div style={{
           background: 'linear-gradient(120deg, var(--bg-card), var(--bg-panel))',
@@ -334,10 +334,10 @@ export default function SupervisorTab() {
         })}
       </div>
 
-      {/* Recommendation — giant verdict card + reasoning */}
+      {/* Recommendation, giant verdict card + reasoning */}
       <VerdictCard rec={rec} running={running} />
 
-      {/* Cost + Governance — the omnigent Cost / Control story for this run */}
+      {/* Cost + Governance, the omnigent Cost / Control story for this run */}
       {rec && (rec.cost || rec.governance) && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {rec.cost && (
@@ -353,7 +353,7 @@ export default function SupervisorTab() {
                 <div>in: {rec.cost.prompt_tokens.toLocaleString()} tok × ${rec.cost.in_per_m}/1M</div>
                 <div>out: {rec.cost.completion_tokens.toLocaleString()} tok × ${rec.cost.out_per_m}/1M</div>
               </div>
-              <div style={{ fontSize: 14.2, color: 'var(--text-muted)', marginTop: 6 }}>Switch to a cheaper model above — same orchestration, lower cost per run.</div>
+              <div style={{ fontSize: 14.2, color: 'var(--text-muted)', marginTop: 6 }}>Switch to a cheaper model above, same orchestration, lower cost per run.</div>
             </div>
           )}
           {rec.governance && (
@@ -395,7 +395,7 @@ export default function SupervisorTab() {
         <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>How this works</div>
         <ol style={{ margin: 0, paddingLeft: 18, fontSize: 16.5, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
           <li><b>Plan:</b> the supervisor first reasons about your question and routes to only the specialists it needs (shown in the Orchestration Plan). Skipped agents are dimmed.</li>
-          <li><b>Fan-out + stream:</b> the engaged specialists run concurrently; results stream to this UI via Server-Sent Events as each completes — no waiting on the slowest.</li>
+          <li><b>Fan-out + stream:</b> the engaged specialists run concurrently; results stream to this UI via Server-Sent Events as each completes, no waiting on the slowest.</li>
           <li><b>Synthesise:</b> a final call on the chosen model (<code>{model}</code>) takes the engaged outputs and produces the recommendation with citations.</li>
           <li><b>Choice · Cost · Governance:</b> swap the model at runtime (no redeploy); the run's real token cost is metered; every call is AI-Gateway governed and audit-logged, and UC / ADME persona enforcement applies here too.</li>
         </ol>
@@ -446,7 +446,7 @@ function VerdictCard({ rec, running }: { rec: { text: string; total_ms: number; 
               display: 'inline-block', padding: '14px 24px',
               background: 'var(--bg-panel)', border: '1px dashed var(--border)',
               borderRadius: 8, fontSize: 36, fontWeight: 800, color: 'var(--text-muted)',
-            }}>{running ? '…' : '—'}</div>
+            }}>{running ? '…' : '–'}</div>
           )}
           <div style={{ fontSize: 15, color: 'var(--text-muted)', marginTop: 6 }}>
             {hasRec ? style.sub : (running ? 'awaiting specialist results' : 'submit a question to run')}
@@ -519,7 +519,7 @@ function SpecialistCard({ info, status, result }: { info: SpecialistInfo; status
       }}>
         {status === 'idle'    && <span style={{ color: 'var(--text-muted)' }}>{info.desc || 'awaiting question…'}</span>}
         {status === 'running' && <Skeleton />}
-        {status === 'skipped' && <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{result?.reason ? `Skipped — ${result.reason}` : 'Skipped by the orchestration plan.'}</span>}
+        {status === 'skipped' && <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{result?.reason ? `Skipped, ${result.reason}` : 'Skipped by the orchestration plan.'}</span>}
         {status === 'done'    && (typeof result?.result === 'string' ? result.result : result?.result ? JSON.stringify(result.result) : '(no output)')}
         {status === 'error'   && <span style={{ color: 'var(--red)' }}>{result?.error || 'failed'}</span>}
       </div>

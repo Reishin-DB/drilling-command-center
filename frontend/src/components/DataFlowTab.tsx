@@ -126,14 +126,14 @@ const SERVING: NodeDef[] = [
     color: '#b37feb', badge: 'UC FN',
     detail: [
       'calculate_npv10() · calculate_break_even()',
-      'f_well_profile() — identity + economics + H2S in one call',
-      'f_wells_economic_at_wti() — trusted wells economic at $X',
-      'f_wells_within_km() — great-circle proximity via well_distances',
+      'f_well_profile(), identity + economics + H2S in one call',
+      'f_wells_economic_at_wti(), trusted wells economic at $X',
+      'f_wells_within_km(), great-circle proximity via well_distances',
       'EXECUTE granted to app SP; called by Economics specialist',
     ],
   },
   {
-    id: 'genie', label: 'Genie Space', sub: 'Subsurface Command — FEVM',
+    id: 'genie', label: 'Genie Space', sub: 'Subsurface Command, FEVM',
     x: 630, y: 320, w: 150, h: 60,
     color: '#4fb3e8', badge: 'GENIE',
     detail: [
@@ -149,10 +149,10 @@ const SERVING: NodeDef[] = [
     x: 800, y: 320, w: 160, h: 60,
     color: '#9254de', badge: 'LLM',
     detail: [
-      'CHOICE: any of 6 endpoints (Claude Sonnet/Opus/Haiku + GPT-OSS/Llama/Qwen), swapped at runtime — no redeploy',
+      'CHOICE: any of 6 endpoints (Claude Sonnet/Opus/Haiku + GPT-OSS/Llama/Qwen), swapped at runtime, no redeploy',
       'COST: real per-run token spend × the model rate',
-      'RELIABILITY: multi-endpoint failover — a provider outage auto-reroutes to a backup model',
-      'GOVERNANCE: Databricks AI Gateway — PII/safety guardrails, payload logging, rate limits, audit log',
+      'RELIABILITY: multi-endpoint failover, a provider outage auto-reroutes to a backup model',
+      'GOVERNANCE: Databricks AI Gateway, PII/safety guardrails, payload logging, rate limits, audit log',
       'VISIBILITY: per-run tokens, spend, and which endpoint served each call logged to Unity Catalog',
       'Supervisor PLANS the task, ROUTES to the relevant specialists, then SYNTHESISES the verdict',
     ],
@@ -168,7 +168,7 @@ const APPL: NodeDef[] = [
     detail: [
       'Seeded on startup from OSDU',
       'Postgres-dialect shim over asyncpg API',
-      'Sub-ms reads — no warehouse round-trip',
+      'Sub-ms reads, no warehouse round-trip',
       'No persistence across restart',
     ],
   },
@@ -179,8 +179,8 @@ const APPL: NodeDef[] = [
     detail: [
       'Bound via Databricks Apps `database` resource',
       'Tables: dcc.journal · dcc.alerts',
-      'OBO auth — SP gets PG role automatically',
-      'Persistent — survives app restarts',
+      'OBO auth, SP gets PG role automatically',
+      'Persistent, survives app restarts',
     ],
   },
   {
@@ -296,13 +296,13 @@ export default function DataFlowTab() {
         </div>
 
         <svg viewBox="0 0 1200 660" style={{ width: '100%', background: 'var(--bg-primary)', borderRadius: 6 }}>
-          {/* Layer labels — placed at the top, above the orange UC banner */}
+          {/* Layer labels, placed at the top, above the orange UC banner */}
           <text x="12"  y="18" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SOURCES</text>
           <text x="220" y="18" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">MEDALLION · Delta</text>
           <text x="220" y="306" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">SERVING · AI</text>
           <text x="220" y="426" fill="var(--text-muted)" fontSize="10" fontFamily="monospace">APPLICATION · orchestration</text>
 
-          {/* Unity Catalog governance boundary — banner sits BELOW the row labels */}
+          {/* Unity Catalog governance boundary, banner sits BELOW the row labels */}
           <text x="550" y="42" textAnchor="middle" fill="#F39C12" fontSize="11" fontWeight="600" fontFamily="monospace">
             Unity Catalog · governance · tags · row filters · masks · UC Functions · Vector Search
           </text>
@@ -382,8 +382,8 @@ export default function DataFlowTab() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {[
-                { h: '1 · Ingest',       c: 'Operational data (wells, economics, drilling ops, reservoir, WTI) is generated in-process into DuckDB on startup — the app carries its own data, no external source needed.', col: '#27AE60' },
-                { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_h2s_profile, well_equipment_integrity, well_distances, gov_legal_tags/entitlements — plus certified UC functions (NPV, break-even, f_wells_within_km, f_equipment_spec_for_well).', col: '#CD6116' },
+                { h: '1 · Ingest',       c: 'Operational data (wells, economics, drilling ops, reservoir, WTI) is generated in-process into DuckDB on startup, the app carries its own data, no external source needed.', col: '#27AE60' },
+                { h: '2 · Serve (UC)',   c: 'Governed tables live in oil_pump_monitor_catalog.subsurface_command: operator_wells, well_economics, well_h2s_profile, well_equipment_integrity, well_distances, gov_legal_tags/entitlements, plus certified UC functions (NPV, break-even, f_wells_within_km, f_equipment_spec_for_well).', col: '#CD6116' },
                 { h: '3 · Retrieve',     c: 'Vector Search (wellbore_vs_index, gte-large-en) does semantic analog-well matching; Genie owns NL→SQL over the UC tables for the sidebar + the Supervisor.', col: '#4fb3e8' },
                 { h: '4 · Omnigent MAS', c: 'The Supervisor PLANS which specialists a question needs and ROUTES to only those (skipped ones dimmed); the engaged ones run in parallel and stream via SSE; it synthesises the verdict.', col: '#4fb3e8' },
                 { h: 'Choice · Cost · Governance', c: 'Swap the model at runtime (no redeploy); each run meters real token cost × the model rate; every call is Databricks AI Gateway governed (guardrails, rate limits, multi-endpoint failover) and audit-logged with per-run token + spend visibility in Unity Catalog.', col: '#9254de' },
@@ -438,7 +438,7 @@ const ONT_ENTITIES: OntEntity[] = [
     { name: 'group_id' }, { name: 'group_name' }, { name: 'description' } ] },
 ]
 const ONT_METRICS = [
-  { name: 'mv_well_economics', desc: 'NPV10-live, IRR, breakeven, capex, margin, CO2 by well/basin — trusted rows only, live NPV, IRR averaged not summed' },
+  { name: 'mv_well_economics', desc: 'NPV10-live, IRR, breakeven, capex, margin, CO2 by well/basin, trusted rows only, live NPV, IRR averaged not summed' },
   { name: 'mv_well_portfolio', desc: 'Well counts and depth by basin, state, and well type' },
   { name: 'mv_equipment_integrity', desc: 'Sour-service capex, lead time, and degradation risk by well, basin, severity band, and component' },
 ]

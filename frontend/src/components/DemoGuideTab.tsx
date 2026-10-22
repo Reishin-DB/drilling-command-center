@@ -8,27 +8,27 @@ const SCENE = {
 }
 
 const BUSINESS_CASE = [
-  { metric: '$50K+/day', label: 'cost of non-productive drilling time' },
+  { metric: '$40M', label: 'risked NPV10 of the next well, found in existing data' },
   { metric: 'days → minutes', label: 'from question to governed answer' },
-  { metric: 'OSDU-native', label: 'no bespoke ETL from the data platform' },
+  { metric: '3.6x', label: 'lower error filling a missing sonic log' },
   { metric: 'per-persona', label: 'governance applied to data AND AI' },
 ]
 
 const WHAT_WE_PROVE = [
-  'Live OSDU wellbore, reservoir, and economics data lands governed in Unity Catalog — one plane, no ETL sprawl.',
+  'Well logs, tops, headers and economics land governed in Unity Catalog through one Lakeflow pipeline: one plane, no ETL sprawl. The OSDU connector pattern is the same (its partner ADME feed is offline in this demo).',
   'Any engineer queries the portfolio in plain English via Genie, now backed by a governed ontology (metric views + certified functions) so answers are consistent and correct.',
-  'The Subsurface Supervisor fans out its specialists and synthesises a recommendation with citations — everyday to technical, in one surface.',
-  'An H2S finding flows straight into equipment reality: the same governed NACE MR0175 engine drives the Supervisor gate, the Oilfield Equipment tab, and Genie — so the metallurgy, capex, and lead-time answer is identical everywhere.',
+  'The Subsurface Supervisor fans out its specialists and synthesises a recommendation with citations, everyday to technical, in one surface.',
+  'An H2S finding flows straight into equipment reality: the same governed NACE MR0175 engine drives the Supervisor gate, the Oilfield Equipment tab, and Genie, so the metallurgy, capex, and lead-time answer is identical everywhere.',
   'Governance covers data AND AI: persona row/column masks apply to Genie answers too, because agents run as the user under Unity Catalog.',
-  'The ontology is governed Unity Catalog objects you own (comments, PK/FK graph, metric views, certified functions) — not a proprietary graph in a separate platform you copy data into. That is the wedge vs Cognite.',
+  'The ontology is governed Unity Catalog objects you own (comments, PK/FK graph, metric views, certified functions), not a proprietary graph in a separate platform you copy data into. That is the wedge vs Cognite.',
 ]
 
 const PLATFORM_PIECES = [
   { name: 'Unity Catalog', role: 'Single governance plane for every OSDU table, metric view, model, and vector index.' },
-  { name: 'ADME / OSDU', role: 'Live wellbore, reservoir, and rock-and-fluid records ingested from the OSDU data platform.' },
+  { name: 'ADME / OSDU', role: 'Wellbore, reservoir, and rock-and-fluid records from the OSDU data platform (the partner ADME feed is offline in this demo).' },
   { name: 'Lakeflow Pipelines', role: 'Bronze → Silver → Gold with quality and lineage; JSON payloads exploded to flat gold tables.' },
   { name: 'Genie + Metric Views', role: 'Natural-language to governed SQL over an ontology of canonical metrics and certified functions.' },
-  { name: 'Foundation Model APIs', role: 'Frontier LLMs power the Subsurface Supervisor synthesis — pay-per-token, no key management.' },
+  { name: 'Foundation Model APIs', role: 'Frontier LLMs power the Subsurface Supervisor synthesis, pay-per-token, no key management.' },
   { name: 'Vector Search', role: 'RAG over analog wells and drilling knowledge with Unity Catalog-governed indexes.' },
   { name: 'Databricks AI Gateway', role: 'Safety + PII guardrails, rate limits, model choice, multi-endpoint failover, and per-run usage/spend tracking (logged to Unity Catalog) in front of every agent.' },
   { name: 'MLflow + Model Serving', role: 'Synthetic-sonic model trained against the Gardner baseline on held-out wells, registered in Unity Catalog, served behind AI Gateway.' },
@@ -161,7 +161,7 @@ export default function DemoGuideTab({ onNavigate }: Props) {
         </ol>
       </Panel>
 
-      <Panel label="THE DATABRICKS STORY — ONE PLATFORM" col={DBR}>
+      <Panel label="THE DATABRICKS STORY, ONE PLATFORM" col={DBR}>
         <div style={{ color: 'var(--text-muted)', fontSize: 18, marginBottom: 12 }}>
           Every box below is real Databricks product, wired together and governed end-to-end. Name them as they come up.
         </div>
@@ -223,7 +223,7 @@ export default function DemoGuideTab({ onNavigate }: Props) {
         </div>
       ))}
 
-      <Panel label="THE WEDGE — WHY WE BEAT COGNITE" col={DBR} mt>
+      <Panel label="THE WEDGE, WHY WE BEAT COGNITE" col={DBR} mt>
         <p style={{ color: 'var(--text-secondary)', fontSize: 18.8, lineHeight: 1.55, margin: '0 0 12px 0' }}>{COGNITE_LINE}</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1.3fr', gap: 0, border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden', fontSize: 17.2 }}>
           <div style={{ background: 'var(--bg-panel)', padding: '7px 10px', fontWeight: 700, color: 'var(--text-muted)' }}></div>
@@ -240,7 +240,7 @@ export default function DemoGuideTab({ onNavigate }: Props) {
         <div style={{ color: 'var(--text-muted)', fontSize: 15.8, marginTop: 8, fontStyle: 'italic' }}>Cognite claims characterized at the architectural level; verify against current Cognite Data Fusion positioning before presenting.</div>
       </Panel>
 
-      <Panel label="CLOSING — PICK YOUR LANDING" col={CY} mt>
+      <Panel label="CLOSING, PICK YOUR LANDING" col={CY} mt>
         <p style={{ color: 'var(--text-muted)', fontSize: 18.8, margin: '0 0 12px 0' }}>End on the pivot that matches who's in the room:</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
           {CLOSING_PIVOTS.map(p => (

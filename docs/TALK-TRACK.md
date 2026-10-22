@@ -105,7 +105,7 @@ Click path follows the left rail. For each step: **click**, **say**, **land the 
 ### 5. Value the Well (1 min) · the business close
 **Click:** *Value the Well* (or *Value the well →* on the voxel banner). Let the top card read.
 **Say (business persona):** "Here's what that location is worth. Unrisked, **$103 million** of NPV10. Risked for its distance from control, **$40 million**, a **34%** IRR, paying back in **two years**, and it still breaks even at **$53** oil. On **$58 million** of capex."
-**Say (technical persona):** "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the **certified Unity Catalog function**, `calculate_npv10`, the same definition Genie and the Supervisor use." Click **Show SQL**.
+**Say (technical persona):** "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the **certified Unity Catalog function**, `calculate_npv10`, the same definition Genie, the Supervisor and the portfolio table below use: San Juan 01 shows **$92.8M** in both places." Click **Show SQL**.
 **Point at:** the Live and Illustrative tags under the card: "HCPT, price and the function are live; same well design and cost as the offset is the assumption, and it says so."
 **Land:** "From logs to a priced well in one sitting, with one governed definition of NPV."
 
@@ -177,8 +177,8 @@ Then stop talking.
 **"Why scale production by pore thickness?"**
 > It's the standard screening shortcut: the offset is the best evidence of how this rock produces, and the type curve is scaled by a reservoir-quality ratio. Pore thickness is a reasonable proxy here; with your data we'd use your type curves and your own scaling, kh if you have the permeability. The point is the workflow: the geomodel output flows straight into the governed economics.
 
-**"Why does the portfolio table show a different NPV for San Juan 01?"**
-> Good catch. The table shows the original underwriting NPV re-rated for today's price. The step-out card re-prices both wells from scratch with the certified function so the comparison is like for like, and the card says that underneath.
+**"Is that the same NPV I'd get from Genie or the Supervisor?"**
+> Yes, to the cent. Every NPV in the app, the step-out, its offset, the portfolio table, Genie's answers and the Supervisor's economics specialist, comes from the same certified Unity Catalog function at today's price. That's the point of governing the definition, not just the data.
 
 **"The OSDU panels say offline."**
 > They're fed by a partner ADME workspace that isn't live right now, and the app says so instead of faking it. The connector pattern is the same; on your OSDU instance those panels light up.
