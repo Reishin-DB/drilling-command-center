@@ -1,0 +1,122 @@
+{
+  "principal": "reishin.toolsi@databricks.com",
+  "query": "SELECT basin, count(*) AS zone_rows, count(avg_pay_sw) AS sw_visible, count(hc_pore_ft) AS hc_pore_visible FROM oil_pump_monitor_catalog.subsurface_command.gold_zone_summary GROUP BY basin ORDER BY basin",
+  "operator_view": [
+    {
+      "basin": "East Texas",
+      "zone_rows": "12",
+      "sw_visible": "6",
+      "hc_pore_visible": "12"
+    },
+    {
+      "basin": "Green River",
+      "zone_rows": "18",
+      "sw_visible": "12",
+      "hc_pore_visible": "18"
+    },
+    {
+      "basin": "Permian Basin",
+      "zone_rows": "24",
+      "sw_visible": "13",
+      "hc_pore_visible": "24"
+    },
+    {
+      "basin": "San Juan",
+      "zone_rows": "30",
+      "sw_visible": "17",
+      "hc_pore_visible": "30"
+    }
+  ],
+  "as_jv_partner_san_juan": [
+    {
+      "basin": "San Juan",
+      "zone_rows": "30",
+      "sw_visible": "0",
+      "hc_pore_visible": "0"
+    }
+  ],
+  "partner_sample_rows": [
+    {
+      "well_id": "SANJUAN-01",
+      "formation_name": "Entrada",
+      "net_pay_ft": "0.0",
+      "avg_pay_sw": null,
+      "hc_pore_ft": null
+    },
+    {
+      "well_id": "SANJUAN-01",
+      "formation_name": "Morrison",
+      "net_pay_ft": "4.0",
+      "avg_pay_sw": null,
+      "hc_pore_ft": null
+    },
+    {
+      "well_id": "SANJUAN-01",
+      "formation_name": "Todilto",
+      "net_pay_ft": "2.0",
+      "avg_pay_sw": null,
+      "hc_pore_ft": null
+    },
+    {
+      "well_id": "SANJUAN-01",
+      "formation_name": "Brushy Basin",
+      "net_pay_ft": "0.0",
+      "avg_pay_sw": null,
+      "hc_pore_ft": null
+    },
+    {
+      "well_id": "SANJUAN-01",
+      "formation_name": "Westwater",
+      "net_pay_ft": "1148.0",
+      "avg_pay_sw": null,
+      "hc_pore_ft": null
+    },
+    {
+      "well_id": "SANJUAN-01",
+      "formation_name": "Salt Wash",
+      "net_pay_ft": "2.0",
+      "avg_pay_sw": null,
+      "hc_pore_ft": null
+    }
+  ],
+  "restored_view": [
+    {
+      "basin": "East Texas",
+      "zone_rows": "12",
+      "sw_visible": "6",
+      "hc_pore_visible": "12"
+    },
+    {
+      "basin": "Green River",
+      "zone_rows": "18",
+      "sw_visible": "12",
+      "hc_pore_visible": "18"
+    },
+    {
+      "basin": "Permian Basin",
+      "zone_rows": "24",
+      "sw_visible": "13",
+      "hc_pore_visible": "24"
+    },
+    {
+      "basin": "San Juan",
+      "zone_rows": "30",
+      "sw_visible": "17",
+      "hc_pore_visible": "30"
+    }
+  ],
+  "policies": [
+    {
+      "routine_name": "mask_interpretation",
+      "comment": "Column mask: hides operator-interpreted saturation and hydrocarbon volume from JV partners."
+    },
+    {
+      "routine_name": "basin_filter",
+      "comment": "Row filter: JV partners only see the basins they are party to."
+    },
+    {
+      "routine_name": "is_jv_partner",
+      "comment": "True when the caller is mapped to the jv_partner persona."
+    }
+  ]
+}

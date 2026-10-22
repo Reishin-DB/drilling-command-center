@@ -1,0 +1,178 @@
+{
+  "endpoint": "subsurface-synthetic-sonic",
+  "state": "READY",
+  "latency_s": 0.14,
+  "served_entities": [
+    {
+      "name": "synthetic_sonic-2",
+      "entity": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
+      "version": "2",
+      "scale_to_zero": true,
+      "workload_size": "Small"
+    }
+  ],
+  "ai_gateway": {
+    "inference_table_config": {
+      "catalog_name": "oil_pump_monitor_catalog",
+      "enabled": true,
+      "schema_name": "subsurface_command",
+      "table_name_prefix": "sonic_endpoint"
+    },
+    "rate_limits": [
+      {
+        "calls": 600,
+        "key": "endpoint",
+        "renewal_period": "minute"
+      }
+    ],
+    "usage_tracking_config": {
+      "enabled": true
+    }
+  },
+  "request": {
+    "columns": [
+      "gr_api",
+      "rhob_gcc",
+      "nphi_vv",
+      "log_rt",
+      "md_ft",
+      "zone_index"
+    ],
+    "data": [
+      [
+        102.73,
+        2.4317,
+        0.3325,
+        0.3171018123980051,
+        5000.0,
+        0
+      ],
+      [
+        92.41,
+        2.3675,
+        0.3273,
+        0.2901459546478102,
+        5002.0,
+        0
+      ],
+      [
+        102.02,
+        2.3952,
+        0.327,
+        0.33387027882600906,
+        5004.0,
+        0
+      ],
+      [
+        98.47,
+        2.3942,
+        0.3523,
+        0.15548786214128146,
+        5006.0,
+        0
+      ],
+      [
+        100.57,
+        2.4431,
+        0.313,
+        0.3844430240587781,
+        5008.0,
+        0
+      ],
+      [
+        87.94,
+        2.4408,
+        0.2898,
+        0.497316744472857,
+        5010.0,
+        0
+      ],
+      [
+        95.21,
+        2.4377,
+        0.2921,
+        0.4971923582535037,
+        5012.0,
+        0
+      ],
+      [
+        106.95,
+        2.487,
+        0.2901,
+        0.5597271274175609,
+        5014.0,
+        0
+      ]
+    ]
+  },
+  "response": {
+    "predictions": [
+      93.66,
+      95.2,
+      95.32,
+      95.95,
+      91.68,
+      88.48,
+      90.03,
+      89.23
+    ]
+  },
+  "check": [
+    {
+      "md_ft": 5000.0,
+      "measured_dt": 97.65,
+      "predicted_dt": 93.66,
+      "abs_error": 3.99
+    },
+    {
+      "md_ft": 5002.0,
+      "measured_dt": 98.82,
+      "predicted_dt": 95.2,
+      "abs_error": 3.62
+    },
+    {
+      "md_ft": 5004.0,
+      "measured_dt": 95.02,
+      "predicted_dt": 95.32,
+      "abs_error": 0.3
+    },
+    {
+      "md_ft": 5006.0,
+      "measured_dt": 96.64,
+      "predicted_dt": 95.95,
+      "abs_error": 0.69
+    },
+    {
+      "md_ft": 5008.0,
+      "measured_dt": 94.77,
+      "predicted_dt": 91.68,
+      "abs_error": 3.09
+    },
+    {
+      "md_ft": 5010.0,
+      "measured_dt": 88.03,
+      "predicted_dt": 88.48,
+      "abs_error": 0.45
+    },
+    {
+      "md_ft": 5012.0,
+      "measured_dt": 91.65,
+      "predicted_dt": 90.03,
+      "abs_error": 1.62
+    },
+    {
+      "md_ft": 5014.0,
+      "measured_dt": 90.33,
+      "predicted_dt": 89.23,
+      "abs_error": 1.1
+    }
+  ],
+  "inference_table": [
+    {
+      "logged_requests": "41",
+      "first_request": "2026-10-21T17:32:54.403Z",
+      "last_request": "2026-10-22T14:19:23.440Z",
+      "ok": "41"
+    }
+  ]
+}

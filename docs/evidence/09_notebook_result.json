@@ -1,0 +1,31 @@
+{
+  "run_id": 1025664438265546,
+  "task_run_id": 1125365433364552,
+  "notebook": "notebooks/evidence_run.py",
+  "result": {
+    "model": {
+      "version": 2,
+      "run_id": "11806608ec9f4301826a8a61d45cff3d",
+      "champion_mae": 3.003,
+      "gardner_calibrated_mae": 10.683
+    },
+    "serving": {
+      "n": 10,
+      "mean_abs_error": 1.76
+    },
+    "genie": [
+      {
+        "q": "Which basin has the highest total live NPV?",
+        "a": "The basin with the **highest** total live NPV is **San Juan**, with **155.92 million USD** in total live NPV. Based on the result shown, **San Juan** is the top-ranked basin on this measure."
+      },
+      {
+        "q": "Which wells are within 50 km of SANJUAN-01 and how far are they?",
+        "a": "Within 50 km of **SANJUAN-01**, the only well shown is **SANJUAN-02** (**San Juan 02**) in the **San Juan** basin at **7.4 km** away, with **same_basin = true**. Based on the 1 row returned, **SANJUAN-02** is both the nearest and only listed nearby well in this result."
+      },
+      {
+        "q": "What is the net pay in the Westwater formation for GREENRIVER-03?",
+        "a": "For well **GREENRIVER-03** in the **Westwater** formation, **net pay is 1,140.0 ft**. As context, **gross interval is 1,200.0 ft** and **net-to-gross is 0.95**, which indicates most of the Westwater interval is counted as pay in **GREENRIVER-03**."
+      }
+    ]
+  }
+}

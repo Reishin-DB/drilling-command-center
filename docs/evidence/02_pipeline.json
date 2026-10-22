@@ -1,0 +1,330 @@
+{
+  "pipeline_id": "95216d7e-1691-44ee-bc12-ab02ee7d6225",
+  "name": "subsurface-command-pipeline",
+  "state": "IDLE",
+  "latest_updates": [
+    {
+      "update_id": "6eca9204-22c0-4bd8-bc10-9c793151393e",
+      "state": "COMPLETED",
+      "created": "2026-10-21 17:04:47 UTC"
+    }
+  ],
+  "data_quality_by_flow": {
+    "oil_pump_monitor_catalog.subsurface_command.silver_wells": {
+      "timestamp": "2026-10-21T17:05:57.418Z",
+      "output_rows": "14",
+      "expectations": [
+        {
+          "name": "has_id",
+          "dataset": "oil_pump_monitor_catalog.subsurface_command.silver_wells",
+          "passed_records": 14,
+          "failed_records": 0
+        },
+        {
+          "name": "located",
+          "dataset": "oil_pump_monitor_catalog.subsurface_command.silver_wells",
+          "passed_records": 14,
+          "failed_records": 0
+        }
+      ]
+    },
+    "oil_pump_monitor_catalog.subsurface_command.silver_logs": {
+      "timestamp": "2026-10-21T17:05:57.357Z",
+      "output_rows": "35014",
+      "expectations": [
+        {
+          "name": "rt_positive",
+          "dataset": "oil_pump_monitor_catalog.subsurface_command.silver_logs",
+          "passed_records": 35014,
+          "failed_records": 0
+        },
+        {
+          "name": "rhob_in_range",
+          "dataset": "oil_pump_monitor_catalog.subsurface_command.silver_logs",
+          "passed_records": 35014,
+          "failed_records": 0
+        },
+        {
+          "name": "has_depth",
+          "dataset": "oil_pump_monitor_catalog.subsurface_command.silver_logs",
+          "passed_records": 35014,
+          "failed_records": 0
+        },
+        {
+          "name": "gr_in_range",
+          "dataset": "oil_pump_monitor_catalog.subsurface_command.silver_logs",
+          "passed_records": 35014,
+          "failed_records": 0
+        }
+      ]
+    }
+  },
+  "table_row_counts": [
+    {
+      "t": "silver_logs",
+      "n": "35014"
+    },
+    {
+      "t": "gold_zone_summary",
+      "n": "84"
+    },
+    {
+      "t": "gold_synthetic_sonic",
+      "n": "14457"
+    },
+    {
+      "t": "bronze_logs",
+      "n": "35014"
+    },
+    {
+      "t": "gold_petrophysics",
+      "n": "35014"
+    },
+    {
+      "t": "gold_sonic_features",
+      "n": "33610"
+    }
+  ],
+  "recent_events": [
+    {
+      "timestamp": "2026-10-21T17:06:04.473Z",
+      "event_type": "update_progress",
+      "level": "INFO",
+      "message": "Update 6eca92 is COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:04.436Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:04.384Z",
+      "event_type": "dataset_life_cycle",
+      "level": "INFO",
+      "message": "Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`gold_zone_summary` has been created."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:04.367Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:04.306Z",
+      "event_type": "dataset_life_cycle",
+      "level": "INFO",
+      "message": "Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`gold_sonic_features` has been created."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.721Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is RUNNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.688Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is STARTING."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.686Z",
+      "event_type": "planning_information",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' has been planned to be executed as COMPLETE_RECOMPUTE."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.469Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is RUNNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.453Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is STARTING."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.451Z",
+      "event_type": "planning_information",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' has been planned to be executed as COMPLETE_RECOMPUTE."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.235Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is PLANNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.233Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is PLANNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.228Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:06:01.189Z",
+      "event_type": "dataset_life_cycle",
+      "level": "INFO",
+      "message": "Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`gold_petrophysics` has been created."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:58.200Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is RUNNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:58.148Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is STARTING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:58.144Z",
+      "event_type": "planning_information",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' has been planned to be executed as COMPLETE_RECOMPUTE."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:57.424Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is PLANNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:57.418Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:57.371Z",
+      "event_type": "dataset_life_cycle",
+      "level": "INFO",
+      "message": "Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`silver_wells` has been created."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:57.357Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:57.316Z",
+      "event_type": "dataset_life_cycle",
+      "level": "INFO",
+      "message": "Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`silver_logs` has been created."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:53.409Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is RUNNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:53.378Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is RUNNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:53.374Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is STARTING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:53.371Z",
+      "event_type": "planning_information",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' has been planned to be executed as COMPLETE_RECOMPUTE."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:53.271Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is STARTING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:53.252Z",
+      "event_type": "planning_information",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' has been planned to be executed as COMPLETE_RECOMPUTE."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.226Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is PLANNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.224Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is PLANNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.153Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.145Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_logs'."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.134Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.128Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops' has COMPLETED."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.109Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops'."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:52.032Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header'."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:46.876Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' is RUNNING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:46.209Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' is STARTING."
+    },
+    {
+      "timestamp": "2026-10-21T17:05:46.094Z",
+      "event_type": "flow_progress",
+      "level": "INFO",
+      "message": "Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops' is RUNNING."
+    }
+  ]
+}

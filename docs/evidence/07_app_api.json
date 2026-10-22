@@ -1,0 +1,478 @@
+{
+  "app": "https://subsurface-command-7474647106303257.aws.databricksapps.com",
+  "captured": "2026-10-22T14:47:27.290110+00:00",
+  "responses": {
+    "/api/sonic/metrics": {
+      "status": 200,
+      "seconds": 0.44,
+      "body": {
+        "endpoint": "subsurface-synthetic-sonic",
+        "model": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
+        "model_version": "2",
+        "champion": "linear_all_curves",
+        "champion_rule": "lowest leave-one-well-out MAE; within 2% the simpler model wins",
+        "evaluation": "leave-one-well-out",
+        "n_wells": 13,
+        "n_samples": 31189,
+        "units": "us/ft",
+        "pooled": {
+          "gardner_textbook": {
+            "mae": 17.232,
+            "rmse": 22.2468,
+            "r2": -1.5415,
+            "bias": 10.9306
+          },
+          "gardner_calibrated": {
+            "mae": 10.6833,
+            "rmse": 12.3358,
+            "r2": 0.2186,
+            "bias": -0.9184
+          },
+          "faust_calibrated": {
+            "mae": 6.6418,
+            "rmse": 8.6566,
+            "r2": 0.6152,
+            "bias": -0.5353
+          },
+          "linear_all_curves": {
+            "mae": 3.0026,
+            "rmse": 3.7626,
+            "r2": 0.9273,
+            "bias": -0.0053
+          },
+          "model": {
+            "mae": 3.0457,
+            "rmse": 3.8147,
+            "r2": 0.9253,
+            "bias": -0.0057
+          }
+        },
+        "per_well_mae": {
+          "gardner_textbook": {
+            "EASTTEXAS-05": 16.781,
+            "ET-OFFSET-08": 16.709,
+            "GR-OFFSET-04": 18.954,
+            "GR-OFFSET-05": 16.728,
+            "PB-OFFSET-06": 15.678,
+            "PB-OFFSET-07": 17.633,
+            "PERMIAN-04": 16.818,
+            "PERMIAN-06": 19.055,
+            "SANJUAN-01": 18.547,
+            "SANJUAN-02": 15.151,
+            "SJ-OFFSET-01": 17.663,
+            "SJ-OFFSET-02": 16.486,
+            "SJ-OFFSET-03": 17.807
+          },
+          "gardner_calibrated": {
+            "EASTTEXAS-05": 10.266,
+            "ET-OFFSET-08": 10.239,
+            "GR-OFFSET-04": 10.895,
+            "GR-OFFSET-05": 10.44,
+            "PB-OFFSET-06": 9.907,
+            "PB-OFFSET-07": 10.888,
+            "PERMIAN-04": 10.792,
+            "PERMIAN-06": 10.443,
+            "SANJUAN-01": 11.164,
+            "SANJUAN-02": 11.547,
+            "SJ-OFFSET-01": 10.85,
+            "SJ-OFFSET-02": 10.321,
+            "SJ-OFFSET-03": 11.135
+          },
+          "faust_calibrated": {
+            "EASTTEXAS-05": 6.084,
+            "ET-OFFSET-08": 6.165,
+            "GR-OFFSET-04": 6.601,
+            "GR-OFFSET-05": 6.336,
+            "PB-OFFSET-06": 6.245,
+            "PB-OFFSET-07": 5.976,
+            "PERMIAN-04": 5.877,
+            "PERMIAN-06": 7.232,
+            "SANJUAN-01": 8.29,
+            "SANJUAN-02": 7.761,
+            "SJ-OFFSET-01": 8.432,
+            "SJ-OFFSET-02": 5.21,
+            "SJ-OFFSET-03": 6.164
+          },
+          "linear_all_curves": {
+            "EASTTEXAS-05": 2.938,
+            "ET-OFFSET-08": 3.393,
+            "GR-OFFSET-04": 3.357,
+            "GR-OFFSET-05": 2.541,
+            "PB-OFFSET-06": 2.623,
+            "PB-OFFSET-07": 2.527,
+            "PERMIAN-04": 2.642,
+            "PERMIAN-06": 2.816,
+            "SANJUAN-01": 2.606,
+            "SANJUAN-02": 4.497,
+            "SJ-OFFSET-01": 3.911,
+            "SJ-OFFSET-02": 2.719,
+            "SJ-OFFSET-03": 2.497
+          },
+          "model": {
+            "EASTTEXAS-05": 2.925,
+            "ET-OFFSET-08": 3.386,
+            "GR-OFFSET-04": 3.429,
+            "GR-OFFSET-05": 2.549,
+            "PB-OFFSET-06": 2.525,
+            "PB-OFFSET-07": 2.578,
+            "PERMIAN-04": 2.758,
+            "PERMIAN-06": 2.858,
+            "SANJUAN-01": 2.748,
+            "SANJUAN-02": 4.477,
+            "SJ-OFFSET-01": 4.034,
+            "SJ-OFFSET-02": 2.813,
+            "SJ-OFFSET-03": 2.547
+          }
+        },
+        "champion_scores": {
+          "mae": 3.0026,
+          "rmse": 3.7626,
+          "r2": 0.9273,
+          "bias": -0.0053
+        },
+        "method_labels": {
+          "gardner_textbook": "Gardner (published coefficients)",
+          "gardner_calibrated": "Gardner (refit on training wells)",
+          "faust_calibrated": "Faust (refit on training wells)",
+          "linear_all_curves": "Linear, all curves",
+          "model": "Gradient-boosted trees, all curves"
+        }
+      }
+    },
+    "/api/voxels/stepouts": {
+      "status": 200,
+      "seconds": 0.4,
+      "body": {
+        "stepouts": [
+          {
+            "field": "East Texas",
+            "basin": "East Texas",
+            "anchor_well": "EASTTEXAS-05",
+            "nearest_well": "EASTTEXAS-05",
+            "control_wells": [
+              "EASTTEXAS-05"
+            ],
+            "lat": 31.52339,
+            "lon": -94.58353,
+            "hcpt_ft": 220.3,
+            "risked_hcpt_ft": 145.4,
+            "control_mean_hcpt_ft": 202.2,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+          },
+          {
+            "field": "Wamsutter",
+            "basin": "Green River",
+            "anchor_well": "GREENRIVER-03",
+            "nearest_well": "GREENRIVER-03",
+            "control_wells": [
+              "GREENRIVER-03"
+            ],
+            "lat": 41.677,
+            "lon": -107.92885,
+            "hcpt_ft": 232.6,
+            "risked_hcpt_ft": 153.5,
+            "control_mean_hcpt_ft": 250.6,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+          },
+          {
+            "field": "Midland",
+            "basin": "Permian Basin",
+            "anchor_well": "PERMIAN-04",
+            "nearest_well": "PERMIAN-04",
+            "control_wells": [
+              "PERMIAN-04"
+            ],
+            "lat": 31.953,
+            "lon": -102.11779,
+            "hcpt_ft": 219.2,
+            "risked_hcpt_ft": 144.7,
+            "control_mean_hcpt_ft": 220.8,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+          },
+          {
+            "field": "Edwards",
+            "basin": "Permian Basin",
+            "anchor_well": "PERMIAN-06",
+            "nearest_well": "PERMIAN-06",
+            "control_wells": [
+              "PERMIAN-06"
+            ],
+            "lat": 31.223,
+            "lon": -100.93773,
+            "hcpt_ft": 245.1,
+            "risked_hcpt_ft": 161.8,
+            "control_mean_hcpt_ft": 246.2,
+            "nearest_well_ft": 2643,
+            "uncertainty": 0.68
+          },
+          {
+            "field": "Blanco",
+            "basin": "San Juan",
+            "anchor_well": "SANJUAN-01",
+            "nearest_well": "SANJUAN-01",
+            "control_wells": [
+              "SANJUAN-01",
+              "SANJUAN-02"
+            ],
+            "lat": 36.72396,
+            "lon": -107.57252,
+            "hcpt_ft": 253.0,
+            "risked_hcpt_ft": 167.5,
+            "control_mean_hcpt_ft": 220.9,
+            "nearest_well_ft": 2616,
+            "uncertainty": 0.68
+          }
+        ]
+      }
+    },
+    "/api/voxels/stepout_value/SANJUAN-01": {
+      "status": 200,
+      "seconds": 1.11,
+      "body": {
+        "field": "Blanco",
+        "basin": "San Juan",
+        "offset_well": "SANJUAN-01",
+        "hcpt": {
+          "offset_ft": 238.6,
+          "stepout_ft": 253.0,
+          "risked_ft": 167.5,
+          "scale": 1.06,
+          "risked_scale": 0.702,
+          "uncertainty": 0.68
+        },
+        "location": {
+          "lat": 36.72396,
+          "lon": -107.57252,
+          "distance_ft": 2616
+        },
+        "wti": 79.18,
+        "wti_date": "2026-10-22",
+        "cases": {
+          "offset": {
+            "capex_musd": 58.0,
+            "opex_musd_yr": 4.1,
+            "decline_pct_yr": 18.0,
+            "wti": 79.18,
+            "peak_rate_bopd": 1800.0,
+            "npv10_musd": 92.75,
+            "break_even_wti": 37.44,
+            "irr_pct": 62.6,
+            "payback_years": 1.3
+          },
+          "stepout": {
+            "capex_musd": 58.0,
+            "opex_musd_yr": 4.1,
+            "decline_pct_yr": 18.0,
+            "wti": 79.18,
+            "peak_rate_bopd": 1908.6,
+            "npv10_musd": 103.37,
+            "break_even_wti": 35.31,
+            "irr_pct": 68.1,
+            "payback_years": 1.2
+          },
+          "risked": {
+            "capex_musd": 58.0,
+            "opex_musd_yr": 4.1,
+            "decline_pct_yr": 18.0,
+            "wti": 79.18,
+            "peak_rate_bopd": 1263.6,
+            "npv10_musd": 40.32,
+            "break_even_wti": 53.33,
+            "irr_pct": 34.3,
+            "payback_years": 2.0
+          }
+        },
+        "priced_by": "uc_function",
+        "pricing_error": null,
+        "sql": "SELECT round(oil_pump_monitor_catalog.subsurface_command.calculate_npv10(58.0, 4.1, 1908.6, 18.0, 79.18, 10), 2) AS npv10_musd,\n       round(oil_pump_monitor_catalog.subsurface_command.calculate_break_even(58.0, 4.1, 1908.6, 18.0), 2) AS break_even_wti",
+        "method": "Offset type curve scaled by HCPT ratio; capex, opex and decline from the offset; priced with the certified UC functions calculate_npv10 and calculate_break_even (10 years, 10% discount). IRR and payback computed in the app from the same cash flows."
+      }
+    },
+    "/api/economics/summary": {
+      "status": 200,
+      "seconds": 1.21,
+      "body": {
+        "wti_spot": 79.18,
+        "wti_date": "2026-10-22",
+        "total_capex_musd": 339.0,
+        "total_npv_live_musd": 507.8,
+        "total_co2_tonnes_yr": 13300,
+        "wells": [
+          {
+            "well_id": "GREENRIVER-03",
+            "well_name": "Green River 03",
+            "basin": "Green River",
+            "status": "qc_complete",
+            "quality_score": 61,
+            "capex_musd": 72.0,
+            "opex_musd_yr": 5.2,
+            "peak_rate_bopd": 3200.0,
+            "decline_pct_yr": 28.0,
+            "wti_break_even": 34.32,
+            "npv10_base_musd": 42.1,
+            "npv10_live_musd": 135.91,
+            "irr_pct": 91.0,
+            "payback_years": 0.8,
+            "co2_tonnes_yr": 3400.0,
+            "margin_per_bbl": 44.86
+          },
+          {
+            "well_id": "EASTTEXAS-05",
+            "well_name": "East Texas 05",
+            "basin": "East Texas",
+            "status": "gold",
+            "quality_score": 95,
+            "capex_musd": 65.0,
+            "opex_musd_yr": 4.8,
+            "peak_rate_bopd": 2100.0,
+            "decline_pct_yr": 15.0,
+            "wti_break_even": 33.35,
+            "npv10_base_musd": 55.8,
+            "npv10_live_musd": 129.85,
+            "irr_pct": 69.3,
+            "payback_years": 1.2,
+            "co2_tonnes_yr": 2400.0,
+            "margin_per_bbl": 45.83
+          },
+          {
+            "well_id": "SANJUAN-01",
+            "well_name": "San Juan 01",
+            "basin": "San Juan",
+            "status": "gold",
+            "quality_score": 88,
+            "capex_musd": 58.0,
+            "opex_musd_yr": 4.1,
+            "peak_rate_bopd": 1800.0,
+            "decline_pct_yr": 18.0,
+            "wti_break_even": 37.44,
+            "npv10_base_musd": 28.4,
+            "npv10_live_musd": 92.75,
+            "irr_pct": 62.6,
+            "payback_years": 1.3,
+            "co2_tonnes_yr": 2100.0,
+            "margin_per_bbl": 41.74
+          },
+          {
+            "well_id": "SANJUAN-02",
+            "well_name": "San Juan 02",
+            "basin": "San Juan",
+            "status": "corrected",
+            "quality_score": 72,
+            "capex_musd": 52.0,
+            "opex_musd_yr": 3.8,
+            "peak_rate_bopd": 1500.0,
+            "decline_pct_yr": 20.0,
+            "wti_break_even": 43.07,
+            "npv10_base_musd": 14.2,
+            "npv10_live_musd": 63.17,
+            "irr_pct": 53.3,
+            "payback_years": 1.4,
+            "co2_tonnes_yr": 1900.0,
+            "margin_per_bbl": 36.11
+          },
+          {
+            "well_id": "PERMIAN-06",
+            "well_name": "Permian 06",
+            "basin": "Permian Basin",
+            "status": "corrected",
+            "quality_score": 78,
+            "capex_musd": 44.0,
+            "opex_musd_yr": 3.2,
+            "peak_rate_bopd": 1400.0,
+            "decline_pct_yr": 22.0,
+            "wti_break_even": 41.19,
+            "npv10_base_musd": 11.2,
+            "npv10_live_musd": 58.71,
+            "irr_pct": 60.0,
+            "payback_years": 1.2,
+            "co2_tonnes_yr": 1800.0,
+            "margin_per_bbl": 37.99
+          },
+          {
+            "well_id": "PERMIAN-04",
+            "well_name": "Permian 04",
+            "basin": "Permian Basin",
+            "status": "raw",
+            "quality_score": 0,
+            "capex_musd": 48.0,
+            "opex_musd_yr": 3.5,
+            "peak_rate_bopd": 1200.0,
+            "decline_pct_yr": 25.0,
+            "wti_break_even": 56.77,
+            "npv10_base_musd": 8.6,
+            "npv10_live_musd": 27.43,
+            "irr_pct": 35.2,
+            "payback_years": 1.7,
+            "co2_tonnes_yr": 1700.0,
+            "margin_per_bbl": 22.41
+          }
+        ],
+        "priced_by": "uc_function",
+        "pricing_error": null,
+        "wti_source": "synthetic"
+      }
+    },
+    "/api/sonic/GREENRIVER-03": {
+      "status": 200,
+      "source": "model",
+      "endpoint": "subsurface-synthetic-sonic",
+      "has_measured_dt": false,
+      "rows_returned": 501,
+      "first_rows": [
+        {
+          "md": 5000.0,
+          "gr": 94.98,
+          "rhob": 2.4681,
+          "nphi": 0.3088,
+          "rt": 3.0481,
+          "dt_actual": null,
+          "dt_gardner": 75.42,
+          "dt_model": 89.13
+        },
+        {
+          "md": 5010.0,
+          "gr": 103.21,
+          "rhob": 2.4778,
+          "nphi": 0.2825,
+          "rt": 3.7957,
+          "dt_actual": null,
+          "dt_gardner": 74.24,
+          "dt_model": 88.72
+        },
+        {
+          "md": 5020.0,
+          "gr": 101.78,
+          "rhob": 2.4827,
+          "nphi": 0.3048,
+          "rt": 2.6505,
+          "dt_actual": null,
+          "dt_gardner": 73.66,
+          "dt_model": 89.25
+        },
+        {
+          "md": 5030.0,
+          "gr": 107.12,
+          "rhob": 2.514,
+          "nphi": 0.3164,
+          "rt": 3.3697,
+          "dt_actual": null,
+          "dt_gardner": 70.06,
+          "dt_model": 89.04
+        },
+        {
+          "md": 5040.0,
+          "gr": 97.84,
+          "rhob": 2.5044,
+          "nphi": 0.294,
+          "rt": 4.7787,
+          "dt_actual": null,
+          "dt_gardner": 71.14,
+          "dt_model": 86.89
+        }
+      ]
+    }
+  }
+}

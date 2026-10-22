@@ -8,10 +8,12 @@ code { font-family: Menlo, monospace; font-size: 9.5pt; background: #F1F3F4; pad
 ul, ol { margin: 4px 0 8px; padding-left: 22px } li { margin: 2px 0 } p { margin: 5px 0 }
 table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9.8pt } th, td { border: 1px solid #D5DDE1; padding: 5px 7px; text-align: left; vertical-align: top } th { background: #F4F6F7 } tr { page-break-inside: avoid }
 h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
-</style></head><body><h1>Subsurface Intelligence: talk track</h1>
-<p>For the FE Bar AI roleplay: about 20 minutes with two personas, a <b>business stakeholder</b> (asset manager or VP subsurface, owns the next-well decision and the capex) and a <b>technical stakeholder</b> (petrophysics or subsurface data lead, owns whether this is trustworthy and fits the stack). Scored on demo setup, value communication, reading the room, and professionalism.</p>
+</style></head><body><h1>Subsurface Intelligence for Landman Oil: talk track</h1>
+<p>For the FE Bar AI roleplay: about 20 minutes with <b>Landman Oil</b>, an illustrative upstream operator whose scale is taken from a public major's 2025 strategy disclosures, and two people in the room.</p>
+<h3>Who is in the room</h3>
+<table><tr><th></th><th>SVP Digital Operations (economic buyer)</th><th>VP of Engineering (technical owner)</th></tr><tr><td>Owns</td><td>The digital and AI program across operations, and the case for funding it</td><td>The engineering platforms, integrations and data the program runs on</td></tr><tr><td>Measured on</td><td>Digital value delivered at scale, and the contribution to Landman's <b>$4 to 5B</b> structural cost target while production grows toward <b>2.3 to 2.5 mmboe/d</b></td><td>Platform reliability, reuse across use cases, security and governance, and engineering delivery speed</td></tr><tr><td>Pressure</td><td><b>86%</b> of energy AI never leaves the pilot; every SaaS tool added is another licence, another copy of the data, another set of access rules</td><td><b>60 to 70%</b> of any AI use case is data integration; point solutions rebuild it each time at <b>3 to 5x</b> the cost</td></tr><tr><td>Wants to hear</td><td>One field, value in weeks, a template that scales, cost under control</td><td>Open formats, one governance layer, it fits the existing stack, the model is proven against today's method</td></tr><tr><td>Will push on</td><td>"What is it worth, and when?"</td><td>"Is the model trustworthy, and what breaks when we port it?"</td></tr></table>
 <p>Shape: <b>open and discover (3 min) → deck slides 1 to 3, the value (3 min) → live demo (10 min) → recap, then deck slide 4, how it is built (2 min) → deck slide 5, the ask (1 min) → questions.</b> The deck is six slides on purpose: it frames the value and the ask, and the demo carries the proof. Leave room; the questions are where the score is made.</p>
-<p>Every number is tagged so you can defend it: <b>[demo]</b> computed live by the app or the training job on the synthetic fleet, <b>[yours]</b> a number you ask them for. There are no industry-benchmark dollar figures in this track on purpose; if they ask for one, turn it into a <b>[yours]</b> question.</p>
+<p>Every number is tagged so you can defend it: <b>[demo]</b> computed live by the app or the training job on the synthetic fleet, <b>[Landman]</b> Landman's public-scale figures (a public major's 2025 disclosures), <b>[benchmark]</b> industry figure, <b>[ask]</b> a number you ask them for.</p>
 <h2>0. Before you start (10 min ahead)</h2>
 <ul>
 <li><b>Warm the sonic endpoint.</b> It scales to zero. Open <i>Fill the Missing Sonic</i> once; the chip must read <code>Live · Model Serving · subsurface-synthetic-sonic</code>, not <code>Fallback · Gardner relation</code>. If it says fallback, wait 60 seconds and reload.</li>
@@ -24,15 +26,15 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 </ul>
 <h2>1. Open and discover (3 min)</h2>
 <p><b>Say:</b></p>
-<blockquote>Thanks for the time. My goal today is narrow: show you one subsurface decision, where the next well goes in a field you already produce from, done end to end on Databricks, and get your honest read on whether it would hold up on your data. Before I start, two quick questions so I aim this at what matters to you.</blockquote>
-<p><b>Ask the business persona:</b></p>
+<blockquote>Thanks for the time. Landman has told the market it will grow production toward 2.3 to 2.5 million barrels a day and take 4 to 5 billion dollars of structural cost out at the same time. My goal today is narrow: show you one decision that sits on both, where the next well goes in a field you already produce from, done end to end on Databricks, and get your honest read on whether it would hold up on Landman's data. Two quick questions first.</blockquote>
+<p><b>Ask the SVP Digital Operations:</b></p>
 <ul>
-<li>When the team proposes the next well in a producing field, how long does it take to get from "we think there is room" to a located, priced proposal? Who touches it?</li>
-<li>What happens to that decision when a key log is missing on a nearby well?</li>
+<li>Which digital programs have made it from pilot to production at Landman, and what stopped the ones that didn't?</li>
+<li>When an asset team proposes the next well in a producing field, how long does it take to get to a located, priced proposal, and how many tools does it pass through? <b>[ask]</b></li>
 </ul>
-<p><b>Ask the technical persona:</b></p>
+<p><b>Ask the VP of Engineering:</b></p>
 <ul>
-<li>Where do your logs, tops, and well headers live today, and how do they get into the geomodel?</li>
+<li>Where do Landman's logs, tops and well headers live today, and how many SaaS applications does a next-well proposal touch?</li>
 <li>What would you need to see before you trusted a model to fill a missing curve, or to rank a location?</li>
 </ul>
 <p><b>Listen for, and reuse later:</b> the number of hand-offs, weeks or months of cycle time, wells drilled without sonic, distrust of black-box models, partners who need some data but not all. Play their words back at each step.</p>
@@ -40,14 +42,14 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p>The deck is the frame; the demo is the proof. Three slides, about a minute each, then switch to the app and do not come back to the deck until after the demo.</p>
 <h3>Slide 1 · Title (30 s)</h3>
 <p><b>Say:</b></p>
-<blockquote>This is Subsurface Intelligence: one decision, where the next well goes, taken from raw well logs to a located, priced, governed proposal on one platform. Three numbers to hold onto: a next well worth <b>$40 million risked</b>, found in data your team already has; a missing sonic log filled with <b>3.6 times lower error</b> than today's method; and all of it in <b>one sitting</b>.</blockquote>
-<h3>Slide 2 · The decision (45 s)</h3>
+<blockquote>This is Subsurface Intelligence for Landman: one decision, where the next well goes, taken from raw well logs to a located, priced, governed proposal on one platform. Three numbers to hold onto: a next well worth <b>$40 million risked</b>, found in data your team already has; a missing sonic log filled with <b>3.6 times lower error</b> than today's method; and all of it in <b>one sitting</b>.</blockquote>
+<h3>Slide 2 · Landman Oil's bet (45 s)</h3>
 <p><b>Say:</b></p>
-<blockquote>The data to place the next well already exists: logs, tops, headers, OSDU records, economics. It lives in five places with five owners, so every new question starts with an export and a hand-off. Gaps make it worse: a well drilled without a sonic log blocks geomechanics until someone patches it by hand. And when AI assistants arrive, they either can't see the governed data or they see too much.</blockquote>
+<blockquote>Landman is putting about 10 billion dollars a year back into oil and gas, growing toward 2.3 to 2.5 million barrels a day, and taking 4 to 5 billion of structural cost out, all at once <b>[Landman]</b>. Every next-well decision sits on both sides of that bet. Today the data to make it lives in several SaaS applications with separate owners, so every proposal is a chain of exports and hand-offs. Gaps make it worse: a well drilled without a sonic log blocks geomechanics until someone patches it by hand. And when AI assistants arrive, they either can't see the governed data or they see too much.</blockquote>
 <p><b>Tie back:</b> play back their answer to "how long does a step-out proposal take today?" in their words.</p>
 <h3>Slide 3 · The business value (1.5 min)</h3>
 <p>Walk the four levers top to bottom, then the cost line.</p>
-<table><tr><th>Lever</th><th>Say</th><th>The number</th></tr><tr><td><b>1. Value per decision</b></td><td>"The geomodel finds and ranks a step-out in data you already have, and the certified NPV function prices it."</td><td><b>$103M</b> NPV10 unrisked, <b>$40M</b> risked, <b>34%</b> IRR, <b>$53</b> break-even on <b>$58M</b> capex at $79 WTI <b>[demo]</b></td></tr><tr><td><b>2. Speed to decision</b></td><td>"Logs to a priced proposal in one sitting instead of a chain of hand-offs. Time has a price."</td><td>Every <b>6 months</b> of delay costs <b>$1.9M</b> of the risked value, <b>$4.8M</b> unrisked, <b>4.7%</b> of NPV at 10% <b>[demo]</b>. "How long does it take you today?" <b>[yours]</b></td></tr><tr><td><b>3. No blocked decisions</b></td><td>"Missing curves are filled in seconds by a served model scored against the method your petrophysicists trust."</td><td><b>3.6x</b> lower error than Gardner refit on the same wells, on <b>13</b> held-out wells <b>[demo]</b>. "How many of your wells lack sonic?" <b>[yours]</b></td></tr><tr><td><b>4. Safe to share</b></td><td>"Partners and AI see only what they're entitled to, enforced once in Unity Catalog."</td><td>JV partner sees <b>30 of 84</b> rows, interpretation masked, in the app, Genie and SQL <b>[demo]</b></td></tr></table>
+<table><tr><th>Lever</th><th>Say</th><th>The number</th></tr><tr><td><b>1. Value per decision</b></td><td>"The geomodel finds and ranks a step-out in data you already have, and the certified NPV function prices it."</td><td><b>$103M</b> NPV10 unrisked, <b>$40M</b> risked, <b>34%</b> IRR, <b>$53</b> break-even on <b>$58M</b> capex at $79 WTI <b>[demo]</b></td></tr><tr><td><b>2. Speed to decision</b></td><td>"Logs to a priced proposal in one sitting instead of a chain of hand-offs. Time has a price."</td><td>Every <b>6 months</b> of delay costs <b>$1.9M</b> of the risked value, <b>$4.8M</b> unrisked, <b>4.7%</b> of NPV at 10% <b>[demo]</b>. "How long does it take you today?" <b>[yours]</b></td></tr><tr><td><b>3. No blocked decisions</b></td><td>"Missing curves are filled in seconds by a served model scored against the method your petrophysicists trust."</td><td><b>3.6x</b> lower error than Gardner refit on the same wells, on <b>13</b> held-out wells <b>[demo]</b>. "How many of your wells lack sonic?" <b>[yours]</b></td></tr><tr><td><b>4. Safe to share</b></td><td>"Partners and AI see only what they're entitled to, enforced once in Unity Catalog."</td><td>JV partner sees <b>30 of 84</b> rows, interpretation masked, in the app, Genie and SQL <b>[demo]</b></td></tr><tr><td><b>5. One platform, many use cases</b></td><td>"The foundation built for this decision carries the next ten, instead of another stitched SaaS stack." Look at the SVP.</td><td><b>60 to 70%</b> of an AI use case's cost is data integration; built once it serves <b>10+</b> use cases at <b>3 to 5x</b> lower cost, toward the <b>$4 to 5B</b> target <b>[benchmark]</b></td></tr></table>
 <p><b>Cost line, say:</b> "And the cost side stays small: a scale-to-zero model endpoint metered through AI Gateway, a serverless pipeline, and AI that shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not."</p>
 <h3>What is new here (if they ask, or work it into slide 2)</h3>
 <blockquote>None of the techniques are exotic. Pseudo-sonic from other curves, kriging between wells, saturation-height functions: your team knows all of them. What is new is that they run <b>as one governed workflow on the platform where the data already is</b>: the pipeline, the model registry, the served model, the geomodel, the economics, and the AI, with Unity Catalog enforcing who sees what in every one of them.</blockquote>
@@ -73,7 +75,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Say:</b> "Green River 03 was drilled without a sonic log, and geomechanics and seismic ties need one. The green track is the served model's prediction; the dashed purple is Gardner with published coefficients, the relation most teams reach for."</p>
 <p><b>Point at:</b> the Evaluation table.</p>
 <p><b>Say:</b> "Here's what makes it trustworthy. We hold out <b>whole wells</b>, because samples from one well share its geology and a random split would leak. Gardner refit on the training wells: 10.7 microseconds per foot. The served model: <b>3.0</b>. Gradient-boosted trees tied the linear model at the noise floor, so we serve the <b>simpler</b> one: easier to explain to a petrophysicist and nothing lost."</p>
-<p><b>Optional, technical persona:</b> switch to SANJUAN-01, which has measured sonic: "On a well where we can check, the model is within 2.6 against 18.7 for textbook Gardner."</p>
+<p><b>Optional, VP of Engineering:</b> switch to SANJUAN-01, which has measured sonic: "On a well where we can check, the model is within 2.6 against 18.7 for textbook Gardner."</p>
 <p><b>Land:</b> "The model has to beat the method you already trust, on wells it never saw. And if the endpoint is cold, the app says so and falls back to Gardner, labelled."</p>
 <h3>4. Model the Subsurface (2 min) · the hero moment</h3>
 <p><b>Click:</b> <i>Model the Subsurface</i>. Let the insight banner read for a second.</p>
@@ -85,8 +87,8 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Land:</b> "A geomodel in the app, in seconds, that tells you where it is uncertain."</p>
 <h3>5. Value the Well (1 min) · the business close</h3>
 <p><b>Click:</b> <i>Value the Well</i> (or <i>Value the well →</i> on the voxel banner). Let the top card read.</p>
-<p><b>Say (business persona):</b> "Here's what that location is worth. Unrisked, <b>$103 million</b> of NPV10. Risked for its distance from control, <b>$40 million</b>, a <b>34%</b> IRR, paying back in <b>two years</b>, and it still breaks even at <b>$53</b> oil. On <b>$58 million</b> of capex."</p>
-<p><b>Say (technical persona):</b> "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the <b>certified Unity Catalog function</b>, <code>calculate_npv10</code>, the same definition Genie, the Supervisor and the portfolio table below use: San Juan 01 shows <b>$92.8M</b> in both places." Click <b>Show SQL</b>.</p>
+<p><b>Say (SVP Digital Operations):</b> "Here's what that location is worth. Unrisked, <b>$103 million</b> of NPV10. Risked for its distance from control, <b>$40 million</b>, a <b>34%</b> IRR, paying back in <b>two years</b>, and it still breaks even at <b>$53</b> oil. On <b>$58 million</b> of capex."</p>
+<p><b>Say (VP of Engineering):</b> "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the <b>certified Unity Catalog function</b>, <code>calculate_npv10</code>, the same definition Genie, the Supervisor and the portfolio table below use: San Juan 01 shows <b>$92.8M</b> in both places." Click <b>Show SQL</b>.</p>
 <p><b>Point at:</b> the Live and Illustrative tags under the card: "HCPT, price and the function are live; same well design and cost as the offset is the assumption, and it says so."</p>
 <p><b>Land:</b> "From logs to a priced well in one sitting, with one governed definition of NPV."</p>
 <h3>6. Decide with AI (1.5 min)</h3>
@@ -105,7 +107,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Click:</b> <i>Governance &amp; Audit</i>. The top panel, <b>Unity Catalog policy · live</b>, runs the same query on the gold zone summary as the app and as you: 84 rows across 4 basins on both sides.</p>
 <p><b>Click:</b> <b>Make me a San Juan JV partner</b>.</p>
 <p><b>Say:</b> "I've just mapped myself as a joint-venture partner. Same query, my identity: 30 rows, San Juan only, and saturation and hydrocarbon pore feet are masked while net pay stays visible. That's a row filter and a column mask on the table in Unity Catalog, not code in this app. Because Genie and the Supervisor run as me, they obey it too."</p>
-<p><b>Click:</b> <b>Show policy SQL</b> if the technical persona leans in, then <b>Restore operator view</b>.</p>
+<p><b>Click:</b> <b>Show policy SQL</b> if the VP of Engineering leans in, then <b>Restore operator view</b>.</p>
 <p><b>Land:</b> "Governance is the platform, not an app feature you have to trust."</p>
 <h3>9. How It Works (30 s, or skip if short on time)</h3>
 <p><b>Click:</b> <i>How It Works</i>.</p>
@@ -126,7 +128,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><b>Every screen tags Live vs Illustrative.</b> Appendix slide 6 lists exactly what is synthetic.</li>
 </ul>
 <h2>5. The ask (1 min) · deck slide 5</h2>
-<blockquote>Here's what I'd propose. <b>Business:</b> name one field and the person who owns its next-well decision. Success is a step-out your team agrees is credible, priced with your own type curves and costs, in weeks rather than a quarter. <b>Technical:</b> a two-week working session with petrophysics and data to map your logs, tops and OSDU records to this pipeline, and agree the bar the sonic model has to clear against your current method.</blockquote>
+<blockquote>Here's what I'd propose. <b>To the SVP Digital Operations:</b> sponsor one Landman field as the first production use case. Success is a step-out the asset team agrees is credible, priced with Landman's own type curves and costs, in weeks rather than a quarter, and a template that takes the next field out of pilot and counts toward the 4 to 5 billion cost target. <b>To the VP of Engineering:</b> a two-week working session with petrophysics and data to port the bundle into Landman's workspace, map Landman's logs, tops and OSDU records to the pipeline, and agree the bar the sonic model has to clear against your current method.</blockquote>
 <p>Then stop talking.</p>
 <h2>6. Objection handling</h2>
 <p><b>"This is synthetic data. Why should I believe it?"</b></p>
@@ -149,7 +151,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <blockquote>The sonic model is a small endpoint that scales to zero, behind AI Gateway with usage tracking and inference tables, so you see the cost per call. The Supervisor shows token cost per run. The rest is pipeline and SQL on serverless.</blockquote>
 <p><b>"Can partners query this through Genie and see too much?"</b></p>
 <blockquote>No. The row filter and column mask are on the tables in Unity Catalog, and Genie runs as the signed-in user. The partner sees 30 rows, San Juan only, with the masked columns NULL, whichever tool they use.</blockquote>
-<h2>7. Questions to expect from the technical persona</h2>
+<h2>7. Questions to expect from the VP of Engineering</h2>
 <ul>
 <li><i>How are the logs QC'd?</i> Silver despikes, flags gaps and range violations with pipeline expectations; bad samples are excluded from training and from the model's inputs.</li>
 <li><i>What are the model inputs?</i> GR, RHOB, NPHI, log10 RT and depth.</li>
@@ -160,8 +162,8 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 </ul>
 <h2>8. Reading the room</h2>
 <ul>
-<li>If the <b>business persona</b> drifts during step 3, skip the optional measured-well check and go straight to the voxel banner.</li>
-<li>If the <b>technical persona</b> leans in on step 4, toggle uncertainty and pay-only, and offer the method panel on the right.</li>
+<li>If the <b>SVP Digital Operations</b> drifts during step 3, skip the optional measured-well check and go straight to the voxel banner.</li>
+<li>If the <b>VP of Engineering</b> leans in on step 4, toggle uncertainty and pay-only, and offer the method panel on the right.</li>
 <li>After step 4, check in with both: "Is that the kind of candidate your team would want to start from?"</li>
 <li>If time is short, cut step 9 and shorten step 6 to the model picker and cost meter.</li>
 </ul>

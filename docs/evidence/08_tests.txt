@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0 -- /Users/reishin.toolsi/cognitive-subsurface/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/reishin.toolsi/drilling-command-center
+collecting ... collected 24 items
+
+tests/test_app.py::test_paths_exist[app.py] PASSED                       [  4%]
+tests/test_app.py::test_paths_exist[app.yaml] PASSED                     [  8%]
+tests/test_app.py::test_paths_exist[requirements.txt] PASSED             [ 12%]
+tests/test_app.py::test_paths_exist[databricks.yml] PASSED               [ 16%]
+tests/test_app.py::test_paths_exist[server] PASSED                       [ 20%]
+tests/test_app.py::test_paths_exist[frontend] PASSED                     [ 25%]
+tests/test_app.py::test_paths_exist[pipelines/subsurface_pipeline.py] PASSED [ 29%]
+tests/test_app.py::test_paths_exist[ml/train_synthetic_sonic.py] PASSED  [ 33%]
+tests/test_app.py::test_paths_exist[ml/metrics.json] PASSED              [ 37%]
+tests/test_app.py::test_paths_exist[governance/policies.sql] PASSED      [ 41%]
+tests/test_app.py::test_paths_exist[docs/TALK-TRACK.md] PASSED           [ 45%]
+tests/test_app.py::test_npv_matches_uc_function PASSED                   [ 50%]
+tests/test_app.py::test_npv_is_zero_at_break_even PASSED                 [ 54%]
+tests/test_app.py::test_irr_found_for_every_fleet_well[65-4.8-2100-15] PASSED [ 58%]
+tests/test_app.py::test_irr_found_for_every_fleet_well[72-5.2-3200-28] PASSED [ 62%]
+tests/test_app.py::test_irr_found_for_every_fleet_well[58-4.1-1800-18] PASSED [ 66%]
+tests/test_app.py::test_irr_found_for_every_fleet_well[52-3.8-1500-20] PASSED [ 70%]
+tests/test_app.py::test_irr_found_for_every_fleet_well[44-3.2-1400-22] PASSED [ 75%]
+tests/test_app.py::test_irr_found_for_every_fleet_well[48-3.5-1200-25] PASSED [ 79%]
+tests/test_app.py::test_payback_within_project_life PASSED               [ 83%]
+tests/test_app.py::test_voxel_model_shape_and_ranges PASSED              [ 87%]
+tests/test_app.py::test_voxel_model_is_deterministic PASSED              [ 91%]
+tests/test_app.py::test_step_out_respects_ranking_rules PASSED           [ 95%]
+tests/test_app.py::test_saturation_height_function PASSED                [100%]
+
+============================== 24 passed in 0.34s ==============================

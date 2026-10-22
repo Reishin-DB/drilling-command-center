@@ -72,7 +72,7 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
 
 
 def foot(_n=None):
-    return '<div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">@@PAGE@@</span></div>'
+    return '<div class="foot"><span class="src">Subsurface Intelligence for Landman Oil · FE Bar build · synthetic well data · company figures: a public major\'s 2025 disclosures</span><span class="src">@@PAGE@@</span></div>'
 
 
 def slides():
@@ -80,11 +80,11 @@ def slides():
     out = []
 
     out.append(f"""<div class="s" style="background:#0A1620;color:#EEF3F6">
-  <div class="k" style="margin-top:1.25in">Databricks · upstream subsurface</div>
+  <div class="k" style="margin-top:1.25in">Databricks × Landman Oil · upstream subsurface</div>
   <h1 style="font-size:60px;color:#fff;margin-top:14px">Subsurface Intelligence</h1>
-  <p class="lead" style="color:#A6B7C2;font-size:22px">From raw well logs to a located, valued, governed drilling decision, on one platform, in one sitting.</p>
+  <p class="lead" style="color:#A6B7C2;font-size:22px">From Landman Oil's raw well logs to a located, valued, governed drilling decision, on one platform, in one sitting.</p>
   <div style="margin-top:0.45in;display:flex;gap:44px">
-    <div><div style="font-size:46px;font-weight:700;color:#F5A524">${VC['risked']['npv10_musd']:.0f}M</div><div style="font-size:15px;color:#A6B7C2">risked NPV10 of the next well,<br>found in data the team already has</div></div>
+    <div><div style="font-size:46px;font-weight:700;color:#F5A524">${VC['risked']['npv10_musd']:.0f}M</div><div style="font-size:15px;color:#A6B7C2">risked NPV10 of the next well,<br>found in data Landman already has</div></div>
     <div><div style="font-size:46px;font-weight:700;color:#2FD39B">{X_BETTER:.1f}x</div><div style="font-size:15px;color:#A6B7C2">lower error filling a missing<br>sonic log than today's method</div></div>
     <div><div style="font-size:46px;font-weight:700;color:#4FB3E8">1 sitting</div><div style="font-size:15px;color:#A6B7C2">from raw logs to a located,<br>priced, governed well</div></div>
   </div>
@@ -100,26 +100,33 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">01 · The decision</div>
-  <h2>Where does the next well go, and is it worth drilling? The answer is spread across five systems.</h2>
-  <div class="grid c3" style="margin-top:10px">
-    <div class="card"><div class="k b">Data in silos</div><h3>Logs, tops, OSDU records, economics, maps</h3><p>Each lives with a different team and tool. Every new question starts with an export and a hand-off.</p></div>
-    <div class="card"><div class="k b">Gaps in the record</div><h3>Wells drilled without a key curve</h3><p>A missing sonic log blocks geomechanics and seismic ties. The usual fix is an empirical relation applied by hand.</p></div>
-    <div class="card"><div class="k b">AI without guardrails</div><h3>Assistants that cannot see, or ignore, entitlements</h3><p>Either the model has no access to the governed data, or it has too much and partners see what they should not.</p></div>
+  <div class="k">01 · Landman Oil's bet</div>
+  <h2>Landman Oil has told the market it will grow the barrel and cut its cost at the same time. Every next-well decision sits on both.</h2>
+  <div class="grid c4" style="margin-top:6px">
+    <div class="tile"><div class="v">~$10B</div><div class="l">a year back into oil and gas</div></div>
+    <div class="tile"><div class="v">2.3–2.5</div><div class="l">mmboe/d targeted by 2030, US upstream heading toward 1.0</div></div>
+    <div class="tile"><div class="v">$4–5B</div><div class="l">of structural cost to take out</div></div>
+    <div class="tile"><div class="v">~$5.60</div><div class="l">per barrel lifting cost to defend as volumes grow</div></div>
   </div>
-  <div class="callout" style="margin-top:26px">Subsurface Intelligence puts the logs, the geomodel, the economics and the AI on one governed platform, so the decision is one workflow instead of five projects.</div>
+  <div class="grid c3" style="margin-top:20px">
+    <div class="card"><div class="k b">Data in silos</div><h3>Several SaaS tools, one decision</h3><p>Logs, tops, OSDU records, economics and maps sit in separate applications with separate owners. Every next-well proposal is a chain of exports and hand-offs.</p></div>
+    <div class="card"><div class="k b">Gaps in the record</div><h3>Wells drilled without a key curve</h3><p>A missing sonic log blocks geomechanics and seismic ties until someone patches it by hand.</p></div>
+    <div class="card"><div class="k b">AI stuck in pilots</div><h3>86% of energy AI never leaves the pilot</h3><p>Assistants either cannot see the governed data or see too much, so partners and JV data become the blocker.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px">Subsurface Intelligence puts Landman's logs, geomodel, economics and AI on one governed platform, so the next-well decision is one workflow, not five projects.</div>
   {foot(2)}
 </div>""")
 
     out.append(f"""<div class="s">
   <div class="k">02 · The business value</div>
-  <h2>Four levers: a better well, found sooner, without blocked decisions, safe to share</h2>
+  <h2>What it is worth to Landman Oil: a better well, found sooner, on one platform</h2>
   <table style="margin-top:4px">
     <tr><th style="width:23%">Lever</th><th style="width:40%">What changes</th><th>The number</th></tr>
-    <tr><td><b>1. Value per decision</b></td><td>The geomodel finds and ranks a step-out in data the team already has, and the certified NPV function prices it</td><td><b class="a">${VC['stepout']['npv10_musd']:.0f}M</b> NPV10 unrisked, <b>${VC['risked']['npv10_musd']:.0f}M</b> risked, {VC['risked']['irr_pct']:.0f}% IRR, ${VC['risked']['break_even_wti']:.0f} break-even on ${VC['risked']['capex_musd']:.0f}M capex <span class="badge live">demo</span></td></tr>
-    <tr><td><b>2. Speed to decision</b></td><td>Logs to a located, priced proposal in one sitting instead of a chain of exports and hand-offs</td><td>Every <b>6 months</b> of delay costs <b>${DELAY_R:.1f}M</b> of the risked value (<b>${DELAY_U:.1f}M</b> unrisked), {DELAY*100:.1f}% of NPV at 10% <span class="badge live">demo</span>. How long does a step-out proposal take today? <span class="badge ill">yours</span></td></tr>
-    <tr><td><b>3. No blocked decisions</b></td><td>Missing curves are filled in seconds by a served model scored against the method engineers trust</td><td><b class="g">{X_BETTER:.1f}x</b> lower error than calibrated Gardner on {M['n_wells']} held-out wells <span class="badge live">demo</span>. How many of your wells lack sonic? <span class="badge ill">yours</span></td></tr>
+    <tr><td><b>1. Value per decision</b></td><td>The geomodel finds and ranks a step-out in data Landman already has, and the certified NPV function prices it</td><td><b class="a">${VC['stepout']['npv10_musd']:.0f}M</b> NPV10 unrisked, <b>${VC['risked']['npv10_musd']:.0f}M</b> risked, {VC['risked']['irr_pct']:.0f}% IRR, ${VC['risked']['break_even_wti']:.0f} break-even on ${VC['risked']['capex_musd']:.0f}M capex <span class="badge live">demo</span></td></tr>
+    <tr><td><b>2. Speed to decision</b></td><td>Logs to a located, priced proposal in one sitting instead of a chain of hand-offs, so wells reach the program sooner on the way to 2.3–2.5 mmboe/d</td><td>Every <b>6 months</b> of delay costs <b>${DELAY_R:.1f}M</b> of the risked value (<b>${DELAY_U:.1f}M</b> unrisked), {DELAY*100:.1f}% of NPV at 10% <span class="badge live">demo</span>. How long does a step-out proposal take at Landman today? <span class="badge ill">ask</span></td></tr>
+    <tr><td><b>3. No blocked decisions</b></td><td>Missing curves are filled in seconds by a served model scored against the method engineers trust</td><td><b class="g">{X_BETTER:.1f}x</b> lower error than calibrated Gardner on {M['n_wells']} held-out wells <span class="badge live">demo</span>. How many Landman wells lack sonic? <span class="badge ill">ask</span></td></tr>
     <tr><td><b>4. Safe to share</b></td><td>Partners and AI assistants see only what they are entitled to, enforced once in Unity Catalog</td><td>JV partner sees <b>30 of 84</b> rows, interpretation masked, in the app, Genie and SQL <span class="badge live">demo</span></td></tr>
+    <tr><td><b>5. One platform, many use cases</b></td><td>The governed foundation built for this decision carries the next ten, instead of another stitched SaaS stack per use case</td><td><b>60–70%</b> of an AI use case's cost is data integration; built once, the foundation serves <b>10+</b> use cases at <b>3–5x</b> lower cost, toward Landman's <b>$4–5B</b> cost target <span class="badge ill">benchmark</span></td></tr>
   </table>
   <div class="callout" style="margin-top:22px">The cost side stays small: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline runs on serverless, and the AI shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.</div>
   {foot()}
@@ -261,16 +268,16 @@ def slides():
 
     out.append(f"""<div class="s">
   <div class="k">10 · The path, and the ask</div>
-  <h2>Prove it on one field with your logs, then reuse the template</h2>
+  <h2>Prove it on one Landman field with Landman's own data, then reuse the template</h2>
   <div class="grid c4" style="margin-top:6px">
-    <div class="tile"><div class="k" style="color:#566874">Weeks 1–2</div><h3 style="margin:6px 0">Land</h3><div class="l">Your LAS files, tops and headers for one field into a UC volume; same pipeline, your data.</div></div>
-    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Weeks 3–4</div><h3 style="margin:6px 0">Score</h3><div class="l">Retrain the sonic model on your wells; agree the bar it must clear against your current method.</div></div>
-    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Weeks 5–8</div><h3 style="margin:6px 0">Decide</h3><div class="l">Voxel model on your horizons; one step-out reviewed by your geoscientists against their own pick.</div></div>
-    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">After</div><h3 style="margin:6px 0">Scale</h3><div class="l">Next field, next missing curve, partner access under the same policies.</div></div>
+    <div class="tile"><div class="k" style="color:#566874">Weeks 1–2</div><h3 style="margin:6px 0">Port</h3><div class="l">Deploy the bundle into Landman's workspace; land one field's LAS files, tops and headers, connected to the SaaS tools already in use.</div></div>
+    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Weeks 3–4</div><h3 style="margin:6px 0">Score</h3><div class="l">Retrain the sonic model on Landman's wells; agree the bar it must clear against the current method.</div></div>
+    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Weeks 5–8</div><h3 style="margin:6px 0">Decide</h3><div class="l">Voxel model on Landman's horizons and type curves; one step-out reviewed against the asset team's own pick.</div></div>
+    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">After</div><h3 style="margin:6px 0">Scale</h3><div class="l">Next field, next missing curve, JV partners under the same policies.</div></div>
   </div>
-  <div class="grid c2" style="margin-top:24px">
-    <div class="card" style="border-color:#EBC48A"><div class="k">Ask 1 · business</div><h3>Name one field and the person who owns its next-well decision</h3><p>Success is a step-out your team agrees is credible, with its value, in weeks instead of a quarter.</p></div>
-    <div class="card" style="border-color:#9FCFEA"><div class="k b">Ask 2 · technical</div><h3>A two-week working session with petrophysics and data</h3><p>Map your logs, tops and OSDU records to the pipeline, and agree the acceptance bar for the sonic model.</p></div>
+  <div class="grid c2" style="margin-top:22px">
+    <div class="card" style="border-color:#EBC48A"><div class="k">Ask 1 · SVP Digital Operations</div><h3>Sponsor one field as the first production use case</h3><p><b>Measured on:</b> digital value delivered at scale and the contribution to the $4–5B structural cost target. <b>Success:</b> a step-out the asset team agrees is credible, priced in weeks rather than a quarter, and a template that takes the next field out of pilot.</p></div>
+    <div class="card" style="border-color:#9FCFEA"><div class="k b">Ask 2 · VP of Engineering</div><h3>A two-week working session with petrophysics and data</h3><p><b>Measured on:</b> platform reliability, reuse across use cases and governance. <b>Success:</b> Landman's logs, tops and OSDU records mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables.</p></div>
   </div>
   {foot(9)}
 </div>""")
@@ -293,7 +300,7 @@ def write_markdown():
     """docs/DECK.md: the same six slides as text, from the same numbers, so the
     content is readable (and reviewable) without opening the PDF."""
     o, u, r = VC["offset"], VC["stepout"], VC["risked"]
-    md = f"""# Subsurface Intelligence: deck (text version)
+    md = f"""# Subsurface Intelligence for Landman Oil: deck (text version)
 
 Generated by `docs/deck/build_deck.py` alongside `Subsurface-Intelligence-Deck.pdf`. Six slides frame the live demo; the app carries the proof.
 
@@ -307,15 +314,22 @@ From raw well logs to a located, valued, governed drilling decision, on one plat
 
 Locate → Read → Fill the sonic → Model in voxels → Value → Decide
 
-## 2. The decision
+## 2. Landman Oil's bet
 
-Where does the next well go, and is it worth drilling? The answer is spread across five systems.
+Landman Oil has told the market it will grow the barrel and cut its cost at the same time. Every next-well decision sits on both. (Company figures: a public major's 2025 strategy disclosures, used as Landman's illustrative profile.)
 
-- **Data in silos.** Logs, tops, OSDU records, economics and maps each live with a different team and tool; every new question starts with an export and a hand-off.
-- **Gaps in the record.** A well drilled without a sonic log blocks geomechanics and seismic ties; the usual fix is an empirical relation applied by hand.
-- **AI without guardrails.** Assistants either cannot see the governed data, or see too much and partners see what they should not.
+- About $10B a year back into oil and gas
+- 2.3 to 2.5 mmboe/d targeted by 2030, US upstream heading toward 1.0
+- $4 to 5B of structural cost to take out
+- About $5.60 per barrel lifting cost to defend as volumes grow
 
-Subsurface Intelligence puts the logs, the geomodel, the economics and the AI on one governed platform, so the decision is one workflow instead of five projects.
+The constraint:
+
+- **Data in silos.** Logs, tops, OSDU records, economics and maps sit in separate SaaS applications with separate owners; every next-well proposal is a chain of exports and hand-offs.
+- **Gaps in the record.** A well drilled without a sonic log blocks geomechanics and seismic ties until someone patches it by hand.
+- **AI stuck in pilots.** 86% of energy AI never leaves the pilot; assistants either cannot see the governed data or see too much.
+
+Subsurface Intelligence puts Landman's logs, geomodel, economics and AI on one governed platform, so the next-well decision is one workflow, not five projects.
 
 ## 3. The business value
 
@@ -325,6 +339,7 @@ Subsurface Intelligence puts the logs, the geomodel, the economics and the AI on
 | 2. Speed to decision | Logs to a located, priced proposal in one sitting instead of a chain of hand-offs | Every 6 months of delay costs ${DELAY_R:.1f}M of the risked value (${DELAY_U:.1f}M unrisked), {DELAY*100:.1f}% of NPV at 10% (demo). How long does it take today? (yours) |
 | 3. No blocked decisions | Missing curves filled in seconds by a served model scored against the method engineers trust | {X_BETTER:.1f}x lower error than calibrated Gardner on {M['n_wells']} held-out wells (demo). How many wells lack sonic? (yours) |
 | 4. Safe to share | Partners and AI see only what they are entitled to, enforced once in Unity Catalog | JV partner sees 30 of 84 rows, interpretation masked, in the app, Genie and SQL (demo) |
+| 5. One platform, many use cases | The governed foundation built for this decision carries the next ten | 60 to 70% of an AI use case's cost is data integration; built once, it serves 10+ use cases at 3 to 5x lower cost, toward Landman's $4 to 5B cost target (benchmark) |
 
 The cost side stays small: a scale-to-zero endpoint metered through AI Gateway, a serverless pipeline, and AI that shows its cost per run.
 
@@ -340,13 +355,16 @@ Every NPV (portfolio, step-out, offset at ${o['npv10_musd']:.1f}M, Genie, Superv
 
 ## 5. The path, and the ask
 
-- **Weeks 1 to 2, Land:** your LAS files, tops and headers for one field in a UC volume.
-- **Weeks 3 to 4, Score:** retrain the sonic model on your wells; agree the bar against your current method.
-- **Weeks 5 to 8, Decide:** voxel model on your horizons; one step-out reviewed by your geoscientists against their own pick.
-- **After, Scale:** next field, next missing curve, partner access under the same policies.
+Prove it on one Landman field with Landman's own data, then reuse the template.
 
-**Ask 1, business:** name one field and the person who owns its next-well decision.
-**Ask 2, technical:** a two-week working session with petrophysics and data to map the feeds and agree the acceptance bar.
+- **Weeks 1 to 2, Port:** deploy the bundle into Landman's workspace; land one field's LAS files, tops and headers, connected to the SaaS tools already in use.
+- **Weeks 3 to 4, Score:** retrain the sonic model on Landman's wells; agree the bar against the current method.
+- **Weeks 5 to 8, Decide:** voxel model on Landman's horizons and type curves; one step-out reviewed against the asset team's own pick.
+- **After, Scale:** next field, next missing curve, JV partners under the same policies.
+
+**Ask 1, SVP Digital Operations:** sponsor one field as the first production use case. Measured on digital value delivered at scale and the contribution to the $4 to 5B cost target; success is a credible, priced step-out in weeks and a template that takes the next field out of pilot.
+
+**Ask 2, VP of Engineering:** a two-week working session with petrophysics and data. Measured on platform reliability, reuse and governance; success is Landman's data mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables.
 
 ## Appendix: what is real, and what is illustrative
 
@@ -369,7 +387,7 @@ def main():
     # vs illustrative held back as an appendix for questions.
     allp = slides()
     pick = lambda key: next(p for p in allp if key in p)
-    pages = [allp[0], pick("· The decision"), pick("· The business value"), pick("· How it is built"),
+    pages = [allp[0], pick("· Landman Oil's bet"), pick("· The business value"), pick("· How it is built"),
              pick("· The path, and the ask"), pick("· What is real, and what is illustrative")]
     import re
     n = 0

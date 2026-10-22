@@ -4,6 +4,8 @@
 
 # Subsurface Intelligence
 
+*Built for Landman Oil, an illustrative upstream operator whose scale comes from a public major's 2025 strategy disclosures.*
+
 *From raw well logs to a located, priced, governed drilling decision, on one Databricks platform, in one sitting.* (Deployed as the `subsurface-command` Databricks App.)
 
 ## The business challenge
@@ -139,6 +141,10 @@ python ml/local_check.py
 ```
 
 The app deploys from a clean `_deploy/` copy with `databricks apps deploy` (see `DEPLOY.md`). Env vars it reads: `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `SONIC_ENDPOINT`.
+
+## Execution evidence
+
+Everything above ran. [`docs/evidence/EVIDENCE.md`](docs/evidence/EVIDENCE.md) summarises output captured from the live FEVM workspace, with the raw API responses beside it: the bundle job run and its task attempts, the Lakeflow pipeline update with row counts and data-quality expectations, the MLflow training run and its logged metrics, a live call to the served model with inference-table logging, a Genie conversation with its SQL and answers, the Unity Catalog policy before and after mapping a JV partner, live app API responses, the test suite, and an executed workspace notebook (`notebooks/evidence_run.py`). Re-capture with `python scripts/collect_evidence.py --profile <profile>`.
 
 ## How it was built
 

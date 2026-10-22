@@ -1,0 +1,92 @@
+{
+  "job_id": 532814868767936,
+  "run_id": 739091380836337,
+  "run_page_url": "https://fevm-oil-pump-monitor.cloud.databricks.com/?o=7474647106303257#job/532814868767936/run/739091380836337",
+  "result": "SUCCESS",
+  "start": "2026-10-21 17:04:05 UTC",
+  "end": "2026-10-21 17:32:31 UTC",
+  "tasks": [
+    {
+      "task_key": "land_raw",
+      "attempt": 0,
+      "result": "SUCCESS",
+      "start": "2026-10-21 17:04:05 UTC",
+      "end": "2026-10-21 17:04:41 UTC",
+      "duration_s": 35.3,
+      "logs_tail": "wells: 14  log samples: 35014  -> /Volumes/oil_pump_monitor_catalog/subsurface_command/raw\n",
+      "error": null
+    },
+    {
+      "task_key": "policies",
+      "attempt": 0,
+      "result": "SUCCESS",
+      "start": "2026-10-21 17:04:05 UTC",
+      "end": "2026-10-21 17:04:45 UTC",
+      "duration_s": 39.6,
+      "logs_tail": "ok: CREATE TABLE IF NOT EXISTS oil_pump_monitor_catalog.subsurface_command.access_personas (\nok: CREATE OR REPLACE FUNCTION oil_pump_monitor_catalog.subsurface_command.is_jv_partner()\nok: CREATE OR REPLACE FUNCTION oil_pump_monitor_catalog.subsurface_command.basin_filter(basin \nok: CREATE OR REPLACE FUNCTION oil_pump_monitor_catalog.subsurface_command.mask_interpretation\n",
+      "error": null
+    },
+    {
+      "task_key": "medallion",
+      "attempt": 0,
+      "result": "SUCCESS",
+      "start": "2026-10-21 17:04:46 UTC",
+      "end": "2026-10-21 17:06:08 UTC",
+      "duration_s": 82.9,
+      "logs_tail": "",
+      "error": "Please refer to the logs for this pipeline in the pipelines page."
+    },
+    {
+      "task_key": "train_serve_score",
+      "attempt": 0,
+      "result": "FAILED",
+      "start": "2026-10-21 17:06:09 UTC",
+      "end": "2026-10-21 17:06:32 UTC",
+      "duration_s": 22.9,
+      "logs_tail": "",
+      "error": "Run failed with error message\n Unexpected error during library installation"
+    },
+    {
+      "task_key": "train_serve_score",
+      "attempt": 1,
+      "result": "FAILED",
+      "start": "2026-10-21 17:06:33 UTC",
+      "end": "2026-10-21 17:06:58 UTC",
+      "duration_s": 25.2,
+      "logs_tail": "",
+      "error": "Run failed with error message\n Unexpected error during library installation"
+    },
+    {
+      "task_key": "train_serve_score",
+      "attempt": 2,
+      "result": "SUCCESS",
+      "start": "2026-10-21 17:08:10 UTC",
+      "end": "2026-10-21 17:20:04 UTC",
+      "duration_s": 714.1,
+      "logs_tail": "odels/oil_pump_monitor_catalog/subsurface_command/synthetic_sonic/version/1?o=7474647106303257\n\n\n\ud83c\udfc3 View run hgb-synthetic-sonic at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109/runs/f32861a61c794d5e87d14f8fb2ded512\n\ud83e\uddea View experiment at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109\nregistered oil_pump_monitor_catalog.subsurface_command.synthetic_sonic v1 @champion (run f32861a61c794d5e87d14f8fb2ded512)\nMETRICS_JSON {\"model_version\": \"1\", \"endpoint\": \"subsurface-synthetic-sonic\", \"pooled\": {\"gardner_textbook\": {\"mae\": 17.232010848586725, \"rmse\": 22.24683850498781, \"r2\": -1.5415384709122657, \"bias\": 10.930637338788275}, \"gardner_calibrated\": {\"mae\": 10.683264521734758, \"rmse\": 12.335819952442405, \"r2\": 0.2185591189162701, \"bias\": -0.9183733316388063}, \"faust_calibrated\": {\"mae\": 6.6418194180543315, \"rmse\": 8.656622387451584, \"r2\": 0.6151805358364035, \"bias\": -0.5352697019128989}, \"linear_all_curves\": {\"mae\": 3.002609694416158, \"rmse\": 3.7625769256722355, \"r2\": 0.9273005945330267, \"bias\": -0.005346666378362636}, \"model\": {\"mae\": 3.045673744753881, \"rmse\": 3.8147364828915955, \"r2\": 0.9252710002528357, \"bias\": -0.005691697393667792}}, \"per_well_mae\": {\"gardner_textbook\": {\"EASTTEXAS-05\": 16.781, \"ET-OFFSET-08\": 16.709, \"GR-OFFSET-04\": 18.954, \"GR-OFFSET-05\": 16.728, \"PB-OFFSET-06\": 15.678, \"PB-OFFSET-07\": 17.633, \"PERMIAN-04\": 16.818, \"PERMIAN-06\": 19.055, \"SANJUAN-01\": 18.547, \"SANJUAN-02\": 15.151, \"SJ-OFFSET-01\": 17.663, \"SJ-OFFSET-02\": 16.486, \"SJ-OFFSET-03\": 17.807}, \"gardner_calibrated\": {\"EASTTEXAS-05\": 10.266, \"ET-OFFSET-08\": 10.239, \"GR-OFFSET-04\": 10.895, \"GR-OFFSET-05\": 10.44, \"PB-OFFSET-06\": 9.907, \"PB-OFFSET-07\": 10.888, \"PERMIAN-04\": 10.792, \"PERMIAN-06\": 10.443, \"SANJUAN-01\": 11.164, \"SANJUAN-02\": 11.547, \"SJ-OFFSET-01\": 10.85, \"SJ-OFFSET-02\": 10.321, \"SJ-OFFSET-03\": 11.135}, \"faust_calibrated\": {\"EASTTEXAS-05\": 6.084, \"ET-OFFSET-08\": 6.165, \"GR-OFFSET-04\": 6.601, \"GR-OFFSET-05\": 6.336, \"PB-OFFSET-06\": 6.245, \"PB-OFFSET-07\": 5.976, \"PERMIAN-04\": 5.877, \"PERMIAN-06\": 7.232, \"SANJUAN-01\": 8.29, \"SANJUAN-02\": 7.761, \"SJ-OFFSET-01\": 8.432, \"SJ-OFFSET-02\": 5.21, \"SJ-OFFSET-03\": 6.164}, \"linear_all_curves\": {\"EASTTEXAS-05\": 2.938, \"ET-OFFSET-08\": 3.393, \"GR-OFFSET-04\": 3.357, \"GR-OFFSET-05\": 2.541, \"PB-OFFSET-06\": 2.623, \"PB-OFFSET-07\": 2.527, \"PERMIAN-04\": 2.642, \"PERMIAN-06\": 2.816, \"SANJUAN-01\": 2.606, \"SANJUAN-02\": 4.497, \"SJ-OFFSET-01\": 3.911, \"SJ-OFFSET-02\": 2.719, \"SJ-OFFSET-03\": 2.497}, \"model\": {\"EASTTEXAS-05\": 2.925, \"ET-OFFSET-08\": 3.386, \"GR-OFFSET-04\": 3.429, \"GR-OFFSET-05\": 2.549, \"PB-OFFSET-06\": 2.525, \"PB-OFFSET-07\": 2.578, \"PERMIAN-04\": 2.758, \"PERMIAN-06\": 2.858, \"SANJUAN-01\": 2.748, \"SANJUAN-02\": 4.477, \"SJ-OFFSET-01\": 4.034, \"SJ-OFFSET-02\": 2.813, \"SJ-OFFSET-03\": 2.547}}}\nGREENRIVER-03 synthetic sonic: 2373 samples, mean 76.2 us/ft\nendpoint subsurface-synthetic-sonic -> oil_pump_monitor_catalog.subsurface_command.synthetic_sonic v1 behind AI Gateway\n",
+      "error": null
+    },
+    {
+      "task_key": "train_serve_score",
+      "attempt": 3,
+      "result": "SUCCESS",
+      "start": "2026-10-21 17:20:58 UTC",
+      "end": "2026-10-21 17:32:30 UTC",
+      "duration_s": 692.7,
+      "logs_tail": "g/subsurface_command/synthetic_sonic/version/2?o=7474647106303257\n\n\n\ud83c\udfc3 View run synthetic-sonic at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109/runs/11806608ec9f4301826a8a61d45cff3d\n\ud83e\uddea View experiment at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109\nregistered oil_pump_monitor_catalog.subsurface_command.synthetic_sonic v2 @champion (run 11806608ec9f4301826a8a61d45cff3d)\nMETRICS_JSON {\"model_version\": \"2\", \"endpoint\": \"subsurface-synthetic-sonic\", \"pooled\": {\"gardner_textbook\": {\"mae\": 17.232010848586725, \"rmse\": 22.24683850498781, \"r2\": -1.5415384709122657, \"bias\": 10.930637338788275}, \"gardner_calibrated\": {\"mae\": 10.683264521734758, \"rmse\": 12.335819952442405, \"r2\": 0.2185591189162701, \"bias\": -0.9183733316388063}, \"faust_calibrated\": {\"mae\": 6.6418194180543315, \"rmse\": 8.656622387451584, \"r2\": 0.6151805358364035, \"bias\": -0.5352697019128989}, \"linear_all_curves\": {\"mae\": 3.002609694416158, \"rmse\": 3.7625769256722355, \"r2\": 0.9273005945330267, \"bias\": -0.005346666378362636}, \"model\": {\"mae\": 3.045673744753881, \"rmse\": 3.8147364828915955, \"r2\": 0.9252710002528357, \"bias\": -0.005691697393667792}}, \"per_well_mae\": {\"gardner_textbook\": {\"EASTTEXAS-05\": 16.781, \"ET-OFFSET-08\": 16.709, \"GR-OFFSET-04\": 18.954, \"GR-OFFSET-05\": 16.728, \"PB-OFFSET-06\": 15.678, \"PB-OFFSET-07\": 17.633, \"PERMIAN-04\": 16.818, \"PERMIAN-06\": 19.055, \"SANJUAN-01\": 18.547, \"SANJUAN-02\": 15.151, \"SJ-OFFSET-01\": 17.663, \"SJ-OFFSET-02\": 16.486, \"SJ-OFFSET-03\": 17.807}, \"gardner_calibrated\": {\"EASTTEXAS-05\": 10.266, \"ET-OFFSET-08\": 10.239, \"GR-OFFSET-04\": 10.895, \"GR-OFFSET-05\": 10.44, \"PB-OFFSET-06\": 9.907, \"PB-OFFSET-07\": 10.888, \"PERMIAN-04\": 10.792, \"PERMIAN-06\": 10.443, \"SANJUAN-01\": 11.164, \"SANJUAN-02\": 11.547, \"SJ-OFFSET-01\": 10.85, \"SJ-OFFSET-02\": 10.321, \"SJ-OFFSET-03\": 11.135}, \"faust_calibrated\": {\"EASTTEXAS-05\": 6.084, \"ET-OFFSET-08\": 6.165, \"GR-OFFSET-04\": 6.601, \"GR-OFFSET-05\": 6.336, \"PB-OFFSET-06\": 6.245, \"PB-OFFSET-07\": 5.976, \"PERMIAN-04\": 5.877, \"PERMIAN-06\": 7.232, \"SANJUAN-01\": 8.29, \"SANJUAN-02\": 7.761, \"SJ-OFFSET-01\": 8.432, \"SJ-OFFSET-02\": 5.21, \"SJ-OFFSET-03\": 6.164}, \"linear_all_curves\": {\"EASTTEXAS-05\": 2.938, \"ET-OFFSET-08\": 3.393, \"GR-OFFSET-04\": 3.357, \"GR-OFFSET-05\": 2.541, \"PB-OFFSET-06\": 2.623, \"PB-OFFSET-07\": 2.527, \"PERMIAN-04\": 2.642, \"PERMIAN-06\": 2.816, \"SANJUAN-01\": 2.606, \"SANJUAN-02\": 4.497, \"SJ-OFFSET-01\": 3.911, \"SJ-OFFSET-02\": 2.719, \"SJ-OFFSET-03\": 2.497}, \"model\": {\"EASTTEXAS-05\": 2.925, \"ET-OFFSET-08\": 3.386, \"GR-OFFSET-04\": 3.429, \"GR-OFFSET-05\": 2.549, \"PB-OFFSET-06\": 2.525, \"PB-OFFSET-07\": 2.578, \"PERMIAN-04\": 2.758, \"PERMIAN-06\": 2.858, \"SANJUAN-01\": 2.748, \"SANJUAN-02\": 4.477, \"SJ-OFFSET-01\": 4.034, \"SJ-OFFSET-02\": 2.813, \"SJ-OFFSET-03\": 2.547}}, \"champion\": \"linear_all_curves\"}\nGREENRIVER-03 synthetic sonic: 2373 samples, mean 76.0 us/ft\nendpoint subsurface-synthetic-sonic -> oil_pump_monitor_catalog.subsurface_command.synthetic_sonic v2 behind AI Gateway\n",
+      "error": null
+    }
+  ],
+  "earlier_attempts": [
+    {
+      "run_id": 160987741777719,
+      "result": "FAILED",
+      "start": "2026-10-21 17:02:32 UTC"
+    },
+    {
+      "run_id": 700849500290538,
+      "result": "CANCELED",
+      "start": "2026-10-21 17:01:11 UTC"
+    }
+  ]
+}
