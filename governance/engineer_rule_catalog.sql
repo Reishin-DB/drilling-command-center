@@ -1,7 +1,7 @@
 -- Rules with the governed glossary behind each one, on one Unity Catalog page.
 -- Read by Catalog Explorer, Genie and the demo. Apply after engineer_rules.sql.
 
-CREATE OR REPLACE VIEW subsurface_command.v_engineer_rule_catalog (
+CREATE OR REPLACE VIEW ${schema}.v_engineer_rule_catalog (
   rule_id COMMENT 'Rule shown on every action item',
   rule_title COMMENT 'What the rule flags',
   severity COMMENT 'critical, high or medium',
