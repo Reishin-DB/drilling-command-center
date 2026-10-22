@@ -67,6 +67,13 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
 .lane { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .14em; color: #8494A0; width: 92px; flex: none }
 .badge { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 99px; margin-left: 6px }
 .live { color: #0B7A55; border: 1px solid #0B7A55 } .ill { color: #B26A00; border: 1px solid #B26A00 }
+.tight td, .tight th { padding: 6px 10px; font-size: 13.5px }
+.tight h2 { font-size: 28px; margin-bottom: 10px }
+.tight .callout { font-size: 15.5px; padding: 11px 18px }
+.arch .box { padding: 7px 8px; font-size: 13px }
+.arch .box small { font-size: 11px }
+.arch .uc { padding: 18px 14px 10px }
+.arch p { font-size: 13px !important; margin: 4px 0 }
 .shot { width: 100%; border: 1px solid #D3DCE2; border-radius: 8px; object-fit: cover; object-position: top }
 """
 
@@ -117,9 +124,9 @@ def slides():
   {foot(2)}
 </div>""")
 
-    out.append(f"""<div class="s">
+    out.append(f"""<div class="s tight">
   <div class="k">02 · The business value</div>
-  <h2>What it is worth to Landman Oil: a better well, found sooner, on one platform</h2>
+  <h2>What it is worth to Landman Oil: a better well, found sooner, acted on the same morning</h2>
   <table style="margin-top:4px">
     <tr><th style="width:23%">Lever</th><th style="width:40%">What changes</th><th>The number</th></tr>
     <tr><td><b>1. Value per decision</b></td><td>The geomodel finds and ranks a step-out in data Landman already has, and the certified NPV function prices it</td><td><b class="a">${VC['stepout']['npv10_musd']:.0f}M</b> NPV10 unrisked, <b>${VC['risked']['npv10_musd']:.0f}M</b> risked, {VC['risked']['irr_pct']:.0f}% IRR, ${VC['risked']['break_even_wti']:.0f} break-even on ${VC['risked']['capex_musd']:.0f}M capex <span class="badge live">demo</span></td></tr>
@@ -127,8 +134,9 @@ def slides():
     <tr><td><b>3. No blocked decisions</b></td><td>Missing curves are filled in seconds by a served model scored against the method engineers trust</td><td><b class="g">{X_BETTER:.1f}x</b> lower error than calibrated Gardner on {M['n_wells']} held-out wells <span class="badge live">demo</span>. How many Landman wells lack sonic? <span class="badge ill">ask</span></td></tr>
     <tr><td><b>4. Safe to share</b></td><td>Partners and AI assistants see only what they are entitled to, enforced once in Unity Catalog</td><td>JV partner sees <b>30 of 84</b> rows, interpretation masked, in the app, Genie and SQL <span class="badge live">demo</span></td></tr>
     <tr><td><b>5. One platform, many use cases</b></td><td>The governed foundation built for this decision carries the next ten, instead of another stitched SaaS stack per use case</td><td><b>60–70%</b> of an AI use case's cost is data integration; built once, the foundation serves <b>10+</b> use cases at <b>3–5x</b> lower cost, toward Landman's <b>$4–5B</b> cost target <span class="badge ill">benchmark</span></td></tr>
+    <tr><td><b>6. Act the same morning</b></td><td>An operations agent runs the governed glossary rules over Unity Catalog data and hands the engineer prioritized action items, each linked to where it gets closed</td><td><b>8</b> items on the 12,000 ppm H2S well, from an H2S audit <b>386 days</b> old to a wellhead spool with <b>20 days</b> of cover against a <b>60-day</b> lead <span class="badge live">demo</span></td></tr>
   </table>
-  <div class="callout" style="margin-top:22px">The cost side stays small: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline runs on serverless, and the AI shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.</div>
+  <div class="callout" style="margin-top:12px">The cost side stays small: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline runs on serverless, and the AI shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.</div>
   {foot()}
 </div>""")
 
@@ -212,10 +220,10 @@ def slides():
   </div>
   {foot()}
 </div>""")
-    out.append(f"""<div class="s">
+    out.append(f"""<div class="s arch">
   <div class="k">07 · How it is built</div>
   <h2>One pipeline, one registry, one governance layer</h2>
-  <div class="uc" style="margin-top:14px"><span class="lbl">UNITY CATALOG · oil_pump_monitor_catalog.subsurface_command</span>
+  <div class="uc" style="margin-top:8px"><span class="lbl">UNITY CATALOG · oil_pump_monitor_catalog.subsurface_command</span>
     <div class="row" style="margin-bottom:12px"><span class="lane">LAND</span>
       <div class="box" style="flex:1">UC volume <small>raw LAS-style curves, headers, tops</small></div><span class="arrow">→</span>
       <div class="box" style="flex:1">bronze_logs <small>Auto Loader</small></div><span class="arrow">→</span>
@@ -248,6 +256,7 @@ def slides():
     </div>
   </div>
   <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command. Cost stays visible: serverless pipeline, a scale-to-zero endpoint with usage tracking and inference tables, and per-run token cost on the Supervisor. Every NPV you see, portfolio, step-out, Genie and Supervisor, comes from the certified <b>calculate_npv10</b> at today's WTI.</p>
+  <p style="font-size:14.5px;margin-top:6px"><b>The ontology is Unity Catalog itself:</b> glossary terms with owners and thresholds, tagged on the columns they govern; a PK/FK graph from tickets to rules to glossary terms and to wells; metric views, certified functions and governed tags. Change a threshold in the glossary and the agent, the dashboard and Genie follow, with no code.</p>
   {foot(6)}
 </div>""")
 
@@ -271,6 +280,8 @@ def slides():
     <tr><td>Pipeline, model, endpoint, policies, Genie</td><td><span class="badge live">Live</span></td><td>Running on Databricks; job, endpoint and policies verified</td></tr>
     <tr><td>Sonic predictions</td><td><span class="badge live">Live</span></td><td>Served model on every request; labelled Gardner fallback if cold</td></tr>
     <tr><td>Voxel properties, step-out and its price</td><td><span class="badge live">Live</span></td><td>Computed from the wells' logs and tops; priced by the certified UC function</td></tr>
+    <tr><td>Engineer action items, agent note, tickets</td><td><span class="badge live">Live</span></td><td>Governed rules run over UC data each load; every figure in the note checked against the items; tickets written to UC</td></tr>
+    <tr><td>Glossary thresholds</td><td><span class="badge ill">Illustrative</span></td><td>Placeholder company standards (365-day audit, 180-day re-sample); Landman's HSE sets the real values</td></tr>
     <tr><td>Well logs</td><td><span class="badge ill">Synthetic</span></td><td>Physically coupled rock model (porosity, shale, fluids); your logs replace them in the pilot</td></tr>
     <tr><td>Structural framework</td><td><span class="badge ill">Illustrative</span></td><td>Dip, closure and fault are modeled, honoured at the tops; a real horizon model plugs in</td></tr>
     <tr><td>OSDU analog panels</td><td><span class="badge ill">Offline</span></td><td>Fed by a partner ADME workspace that is not live; the panels say so</td></tr>
@@ -289,7 +300,7 @@ def slides():
   </div>
   <div class="grid c2" style="margin-top:22px">
     <div class="card" style="border-color:#EBC48A"><div class="k">Ask 1 · SVP Digital Operations</div><h3>Sponsor one field as the first production use case</h3><p><b>Measured on:</b> digital value delivered at scale and the contribution to the $4–5B structural cost target. <b>Success:</b> a step-out the asset team agrees is credible, priced in weeks rather than a quarter, and a template that takes the next field out of pilot.</p></div>
-    <div class="card" style="border-color:#9FCFEA"><div class="k b">Ask 2 · VP of Engineering</div><h3>A two-week working session with petrophysics and data</h3><p><b>Measured on:</b> platform reliability, reuse across use cases and governance. <b>Success:</b> Landman's logs, tops and OSDU records mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables.</p></div>
+    <div class="card" style="border-color:#9FCFEA"><div class="k b">Ask 2 · VP of Engineering</div><h3>A two-week working session with petrophysics and data</h3><p><b>Measured on:</b> platform reliability, reuse across use cases and governance. <b>Success:</b> Landman's logs, tops and OSDU records mapped to the pipeline, the model's acceptance bar agreed, partner policies live on Landman's tables, and engineers getting morning action items from Landman's own glossary rules.</p></div>
   </div>
   {foot(9)}
 </div>""")
@@ -352,6 +363,7 @@ Subsurface Intelligence puts Landman's logs, geomodel, economics and AI on one g
 | 3. No blocked decisions | Missing curves filled in seconds by a served model scored against the method engineers trust | {X_BETTER:.1f}x lower error than calibrated Gardner on {M['n_wells']} held-out wells (demo). How many wells lack sonic? (yours) |
 | 4. Safe to share | Partners and AI see only what they are entitled to, enforced once in Unity Catalog | JV partner sees 30 of 84 rows, interpretation masked, in the app, Genie and SQL (demo) |
 | 5. One platform, many use cases | The governed foundation built for this decision carries the next ten | 60 to 70% of an AI use case's cost is data integration; built once, it serves 10+ use cases at 3 to 5x lower cost, toward Landman's $4 to 5B cost target (benchmark) |
+| 6. Act the same morning | An operations agent runs the governed glossary rules over UC data and hands the engineer prioritized action items linked to where they get closed | 8 items on the 12,000 ppm H2S well, from an H2S audit 386 days old to a wellhead spool with 20 days of cover against a 60-day lead (demo) |
 
 The cost side stays small: a scale-to-zero endpoint metered through AI Gateway, a serverless pipeline, and AI that shows its cost per run.
 
@@ -362,6 +374,8 @@ One pipeline, one registry, one governance layer, all in `oil_pump_monitor_catal
 - **Land:** UC volume of LAS-style curves, headers and tops → `bronze_logs` (Auto Loader) → `silver_logs` (despike, gaps, range expectations) → `gold_petrophysics`, `gold_zone_summary`
 - **Learn:** `gold_sonic_features` → MLflow leave-one-well-out bake-off against Gardner and Faust → `synthetic_sonic@champion` → Model Serving + AI Gateway (`subsurface-synthetic-sonic`)
 - **Serve:** the Databricks App (voxel model, map, sonic, economics), Genie, the Subsurface Supervisor, and row filters + column masks enforced for every consumer
+
+The ontology is Unity Catalog itself: glossary terms with owners and thresholds, tagged on the columns they govern; a PK/FK graph from tickets to rules to glossary terms and to wells; metric views, certified functions and governed tags. Change a threshold in the glossary and the agent, the dashboard and Genie follow, with no code.
 
 Every NPV (portfolio, step-out, offset at ${o['npv10_musd']:.1f}M, Genie, Supervisor) comes from `calculate_npv10` at today's WTI. One Asset Bundle job, `subsurface-command-build`, rebuilds the stack.
 
@@ -376,7 +390,7 @@ Prove it on one Landman field with Landman's own data, then reuse the template.
 
 **Ask 1, SVP Digital Operations:** sponsor one field as the first production use case. Measured on digital value delivered at scale and the contribution to the $4 to 5B cost target; success is a credible, priced step-out in weeks and a template that takes the next field out of pilot.
 
-**Ask 2, VP of Engineering:** a two-week working session with petrophysics and data. Measured on platform reliability, reuse and governance; success is Landman's data mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables.
+**Ask 2, VP of Engineering:** a two-week working session with petrophysics and data. Measured on platform reliability, reuse and governance; success is Landman's data mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables, and engineers getting morning action items from Landman's own glossary rules.
 
 ## Appendix: what is real, and what is illustrative
 
@@ -385,6 +399,8 @@ Prove it on one Landman field with Landman's own data, then reuse the template.
 | Pipeline, model, endpoint, policies, Genie | Live | Running on Databricks; job, endpoint and policies verified |
 | Sonic predictions | Live | Served model on every request; labelled Gardner fallback if cold |
 | Voxel properties, step-out and its price | Live | Computed from the wells' logs and tops; priced by the certified UC function |
+| Engineer action items, agent note, tickets | Live | Governed rules run over UC data each load; every figure in the note checked; tickets written to UC |
+| Glossary thresholds | Illustrative | Placeholder company standards (365-day audit, 180-day re-sample); Landman's HSE sets the real values |
 | Well logs | Synthetic | Physically coupled rock model; your logs replace them in the pilot |
 | Structural framework | Illustrative | Dip, closure and fault are modelled, honoured at the tops |
 | OSDU analog panels | Offline | Fed by a partner ADME workspace that is not live; the panels say so |

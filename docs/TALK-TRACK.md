@@ -57,7 +57,7 @@ The deck is the frame; the demo is the proof. Three slides, about a minute each,
 **Tie back:** play back their answer to "how long does a step-out proposal take today?" in their words.
 
 ### Slide 3 · The business value (1.5 min)
-Walk the four levers top to bottom, then the cost line.
+Walk the six levers top to bottom, then the cost line.
 
 | Lever | Say | The number |
 |---|---|---|
@@ -66,6 +66,7 @@ Walk the four levers top to bottom, then the cost line.
 | **3. No blocked decisions** | "Missing curves are filled in seconds by a served model scored against the method your petrophysicists trust." | **3.6x** lower error than Gardner refit on the same wells, on **13** held-out wells **[demo]**. "How many of your wells lack sonic?" **[yours]** |
 | **4. Safe to share** | "Partners and AI see only what they're entitled to, enforced once in Unity Catalog." | JV partner sees **30 of 84** rows, interpretation masked, in the app, Genie and SQL **[demo]** |
 | **5. One platform, many use cases** | "The foundation built for this decision carries the next ten, instead of another stitched SaaS stack." Look at the SVP. | **60 to 70%** of an AI use case's cost is data integration; built once it serves **10+** use cases at **3 to 5x** lower cost, toward the **$4 to 5B** target **[benchmark]** |
+| **6. Act the same morning** | "And the engineer who runs the well gets it first thing: an operations agent turns Landman's governed rules into action items, each linked to where it gets closed." Look at the VP of Engineering. | **8** items on the 12,000 ppm H2S well, from an H2S audit **386 days** old to a wellhead spool with **20 days** of cover against a **60-day** lead **[demo]** |
 
 **Cost line, say:** "And the cost side stays small: a scale-to-zero model endpoint metered through AI Gateway, a serverless pipeline, and AI that shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not."
 

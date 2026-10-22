@@ -38,6 +38,7 @@ Subsurface Intelligence puts Landman's logs, geomodel, economics and AI on one g
 | 3. No blocked decisions | Missing curves filled in seconds by a served model scored against the method engineers trust | 3.6x lower error than calibrated Gardner on 13 held-out wells (demo). How many wells lack sonic? (yours) |
 | 4. Safe to share | Partners and AI see only what they are entitled to, enforced once in Unity Catalog | JV partner sees 30 of 84 rows, interpretation masked, in the app, Genie and SQL (demo) |
 | 5. One platform, many use cases | The governed foundation built for this decision carries the next ten | 60 to 70% of an AI use case's cost is data integration; built once, it serves 10+ use cases at 3 to 5x lower cost, toward Landman's $4 to 5B cost target (benchmark) |
+| 6. Act the same morning | An operations agent runs the governed glossary rules over UC data and hands the engineer prioritized action items linked to where they get closed | 8 items on the 12,000 ppm H2S well, from an H2S audit 386 days old to a wellhead spool with 20 days of cover against a 60-day lead (demo) |
 
 The cost side stays small: a scale-to-zero endpoint metered through AI Gateway, a serverless pipeline, and AI that shows its cost per run.
 
@@ -48,6 +49,8 @@ One pipeline, one registry, one governance layer, all in `oil_pump_monitor_catal
 - **Land:** UC volume of LAS-style curves, headers and tops → `bronze_logs` (Auto Loader) → `silver_logs` (despike, gaps, range expectations) → `gold_petrophysics`, `gold_zone_summary`
 - **Learn:** `gold_sonic_features` → MLflow leave-one-well-out bake-off against Gardner and Faust → `synthetic_sonic@champion` → Model Serving + AI Gateway (`subsurface-synthetic-sonic`)
 - **Serve:** the Databricks App (voxel model, map, sonic, economics), Genie, the Subsurface Supervisor, and row filters + column masks enforced for every consumer
+
+The ontology is Unity Catalog itself: glossary terms with owners and thresholds, tagged on the columns they govern; a PK/FK graph from tickets to rules to glossary terms and to wells; metric views, certified functions and governed tags. Change a threshold in the glossary and the agent, the dashboard and Genie follow, with no code.
 
 Every NPV (portfolio, step-out, offset at $92.8M, Genie, Supervisor) comes from `calculate_npv10` at today's WTI. One Asset Bundle job, `subsurface-command-build`, rebuilds the stack.
 
@@ -62,7 +65,7 @@ Prove it on one Landman field with Landman's own data, then reuse the template.
 
 **Ask 1, SVP Digital Operations:** sponsor one field as the first production use case. Measured on digital value delivered at scale and the contribution to the $4 to 5B cost target; success is a credible, priced step-out in weeks and a template that takes the next field out of pilot.
 
-**Ask 2, VP of Engineering:** a two-week working session with petrophysics and data. Measured on platform reliability, reuse and governance; success is Landman's data mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables.
+**Ask 2, VP of Engineering:** a two-week working session with petrophysics and data. Measured on platform reliability, reuse and governance; success is Landman's data mapped to the pipeline, the model's acceptance bar agreed, and partner policies live on Landman's tables, and engineers getting morning action items from Landman's own glossary rules.
 
 ## Appendix: what is real, and what is illustrative
 
@@ -71,6 +74,8 @@ Prove it on one Landman field with Landman's own data, then reuse the template.
 | Pipeline, model, endpoint, policies, Genie | Live | Running on Databricks; job, endpoint and policies verified |
 | Sonic predictions | Live | Served model on every request; labelled Gardner fallback if cold |
 | Voxel properties, step-out and its price | Live | Computed from the wells' logs and tops; priced by the certified UC function |
+| Engineer action items, agent note, tickets | Live | Governed rules run over UC data each load; every figure in the note checked; tickets written to UC |
+| Glossary thresholds | Illustrative | Placeholder company standards (365-day audit, 180-day re-sample); Landman's HSE sets the real values |
 | Well logs | Synthetic | Physically coupled rock model; your logs replace them in the pilot |
 | Structural framework | Illustrative | Dip, closure and fault are modelled, honoured at the tops |
 | OSDU analog panels | Offline | Fed by a partner ADME workspace that is not live; the panels say so |
