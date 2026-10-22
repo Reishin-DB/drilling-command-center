@@ -16,6 +16,27 @@ Shape: **open and discover (3 min) → deck slides 1 to 3, the value (3 min) →
 
 Every number is tagged so you can defend it: **[demo]** computed live by the app or the training job on the synthetic fleet, **[Landman]** Landman's public-scale figures (a public major's 2025 disclosures), **[benchmark]** industry figure, **[ask]** a number you ask them for.
 
+### Cheat sheet: the run of show on one page
+
+| Time | Where | The one line to land |
+|---|---|---|
+| 0:00 | Open, two questions each | "One decision that sits on both your growth and your cost target: where the next well goes." |
+| 3:00 | Slide 1, title | "$40M risked, found in data you already have; 3.6x lower error than today's method; one sitting." |
+| 3:30 | Slide 2, Landman's bet | "Every next-well decision sits on both sides of the bet, and today it runs through several SaaS tools." |
+| 4:15 | Slide 3, business value | Six levers, then: "Value per decision is tens of millions; platform cost per decision is not." |
+| 6:00 | Demo 1 to 2, wells and logs | "Location is a governed query, not a GIS export." |
+| 7:00 | Demo 3, missing sonic | "The model has to beat the method you trust, on wells it never saw." |
+| 8:30 | Demo 4, voxel model | "A geomodel in seconds that tells you where it is uncertain." |
+| 10:30 | Demo 5, value the well | "$103M unrisked, $40M risked, 34% IRR, priced by the certified function." |
+| 11:30 | Demo 8, governance | "Governance is the platform, not an app feature you have to trust." |
+| 12:30 | Demo 9, engineer and H2S | "Nobody coded 365 days into this app. HSE owns it, and everything follows it." |
+| 14:30 | Recap in the app | Play back their cycle time and their missing-curve problem. |
+| 15:00 | Slide 4, how it is built | "One pipeline, one registry, one governance layer, one bundle rebuilds it." |
+| 17:00 | Slide 5, the ask | Sponsor one field (SVP); two-week port with petrophysics (VP). Then stop talking. |
+| 18:00 | Questions | Section 6 and 7 below. "It ran" questions: open `EXECUTION_EVIDENCE.md`. |
+
+Steps 6, 7 and 10 of the demo are optional; use them if time and the room allow.
+
 ## 0. Before you start (10 min ahead)
 
 - **Warm the sonic endpoint.** It scales to zero. Open *Fill the Missing Sonic* once; the chip must read `Live · Model Serving · subsurface-synthetic-sonic`, not `Fallback · Gardner relation`. If it says fallback, wait 60 seconds and reload.
@@ -141,11 +162,12 @@ Click path follows the left rail. For each step: **click**, **say**, **land the 
 **Click:** **Make me a San Juan JV partner**.
 **Say:** "I've just mapped myself as a joint-venture partner. Same query, my identity: 30 rows, San Juan only, and saturation and hydrocarbon pore feet are masked while net pay stays visible. That's a row filter and a column mask on the table in Unity Catalog, not code in this app. Because Genie and the Supervisor run as me, they obey it too."
 **Click:** **Show policy SQL** if the VP of Engineering leans in, then **Restore operator view**.
+**Scroll to:** the **Audit trail** panel. **Say:** "And this is who touched the governed tables and when, read live from Unity Catalog's audit log as you, so it obeys your permissions too. Today's policy change lands here once the audit log catches up, usually within the hour."
 **Land:** "Governance is the platform, not an app feature you have to trust."
 
 ### 9. The engineer's morning (2 min) · H2S well, then Genie
 **Click:** the persona switch in the header, **Engineer**. Let the notifications slide in; point at the bell.
-**Say (to the VP of Engineering):** "Same platform, different person. This is a production engineer arriving in the morning. The operations agent has already checked the governed rules against this morning's data and found seven open action items on East Texas 05, the 12,000 ppm extreme-sour well."
+**Say (to the VP of Engineering):** "Same platform, different person. This is a production engineer arriving in the morning. The operations agent has already checked the governed rules against this morning's data and found eight open action items on East Texas 05, the 12,000 ppm extreme-sour well."
 **Click:** a notification, or *Morning Action Items*. Point at the agent note and its **Grounded** chip, then the top card.
 **Say:** "Every item comes from business context the business owns: a glossary term with its threshold and owner, and a rule that is a governed query over Unity Catalog. The H2S safety audit is 386 days old against a 365-day interval. Three sour-critical parts will stock out before a reorder lands; the wellhead spool has 20 days of cover against a 60-day lead time. Each item links to where it gets closed: the sour-service dashboard, the Equipment tab with this well selected, the source table, or a ticket."
 **Click:** **Show the glossary and rules** in *The rules behind this briefing*. Point at the **H2S safety audit interval** row: definition, owner HSE, threshold **365** days.
@@ -154,6 +176,12 @@ Click path follows the left rail. For each step: **click**, **say**, **land the 
 **Optional, for the VP of Engineering:** click **business_glossary in Catalog Explorer ↗**. Show the Sample data (the 365 row, owner HSE), then open `v_engineer_rule_catalog`: every rule with its definition, owner, live threshold and open items today. On `well_h2s_profile`, point at the `glossary_term` tag on `last_safety_audit_date`. "The meaning is on the data itself, governed in Unity Catalog."
 **Click:** **Create reorder ticket** on the wellhead spool (a `SUB-` ticket appears, written to UC), then **Ask Genie why** on the audit item.
 **Say:** "And if the engineer wants to know why, Genie answers from the same rule, the same glossary definition and the same data, with the SQL to prove it."
+**If you have a minute, paste one or two of these into Genie** (all eight were run live and are recorded in `docs/evidence/16_h2s_proof_points.md`):
+1. "Why is EASTTEXAS-05 flagged for an H2S safety audit? Show the rule, its glossary definition and the data behind it." Genie names **R-H2S-AUDIT**, the **365-day** glossary interval, and **386 days** since the 2025-10-01 audit.
+2. "Which wells are sour, and what is each one's H2S severity band and last measured ppm?" Genie returns EASTTEXAS-05 **extreme** at **12,000 ppm**, PERMIAN-04 and GREENRIVER-03 **moderate**.
+3. "Which wellhead and casing parts will stock out before a reorder arrives?" Genie returns **3 parts**, the casing joint at **7.2 days** of cover against a **35-day** lead.
+
+**Say:** "Notice it opens with the H2S hazard banner. That's an instruction HSE put on the space, so every sour-well answer starts with the safety checks." If the VP of Engineering asks how you know Genie gets it right: "We ran these as proof points. The first time, Genie called this well 'high' because it read an HSE risk field instead of the governed severity band. We pointed its instructions at the glossary's source, re-ran, and it says extreme. That loop is recorded."
 **Land:** "The agent, the dashboard, the ticket and Genie all read one governed definition of what matters this morning."
 
 ### 10. How It Works (30 s, or skip if short on time)
@@ -216,6 +244,9 @@ Then stop talking.
 **"Is this an ontology, or just some tables?"**
 > It's an ontology in the Databricks sense: governed Unity Catalog objects, not a separate graph product you copy data into. The glossary defines the business terms with owners and thresholds, each term is tagged on the columns it governs, primary and foreign keys connect tickets to rules to glossary terms and to wells, and metric views and certified functions hold the canonical measures and logic. The agent, the dashboard and Genie all read the same definitions, so when HSE changes a threshold, everything follows.
 
+**"How do I know this actually ran, and isn't a mock-up?"**
+> Every number has a receipt. `EXECUTION_EVIDENCE.md` at the top of the repo is captured output, not code: the job logs with the printed model metrics, a live call to the served model and its response, the rows AI Gateway logged, Genie's answers with the SQL it wrote, the policy check before and after, the drift retrains, the eval runs and the audit log. And the app tags every panel Live or Illustrative.
+
 **"Can partners query this through Genie and see too much?"**
 > No. The row filter and column mask are on the tables in Unity Catalog, and Genie runs as the signed-in user. The partner sees 30 rows, San Juan only, with the masked columns NULL, whichever tool they use.
 
@@ -226,8 +257,8 @@ Then stop talking.
 - *Where is the model?* `oil_pump_monitor_catalog.subsurface_command.synthetic_sonic`, alias `@champion`, served on `subsurface-synthetic-sonic`.
 - *How is the step-out priced?* Offset type curve scaled by HCPT ratio (1.06x unrisked, 0.70x risked), offset capex $58M, opex and 18%/yr decline, priced by `calculate_npv10` and `calculate_break_even` at today's WTI over 10 years at 10%. IRR and payback come from the same cash flows in the app.
 - *How is the step-out ranked?* Undrilled columns between 2,500 ft and one correlation range from control are ranked on kriged hydrocarbon pore thickness, times one minus half the column's kriging uncertainty.
-- *What happens when the model drifts?* A drift job scores the served model on every well with measured sonic against two bars: 1.5x its validated error, and calibrated Gardner. Today 0 of 13 wells drift. A simulated new well with a neutron-tool calibration shift went to 5.4 us/ft against a 4.5 bar, and the job retrained the model automatically.
-- *Is the AI brief making numbers up?* No: it may only use numbered governed facts, a validator rejects any figure that is not in them, and each brief is logged to `gold_action_plans` with its facts, prompt, model and result.
+- *What happens when the model drifts?* A drift job scores the served model on every well with measured sonic against two bars: 1.5x its validated error, and calibrated Gardner. Today 0 of 13 wells drift. A simulated new well with a neutron-tool calibration shift went to 5.4 us/ft against a 4.5 bar, and the job retrained the model automatically. A second failure mode, a gamma-ray tool change, was also detected and retrained; the champion is now version 4.
+- *Is the AI brief making numbers up?* No: it may only use numbered governed facts, a validator rejects any figure that is not in them, and each brief is logged to `gold_action_plans` with its facts, prompt, model and result. An eval set runs one brief per field: it passed 3 of 5, then 4 of 5, then 5 of 5 after two fixes, and the history is a table in Unity Catalog (`gold_brief_eval`).
 - *Does the partner policy cover equipment and H2S?* Yes: the same row filter and typed masks hide upgrade capex, risk scores and notes, but H2S concentration stays visible because safety data is never masked.
 - *Where do the engineer's action items come from?* `engineer_rules`: each rule is a read-only governed SELECT tied to a `business_glossary` term with its threshold and owner; the app runs them, refuses anything that is not a single SELECT, and writes tickets and close-outs back to `engineer_tickets` and `engineer_action_log`. Change a threshold in the glossary and tomorrow's briefing changes, no code.
 - *How do I rebuild it?* `databricks bundle deploy -t fevm` then run the `subsurface-command-build` job.
