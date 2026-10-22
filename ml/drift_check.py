@@ -16,10 +16,12 @@ redeploy the champion.
 
 Every well with measured sonic today was in the training set, so a routine run
 is in-sample monitoring. --simulate-well adds a new well built from an existing
-one with a neutron-tool calibration shift (NPHI +0.12 v/v), the kind of change a
-new logging vendor or tool string introduces, to exercise the drift path.
+one with a tool change, to exercise the drift path. Two failure modes:
+  nphi  neutron-tool calibration shift (NPHI +0.12 v/v)
+  gr    gamma-ray tool reading hot after a vendor or tool-string change (GR x1.3)
 """
 import argparse
+import re
 import datetime as dt
 import uuid
 
@@ -50,7 +52,9 @@ def main():
     ap.add_argument("--catalog", required=True)
     ap.add_argument("--schema", required=True)
     ap.add_argument("--simulate-well", default="", help="source well for a simulated new well with an NPHI calibration shift")
+    ap.add_argument("--drift-mode", default="nphi", choices=["nphi", "gr"])
     ap.add_argument("--nphi-shift", type=float, default=0.12)
+    ap.add_argument("--gr-scale", type=float, default=1.3)
     ap.add_argument("--trigger", action="store_true", help="retrain when any well drifts")
     ap.add_argument("--max-samples", type=int, default=1200)
     a = ap.parse_args()
@@ -66,14 +70,18 @@ def main():
     wells = {wid: g for wid, g in lab.groupby("well_id")}
     if a.simulate_well:
         sim = wells[a.simulate_well].copy()
-        sim["nphi_vv"] = sim["nphi_vv"] + a.nphi_shift
-        wells[f"NEW-{a.simulate_well}-NPHI+{a.nphi_shift:g}"] = sim
+        if a.drift_mode == "gr":
+            sim["gr_api"] = sim["gr_api"] * a.gr_scale
+            wells[f"NEW-{a.simulate_well}-GRx{a.gr_scale:g}"] = sim
+        else:
+            sim["nphi_vv"] = sim["nphi_vv"] + a.nphi_shift
+            wells[f"NEW-{a.simulate_well}-NPHI+{a.nphi_shift:g}"] = sim
 
     check_id, now, rows = str(uuid.uuid4()), dt.datetime.now(dt.timezone.utc), []
     for wid, g in sorted(wells.items()):
         g = g.sort_values("md_ft").iloc[:: max(1, len(g) // a.max_samples)]
         # Calibrated Gardner, fit on every other well (the same log-linear form the training job uses).
-        rest = lab[lab.well_id != wid.split("-NPHI")[0].replace("NEW-", "")]
+        rest = lab[lab.well_id != re.sub(r"^NEW-|-(NPHI|GR).*$", "", wid)]
         b, c = np.polyfit(np.log(rest.rhob_gcc), np.log(rest[TARGET]), 1)
         gard = np.exp(c + b * np.log(g.rhob_gcc.to_numpy()))
         pred = predict(w, g)

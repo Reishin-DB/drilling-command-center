@@ -1,0 +1,20 @@
+# subsurface-sonic-drift-check
+# job run 243464966359023 (https://fevm-oil-pump-monitor.cloud.databricks.com/?o=7474647106303257#job/553255092262892/run/243464966359023)
+# task drift_check, task run 763605210412892, SUCCESS, 2026-10-22 18:54:44 UTC to 2026-10-22 18:55:37 UTC
+# Captured with jobs.get_run_output; this is the task's stdout as printed by the job.
+
+EASTTEXAS-05                 n= 1203  model   2.85  gardner  10.30  bar  4.50  ok
+ET-OFFSET-08                 n= 2396  model   3.28  gardner  10.24  bar  4.50  ok
+GR-OFFSET-04                 n= 2385  model   3.22  gardner  10.89  bar  4.50  ok
+GR-OFFSET-05                 n= 2395  model   2.54  gardner  10.44  bar  4.50  ok
+NEW-PERMIAN-06-GRx1.3        n= 1206  model   4.56  gardner  10.36  bar  4.50  DRIFT
+PB-OFFSET-06                 n= 2392  model   2.61  gardner   9.91  bar  4.50  ok
+PB-OFFSET-07                 n= 2389  model   2.52  gardner  10.89  bar  4.50  ok
+PERMIAN-04                   n= 1218  model   2.63  gardner  10.89  bar  4.50  ok
+PERMIAN-06                   n= 1206  model   2.76  gardner  10.36  bar  4.50  ok
+SANJUAN-01                   n= 1212  model   2.60  gardner  11.23  bar  4.50  ok
+SANJUAN-02                   n= 2388  model   4.21  gardner  11.55  bar  4.50  ok
+SJ-OFFSET-01                 n= 2357  model   3.72  gardner  10.85  bar  4.50  ok
+SJ-OFFSET-02                 n= 1207  model   2.74  gardner  10.31  bar  4.50  ok
+SJ-OFFSET-03                 n= 2396  model   2.49  gardner  11.13  bar  4.50  ok
+check 357f4095-88a3-407a-8f1c-c6a82e79f04e: 1 of 14 wells in drift; action: retrain triggered: subsurface-command-build run 730433284449926 (train_serve_score)

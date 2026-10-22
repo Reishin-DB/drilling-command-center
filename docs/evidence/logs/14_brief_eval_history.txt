@@ -1,0 +1,7 @@
+# Decision brief eval history, read from oil_pump_monitor_catalog.subsurface_command.gold_brief_eval
+# Run 1: before the fix. Run 2: self-correction also enforces citations and length. Run 3: up to two correction passes.
+
+run_id | ran_at | cases | passed | grounded | self_corrected
+257aadfb-3b20-4b7f-90f6-6ecfa3069309 | 2026-10-22T18:58:04.498Z | 5 | 3 | 5 | 2
+bb2ecc78-ed66-400d-93b7-689030979084 | 2026-10-22T19:02:01.919Z | 5 | 4 | 5 | 3
+2d6b706f-68c0-4c2d-8c2f-868414c46882 | 2026-10-22T19:05:52.092Z | 5 | 5 | 5 | 2

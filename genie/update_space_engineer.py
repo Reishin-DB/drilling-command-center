@@ -19,7 +19,7 @@ import uuid
 from databricks.sdk import WorkspaceClient
 
 SPACE_ID = "01f17bdeaeee136fbd65013d3eb40261"
-TABLES = ["v_engineer_rule_catalog", "business_glossary", "engineer_rules", "engineer_tickets", "engineer_action_log",
+TABLES = ["v_engineer_rule_catalog", "v_well_sour_band", "business_glossary", "engineer_rules", "engineer_tickets", "engineer_action_log",
           "well_h2s_profile", "well_equipment_integrity", "drilling_inventory"]
 MARKER = "### Engineer action items, glossary, and H2S rules"
 NEXT_MARKER = "### Petrophysics, net pay, and synthetic sonic"
@@ -36,6 +36,9 @@ INSTRUCTIONS = MARKER + """
   lead_time_days, for wells in the high or extreme severity band; R-ECON-SOURCAPEX = sour upgrade capex at or above
   10% of npv10_live_musd in well_economics.
 - A sour well is h2s_ppm_last_measured >= 100 or sour_classified. EASTTEXAS-05 is the extreme-sour well (12,000 ppm).
+- "Severity band" or "H2S severity" means the glossary term Severity band: v_well_sour_band.severity_band
+  (sweet, low, moderate, high, extreme), computed from the last measured ppm. Do not use well_h2s_profile.h2s_risk_level
+  for severity; that is the HSE risk rating, a different field. When listing sour wells, show severity_band.
 - engineer_tickets holds tickets raised from action items (ticket_id, item_key, rule_id, well_id, title, status);
   engineer_action_log holds close-outs. item_key is rule_id|well_id|subject.
 - v_engineer_rule_catalog: one row per rule with its glossary definition, owner, live threshold_value and

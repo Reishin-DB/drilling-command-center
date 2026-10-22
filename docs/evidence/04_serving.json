@@ -1,12 +1,12 @@
 {
   "endpoint": "subsurface-synthetic-sonic",
   "state": "READY",
-  "latency_s": 117.944,
+  "latency_s": 0.147,
   "served_entities": [
     {
-      "name": "synthetic_sonic-3",
+      "name": "synthetic_sonic-4",
       "entity": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
-      "version": "3",
+      "version": "4",
       "scale_to_zero": true,
       "workload_size": "Small"
     }
@@ -169,10 +169,10 @@
   ],
   "inference_table": [
     {
-      "logged_requests": "193",
+      "logged_requests": "282",
       "first_request": "2026-10-21T17:32:54.403Z",
-      "last_request": "2026-10-22T16:02:28.983Z",
-      "ok": "193"
+      "last_request": "2026-10-22T19:04:25.275Z",
+      "ok": "282"
     }
   ]
 }

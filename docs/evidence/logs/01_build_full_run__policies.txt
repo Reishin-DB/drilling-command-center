@@ -1,0 +1,9 @@
+# subsurface-command-build: full end-to-end build
+# job run 739091380836337 (https://fevm-oil-pump-monitor.cloud.databricks.com/?o=7474647106303257#job/532814868767936/run/739091380836337)
+# task policies, task run 990374882168686, SUCCESS, 2026-10-21 17:04:05 UTC to 2026-10-21 17:04:45 UTC
+# Captured with jobs.get_run_output; this is the task's stdout as printed by the job.
+
+ok: CREATE TABLE IF NOT EXISTS oil_pump_monitor_catalog.subsurface_command.access_personas (
+ok: CREATE OR REPLACE FUNCTION oil_pump_monitor_catalog.subsurface_command.is_jv_partner()
+ok: CREATE OR REPLACE FUNCTION oil_pump_monitor_catalog.subsurface_command.basin_filter(basin 
+ok: CREATE OR REPLACE FUNCTION oil_pump_monitor_catalog.subsurface_command.mask_interpretation

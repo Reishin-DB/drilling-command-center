@@ -1,0 +1,54 @@
+# Unity Catalog audit trail: who accessed or changed the governed tables, and when
+# Source: system.access.audit, captured 2026-10-22 21:44 UTC
+# Query:
+#   SELECT date_format(event_time, 'yyyy-MM-dd HH:mm') AS at, coalesce(user_identity.email, 'unknown') AS who,
+#          action_name AS action, element_at(split(request_params['full_name_arg'], '\\.'), -1) AS object, response.status_code AS status
+#   FROM system.access.audit
+#   WHERE event_date >= current_date() - 2 AND service_name = 'unityCatalog'
+#     AND request_params['full_name_arg'] IN ('oil_pump_monitor_catalog.subsurface_command.gold_zone_summary',
+#         'oil_pump_monitor_catalog.subsurface_command.well_h2s_profile', 'oil_pump_monitor_catalog.subsurface_command.access_personas',
+#         'oil_pump_monitor_catalog.subsurface_command.business_glossary', 'oil_pump_monitor_catalog.subsurface_command.engineer_rules',
+#         'oil_pump_monitor_catalog.subsurface_command.equipment_component_spec')
+#   ORDER BY event_time DESC LIMIT 40
+
+at | who | action | object | status
+2026-10-22 18:57 | reishin.toolsi@databricks.com | updateTables | equipment_component_spec | 200
+2026-10-22 18:57 | reishin.toolsi@databricks.com | getTable | equipment_component_spec | 200
+2026-10-22 18:57 | reishin.toolsi@databricks.com | updateTables | equipment_component_spec | 200
+2026-10-22 18:57 | reishin.toolsi@databricks.com | getTable | equipment_component_spec | 200
+2026-10-22 18:57 | reishin.toolsi@databricks.com | updateTables | well_h2s_profile | 200
+2026-10-22 18:57 | reishin.toolsi@databricks.com | getTable | well_h2s_profile | 200
+2026-10-22 18:56 | reishin.toolsi@databricks.com | updateTables | well_h2s_profile | 200
+2026-10-22 18:56 | reishin.toolsi@databricks.com | getTable | well_h2s_profile | 200
+2026-10-22 17:52 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:52 | reishin.toolsi@databricks.com | getTable | well_h2s_profile | 200
+2026-10-22 17:52 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:52 | reishin.toolsi@databricks.com | getTable | gold_zone_summary | 200
+2026-10-22 17:52 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:51 | reishin.toolsi@databricks.com | updateTables | access_personas | 200
+2026-10-22 17:51 | reishin.toolsi@databricks.com | getTable | access_personas | 200
+2026-10-22 17:51 | reishin.toolsi@databricks.com | getTable | access_personas | 200
+2026-10-22 17:51 | reishin.toolsi@databricks.com | getTable | access_personas | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | well_h2s_profile | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | gold_zone_summary | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | well_h2s_profile | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | gold_zone_summary | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | well_h2s_profile | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:50 | reishin.toolsi@databricks.com | getTable | gold_zone_summary | 200
+2026-10-22 17:49 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:49 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:49 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:49 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:48 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:48 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:39 | reishin.toolsi@databricks.com | getTable | business_glossary | 200
+2026-10-22 17:37 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:36 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200
+2026-10-22 17:36 | reishin.toolsi@databricks.com | getTable | engineer_rules | 200

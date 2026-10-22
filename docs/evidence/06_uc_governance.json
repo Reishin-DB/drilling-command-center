@@ -144,10 +144,6 @@
   ],
   "policies": [
     {
-      "routine_name": "mask_interpretation_int",
-      "comment": "Column mask: hides operator risk scoring from JV partners."
-    },
-    {
       "routine_name": "mask_interpretation_str",
       "comment": "Column mask: hides operator free-text interpretation from JV partners."
     },
@@ -158,6 +154,10 @@
     {
       "routine_name": "mask_commercial_dec32",
       "comment": "Column mask: hides operator upgrade capex from JV partners."
+    },
+    {
+      "routine_name": "mask_interpretation_int",
+      "comment": "Column mask: hides operator risk scoring from JV partners."
     },
     {
       "routine_name": "is_jv_partner",

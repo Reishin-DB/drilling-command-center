@@ -1,28 +1,28 @@
 {
   "space_id": "01f17bdeaeee136fbd65013d3eb40261",
-  "conversation_id": "01f1ce410bc21446bba369c21aad395b",
-  "captured": "2026-10-22T17:51:17.268804+00:00",
+  "conversation_id": "01f1ce621bec14d3b614d5b332e60b6d",
+  "captured": "2026-10-22T21:47:57.078817+00:00",
   "turns": [
     {
       "question": "Which basin has the highest total live NPV?",
       "status": "COMPLETED",
-      "seconds": 18.8,
-      "text": "**San Juan** has the highest total live NPV at **155.92 million USD**. In the returned result set, **San Juan** is the top-ranked basin by total live NPV.",
-      "sql": "WITH basin_totals AS (\n  SELECT\n    `basin`,\n    SUM(`npv10_live_musd`) AS `total_live_npv_musd`\n  FROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_economics`\n  WHERE `status` IN ('gold', 'qc_complete', 'corrected')\n    AND `basin` IS NOT NULL\n    AND `npv10_live_musd` IS NOT NULL\n  GROUP BY `basin`\n), ranked AS (\n  SELECT\n    `basin`,\n    `total_live_npv_musd`,\n    RANK() OVER (ORDER BY `total_live_npv_musd` DESC) AS `rnk`\n  FROM basin_totals\n)\nSELECT\n  `basin`,\n  `total_live_npv_musd`\nFROM ranked\nWHERE `rnk` = 1",
+      "seconds": 19.2,
+      "text": "The basin with the highest total live NPV is **San Juan**, with total live NPV of **155.92 million USD**. Based on the ranked result shown, **San Juan** is the top basin on this measure.",
+      "sql": "WITH basin_totals AS (\n  SELECT\n    well_economics.basin,\n    SUM(well_economics.npv10_live_musd) AS total_live_npv_musd\n  FROM oil_pump_monitor_catalog.subsurface_command.well_economics\n  WHERE well_economics.status IN ('gold', 'qc_complete', 'corrected')\n    AND well_economics.basin IS NOT NULL\n    AND well_economics.npv10_live_musd IS NOT NULL\n  GROUP BY well_economics.basin\n), ranked_basins AS (\n  SELECT\n    basin,\n    total_live_npv_musd,\n    RANK() OVER (ORDER BY total_live_npv_musd DESC) AS rnk\n  FROM basin_totals\n)\nSELECT\n  basin,\n  total_live_npv_musd\nFROM ranked_basins\nWHERE rnk = 1\nORDER BY basin",
       "rows": [
         {
           "basin": "San Juan",
           "total_live_npv_musd": "155.92000000000002"
         }
       ],
-      "description": "You want to find the basin with the highest total live net present value (NPV) from wells with trusted economic data."
+      "description": "You want to find the basin with the highest total live net present value (NPV) from wells that have trusted economic data."
     },
     {
       "question": "Which wells are within 50 km of SANJUAN-01 and how far are they?",
       "status": "COMPLETED",
-      "seconds": 19.5,
-      "text": "Within 50 km of SANJUAN-01, the only well shown is **SANJUAN-02** (well name **San Juan 02**) in the **San Juan** basin at **7.4 km** away, with **same_basin = true**. Based on the visible result, **SANJUAN-02** is also the closest well returned for SANJUAN-01.",
-      "sql": "SELECT `to_well` AS `well_id`, `to_name` AS `well_name`, `to_basin` AS `basin`, ROUND(`km`, 1) AS `km`, `same_basin`\nFROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_distances`\nWHERE `from_well` = 'SANJUAN-01'\n  AND `to_well` <> 'SANJUAN-01'\n  AND `km` <= 50\nORDER BY `km`",
+      "seconds": 17.9,
+      "text": "Within 50 km of **SANJUAN-01**, the only well shown is **SANJUAN-02** in the **San Juan** basin at **7.4 km** away, with **same_basin = true**. Based on the 1 row returned, **SANJUAN-02** is the nearest well listed within the 50 km range.",
+      "sql": "SELECT `to_well` AS `well_id`, `to_name` AS `well_name`, `to_basin` AS `basin`, ROUND(`km`, 1) AS `km`, `same_basin` FROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_distances` WHERE `from_well` = 'SANJUAN-01' AND `km` <= 50 AND `to_well` <> 'SANJUAN-01' ORDER BY `km`",
       "rows": [
         {
           "well_id": "SANJUAN-02",
@@ -32,27 +32,28 @@
           "same_basin": "true"
         }
       ],
-      "description": "You want to see all wells that are located within 50 kilometers of the well named SANJUAN-01, excluding SANJUAN-01 itself. For each of these nearby wells, you want to know their identifier, name, basin, the distance from SANJUAN-01 rounded to one decimal place, and whether they are in the same basin as SANJUAN-01. The results are ordered by distance from closest to farthest."
+      "description": "You're looking for a list of wells that are located within 50 kilometers of the well identified as SANJUAN-01, along with the distance to each of those wells."
     },
     {
       "question": "What is the net pay in the Westwater formation for GREENRIVER-03?",
       "status": "COMPLETED",
-      "seconds": 18.4,
-      "text": "For well ID **GREENRIVER-03** in the **Westwater** formation, net pay is **1,140.0 ft**. In the single returned record, **GREENRIVER-03** also shows net-to-gross of **0.95**, which indicates a very high proportion of pay within the interval.",
-      "sql": "SELECT\n  gold_zone_summary.well_id,\n  gold_zone_summary.basin,\n  gold_zone_summary.formation_name,\n  gold_zone_summary.net_pay_ft,\n  gold_zone_summary.net_to_gross,\n  gold_zone_summary.avg_pay_phi,\n  gold_zone_summary.avg_pay_sw,\n  gold_zone_summary.hc_pore_ft\nFROM oil_pump_monitor_catalog.subsurface_command.gold_zone_summary\nWHERE gold_zone_summary.role = 'app_well'\n  AND gold_zone_summary.well_id = 'GREENRIVER-03'\n  AND gold_zone_summary.formation_name = 'Westwater'\n  AND gold_zone_summary.net_pay_ft IS NOT NULL",
+      "seconds": 19.2,
+      "text": "For well ID **GREENRIVER-03** in the **Westwater** formation, the **net pay is 1,140.0 ft**. As context, well ID **GREENRIVER-03** has **1,200.0 ft** gross interval and a **0.95** net-to-gross ratio in the **Green River** basin.",
+      "sql": "SELECT\n  `well_id`,\n  `basin`,\n  `formation_name`,\n  `net_pay_ft`,\n  `gross_ft`,\n  `net_to_gross`,\n  `avg_pay_phi`,\n  `avg_pay_sw`,\n  `hc_pore_ft`\nFROM `oil_pump_monitor_catalog`.`subsurface_command`.`gold_zone_summary`\nWHERE `role` = 'app_well'\n  AND `well_id` = 'GREENRIVER-03'\n  AND `formation_name` = 'Westwater'\n  AND `formation_name` IS NOT NULL\n  AND `net_pay_ft` IS NOT NULL",
       "rows": [
         {
           "well_id": "GREENRIVER-03",
           "basin": "Green River",
           "formation_name": "Westwater",
           "net_pay_ft": "1140.0",
+          "gross_ft": "1200.0",
           "net_to_gross": "0.95",
           "avg_pay_phi": "0.1696",
           "avg_pay_sw": "0.1835",
           "hc_pore_ft": "157.879"
         }
       ],
-      "description": "You want to see the net pay details for the Westwater formation in the well named GREENRIVER-03."
+      "description": "You want to see the net pay and related petrophysical details for the Westwater formation in the well named GREENRIVER-03."
     }
   ]
 }

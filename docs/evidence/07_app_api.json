@@ -1,10 +1,10 @@
 {
   "app": "https://subsurface-command-7474647106303257.aws.databricksapps.com",
-  "captured": "2026-10-22T17:51:36.245315+00:00",
+  "captured": "2026-10-22T21:48:16.387481+00:00",
   "responses": {
     "/api/sonic/metrics": {
       "status": 200,
-      "seconds": 0.3,
+      "seconds": 0.59,
       "body": {
         "endpoint": "subsurface-synthetic-sonic",
         "model": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
@@ -142,7 +142,7 @@
     },
     "/api/voxels/stepouts": {
       "status": 200,
-      "seconds": 0.34,
+      "seconds": 0.28,
       "body": {
         "stepouts": [
           {
@@ -231,7 +231,7 @@
     },
     "/api/voxels/stepout_value/SANJUAN-01": {
       "status": 200,
-      "seconds": 1.19,
+      "seconds": 1.11,
       "body": {
         "field": "Blanco",
         "basin": "San Juan",
@@ -294,7 +294,7 @@
     },
     "/api/economics/summary": {
       "status": 200,
-      "seconds": 1.06,
+      "seconds": 1.14,
       "body": {
         "wti_spot": 79.18,
         "wti_date": "2026-10-22",

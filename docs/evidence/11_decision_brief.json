@@ -1,7 +1,7 @@
 {
-  "brief_id": "3b4b4d4f-8096-4f81-b037-3a54048213d2",
+  "brief_id": "5b7d43bb-4ac5-4213-9148-903513520aca",
   "well": "SANJUAN-01",
-  "plan": "**Recommendation**\n\nDrill the Blanco field step-out well 2,616 ft from SANJUAN-01 [F1].\n\n**Why this well**\n\n\u2022 Voxel model predicts 253.0 ft hydrocarbon pore thickness, exceeding SANJUAN-01's 238.6 ft [F2], with risked economics of $40.3M NPV10, 34% IRR, and 2.0 yr payback at $79.18 WTI [F5].\n\n\u2022 Break-even WTI of $53 provides substantial downside protection in current $79.18 price environment [F5] [F6].\n\n\u2022 Synthetic-sonic model demonstrates strong predictive accuracy (3.0 us/ft error vs 10.7 us/ft for calibrated Gardner on held-out wells) [F9], supporting confidence in subsurface interpretation.\n\n**Why now**\n\n\u2022 Six-month delay costs $1.9M (4.7% of risked NPV) [F8], eroding project returns in a favorable price environment.\n\n\u2022 158 ft closure and 140 ft normal fault provide adequate structural definition [F10] to proceed without additional data acquisition.\n\n**Risks and how they are controlled**\n\n\u2022 Subsurface uncertainty: Model uncertainty of 0.68 [F3] reflects 2,616 ft distance from control [F1]; risked pore thickness of 167.5 ft [F3] vs unrisked 253.0 ft [F2] appropriately haircuts geological risk.\n\n\u2022 Sour service: H2S measured at 1.2 ppm with NACE MR0175 not required [F11]; no equipment upgrade cost or schedule impact [F12].\n\n**Next actions**\n\n\u2022 **Asset team**: Finalize $58M AFE using offset well design [F6] and secure rig contract.\n\n\u2022 **VP of Engineering**: Confirm well design incorporates free-water level at 9275 ft [F10] and H2S monitoring protocols [F11].\n\n\u2022 **SVP Digital Operations**: Validate voxel model calibration at step-out location after drilling to refine future predictions.",
+  "plan": "**Recommendation**\n\nApprove the step-out well 2,616 ft from SANJUAN-01 in the Blanco field with $58M capex for drilling in the current program [F1, F6].\n\n**Why this well**\n\n\u2022 Risked economics deliver $40.3M NPV10, 34% IRR, and 2.0 yr payback at $79.18 WTI with $53 break-even [F5, F6].\n\n\u2022 Voxel model shows 253.0 ft hydrocarbon pore thickness vs 238.6 ft at SANJUAN-01, supporting comparable or better reservoir quality [F2].\n\n\u2022 Synthetic-sonic model demonstrates 3.0 us/ft accuracy on held-out wells, significantly outperforming calibrated Gardner at 10.7 us/ft [F9].\n\n**Why now**\n\n\u2022 Six-month delay costs $1.9M of risked NPV at 10% discount [F8].\n\n\u2022 Structural closure of 158 ft and 140 ft normal fault with free-water level at 9275 ft define a proven trap [F10].\n\n**Risks and how they are controlled**\n\n\u2022 Subsurface uncertainty reflected in 0.68 model confidence reduces pore thickness from 253.0 ft unrisked to 167.5 ft risked [F2, F3].\n\n\u2022 H2S risk is low at 1.2 ppm last measured; NACE MR0175 not required, and sour-service equipment adds $0.00M capex with 0 weeks lead time [F11, F12].\n\n**Next actions**\n\n\u2022 **Asset team**: Finalize AFE and secure rig contract.\n\n\u2022 **VP of Engineering**: Confirm wellbore design matches offset SANJUAN-01 specifications.\n\n\u2022 **SVP Digital Operations**: Commission pre-drill uncertainty quantification to refine risked thickness.",
   "facts": [
     {
       "id": "F1",
@@ -65,40 +65,33 @@
     }
   ],
   "validation": {
-    "figures_checked": 21,
+    "figures_checked": 23,
     "unsupported": [],
     "facts_cited": [
-      "F1",
       "F2",
-      "F3",
-      "F5",
-      "F6",
       "F8",
       "F9",
-      "F10",
-      "F11",
-      "F12"
+      "F10"
     ],
     "grounded": true
   },
-  "attempts": 1,
-  "first_attempt_unsupported": [],
+  "attempts": 3,
+  "first_attempt_unsupported": [
+    "30"
+  ],
   "served_by": "databricks-claude-sonnet-4-5",
   "fell_back": false,
   "usage": {
-    "cache_read_input_tokens": 0,
-    "completion_tokens": 508,
-    "prompt_tokens": 686,
-    "total_tokens": 1194,
-    "cache_creation_input_tokens": 0
+    "prompt_tokens": 1945,
+    "completion_tokens": 939
   },
   "logged_to": "oil_pump_monitor_catalog.subsurface_command.gold_action_plans",
   "log_error": null,
-  "generated": "2026-10-22T17:51:53.043554+00:00",
+  "generated": "2026-10-22T21:48:45.362788+00:00",
   "log_rows": [
     {
-      "briefs": "5",
-      "grounded": "4"
+      "briefs": "21",
+      "grounded": "20"
     }
   ]
 }

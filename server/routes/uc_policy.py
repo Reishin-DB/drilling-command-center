@@ -129,3 +129,27 @@ async def set_partner(request: Request, on: bool = True):
         return {"ok": True, "jv_partner": on, "user": email}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:240]}"}
+
+
+
+AUDIT_TABLES = ["gold_zone_summary", "well_h2s_profile", "access_personas", "business_glossary", "engineer_rules",
+                "equipment_component_spec", "engineer_tickets"]
+AUDIT_SQL = (
+    "SELECT date_format(event_time, 'yyyy-MM-dd HH:mm:ss') AS at, coalesce(user_identity.email, 'unknown') AS who, "
+    "action_name AS action, element_at(split(request_params['full_name_arg'], '\\\\.'), -1) AS object, "
+    "response.status_code AS status FROM system.access.audit "
+    "WHERE event_date >= current_date() - 2 AND service_name = 'unityCatalog' AND request_params['full_name_arg'] IN ("
+    + ", ".join(f"'{CATALOG}.{SCHEMA}.{t}'" for t in AUDIT_TABLES) + ") ORDER BY event_time DESC LIMIT 30"
+)
+
+
+@router.get("/governance/audit_trail")
+async def audit_trail(request: Request):
+    """Who accessed or changed the governed tables, and when, from system.access.audit.
+    Runs as the signed-in user (system tables are rarely granted to app service principals)."""
+    _, token = _identity(request)
+    try:
+        rows = (await asyncio.to_thread(_run_rest, [AUDIT_SQL], token))[0] if token else (await asyncio.to_thread(_run, [(AUDIT_SQL, None)]))[0]
+        return {"rows": rows, "source": "system.access.audit", "query": AUDIT_SQL, "error": None}
+    except Exception as e:
+        return {"rows": [], "source": "system.access.audit", "query": AUDIT_SQL, "error": f"{type(e).__name__}: {str(e)[:200]}"}

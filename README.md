@@ -8,6 +8,28 @@
 
 *From raw well logs to a located, priced, governed drilling decision, on one Databricks platform, in one sitting.* (Deployed as the `subsurface-command` Databricks App.)
 
+## Execution evidence (captured output)
+
+Everything in this repo has run on the live FEVM workspace. **[`EXECUTION_EVIDENCE.md`](EXECUTION_EVIDENCE.md)** holds the captured output, verbatim: job task logs, the pipeline event log, MLflow metrics, a served-model request and response, AI Gateway inference-table rows, Genie conversations with their SQL, Unity Catalog policy checks, the audit log, eval runs and the test suite. Raw captures: [`docs/evidence/`](docs/evidence/) and [`docs/evidence/logs/`](docs/evidence/logs/). H2S Genie and glossary proof points: [`docs/evidence/16_h2s_proof_points.md`](docs/evidence/16_h2s_proof_points.md).
+
+Printed by the training task of job run 739091380836337 (leave-one-well-out, us/ft):
+
+```text
+  gardner_textbook     MAE  17.23  RMSE  22.25  R2 -1.542  bias +10.93 us/ft
+  gardner_calibrated   MAE  10.68  RMSE  12.34  R2  0.219  bias  -0.92 us/ft
+  faust_calibrated     MAE   6.64  RMSE   8.66  R2  0.615  bias  -0.54 us/ft
+  linear_all_curves    MAE   3.00  RMSE   3.76  R2  0.927  bias  -0.01 us/ft
+  model                MAE   3.05  RMSE   3.81  R2  0.925  bias  -0.01 us/ft
+```
+
+Served model, live call (0.147 s): request `[102.73, 2.4317, 0.3325, 0.3171018123980051, 5000.0, 0]` returned `93.66` (measured 97.65).
+
+Genie, asked "Why is EASTTEXAS-05 flagged for an H2S safety audit? Show the rule, its glossary definition and the data behind it." (COMPLETED, 25.8 s):
+
+> **EASTTEXAS-05** is flagged by rule **R-H2S-AUDIT** (**H2S safety audit overdue**) because glossary term **H2S safety audit interval** requires an audit at least once a year, with a threshold of **365 days**, and **EASTTEXAS-05** shows **386 days** since the last safety audit on **2025-10-01**. The glossary definition says every sour well needs an on-site H2S safety audit at least once a year, and the supporting well...
+
+Unity Catalog policy, same query and user: operator **84 rows**, mapped as a San Juan JV partner **30 rows**, saturation and pore feet masked.
+
 ## The business challenge
 
 In a producing field the data needed to place the next well already exists: well logs, formation tops, well headers, OSDU records, economics. It sits in separate tools owned by separate teams, so every next-well proposal is a chain of exports and hand-offs that takes weeks, and delay costs value. Gaps stall it further: a well drilled without a sonic log blocks geomechanics and seismic ties until someone patches it by hand with Gardner's density transform. And AI assistants either cannot see the governed data or see too much, exposing interpretation to joint-venture partners.
@@ -158,7 +180,7 @@ The ontology is not a separate product or a copy of the data; it is governed Uni
 
 ## Execution evidence
 
-Everything above ran. [`docs/evidence/EVIDENCE.md`](docs/evidence/EVIDENCE.md) summarises output captured from the live FEVM workspace, with the raw API responses beside it: the bundle job run and its task attempts, the Lakeflow pipeline update with row counts and data-quality expectations, the MLflow training run and its logged metrics, a live call to the served model with inference-table logging, a Genie conversation with its SQL and answers, the Unity Catalog policy before and after mapping a JV partner, live app API responses, the test suite, and an executed workspace notebook (`notebooks/evidence_run.py`). Re-capture with `python scripts/collect_evidence.py --profile <profile>`.
+Everything above ran. [`EXECUTION_EVIDENCE.md`](EXECUTION_EVIDENCE.md) (and the per-source [`docs/evidence/EVIDENCE.md`](docs/evidence/EVIDENCE.md)) holds output captured from the live FEVM workspace, with the raw API responses beside it: the bundle job run and its task attempts, the Lakeflow pipeline update with row counts and data-quality expectations, the MLflow training run and its logged metrics, a live call to the served model with inference-table logging, a Genie conversation with its SQL and answers, the Unity Catalog policy before and after mapping a JV partner, live app API responses, the test suite, and an executed workspace notebook (`notebooks/evidence_run.py`). Re-capture with `python scripts/collect_evidence.py --profile <profile>`.
 
 ## How it was built
 

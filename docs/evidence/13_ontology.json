@@ -26,7 +26,7 @@
     },
     {
       "glossary_term": "Sour service",
-      "governs": "well_h2s_profile.h2s_ppm_last_measured, well_h2s_profile.sour_classified"
+      "governs": "well_h2s_profile.sour_classified, well_h2s_profile.h2s_ppm_last_measured"
     }
   ],
   "foreign_keys": [
@@ -113,13 +113,13 @@
   "table_tags": [
     {
       "table_name": "business_glossary",
-      "tag_name": "glossary_steward",
-      "tag_value": "HSE"
+      "tag_name": "domain",
+      "tag_value": "operations"
     },
     {
       "table_name": "business_glossary",
-      "tag_name": "domain",
-      "tag_value": "operations"
+      "tag_name": "glossary_steward",
+      "tag_value": "HSE"
     },
     {
       "table_name": "engineer_rules",

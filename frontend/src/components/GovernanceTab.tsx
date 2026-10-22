@@ -91,6 +91,7 @@ export default function GovernanceTab() {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <UcPolicyPanel />
+      <AuditTrailPanel />
       {/* KPI strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
         <Kpi label="ADME legal tags"   value={legal?.legal_tags?.length ?? '…'} sub={legal?.error ? 'UC fetch failed' : 'gov_legal_tags'} color="var(--teal)" />
@@ -686,6 +687,46 @@ function PolicyTable({ title, sub, v, highlight }: { title: string; sub: string;
           <div style={{ color: 'var(--text-muted)' }}>H2S concentration stays visible to partners on purpose: safety data is never masked.</div>
         </div>
       )}
+    </div>
+  )
+}
+
+
+// ── Audit trail: who saw or changed the governed tables, and when ───────────
+function AuditTrailPanel() {
+  const [d, setD] = useState<{ rows: { at: string; who: string; action: string; object: string; status: number }[]; error: string | null; query: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [showSql, setShowSql] = useState(false)
+  const load = () => { setBusy(true); fetch('/api/governance/audit_trail').then(r => r.json()).then(setD).catch(() => {}).finally(() => setBusy(false)) }
+  useEffect(() => { load() }, [])
+  const label: Record<string, string> = { getTable: 'read', updateTables: 'changed', tableExists: 'checked', generateTemporaryTableCredential: 'read data' }
+  return (
+    <div className="card" style={{ padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontSize: 19.5, fontWeight: 700 }}>Audit trail · who saw what, when</div>
+          <div style={{ fontSize: 14.5, color: 'var(--text-muted)' }}>Unity Catalog records every access to the governed tables in <span className="mono">system.access.audit</span>, including the partner toggle above and glossary changes from the engineer view.</div>
+        </div>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          <button className="cs-btn" onClick={() => setShowSql(v => !v)}>{showSql ? 'Hide' : 'Show'} SQL</button>
+          <button className="cs-btn" disabled={busy} onClick={load}>{busy ? 'Loading…' : 'Refresh'}</button>
+        </span>
+      </div>
+      {showSql && d && <pre className="mono" style={{ fontSize: 12.5, whiteSpace: 'pre-wrap', background: 'var(--bg-panel)', border: '1px solid var(--border-dim)', borderRadius: 6, padding: 10, color: 'var(--teal)', marginBottom: 10 }}>{d.query}</pre>}
+      {!d ? <span className="spinner" /> : d.error
+        ? <div style={{ fontSize: 14.5, color: 'var(--amber)' }}>{/scope/i.test(d.error) ? 'Open the app in a fresh browser window so your session carries the sql scope, then refresh.' : d.error}</div>
+        : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14.5 }}>
+            <thead><tr style={{ color: 'var(--text-muted)', textAlign: 'left', fontSize: 12.5, textTransform: 'uppercase', letterSpacing: '.05em' }}>
+              <th style={{ padding: 4 }}>When (UTC)</th><th style={{ padding: 4 }}>Who</th><th style={{ padding: 4 }}>Did</th><th style={{ padding: 4 }}>Table</th><th style={{ padding: 4 }}>Result</th></tr></thead>
+            <tbody>{d.rows.slice(0, 15).map((r, i) => (
+              <tr key={i} style={{ borderTop: '1px solid var(--border-dim)' }}>
+                <td className="mono" style={{ padding: 4 }}>{r.at}</td><td style={{ padding: 4 }}>{r.who}</td>
+                <td style={{ padding: 4, color: r.action === 'updateTables' ? 'var(--amber)' : 'var(--text-secondary)' }}>{label[r.action] || r.action}</td>
+                <td className="mono" style={{ padding: 4, color: 'var(--blue)' }}>{r.object}</td><td style={{ padding: 4 }}>{String(r.status) === '200' ? 'allowed' : r.status}</td>
+              </tr>))}</tbody>
+          </table>
+        )}
     </div>
   )
 }

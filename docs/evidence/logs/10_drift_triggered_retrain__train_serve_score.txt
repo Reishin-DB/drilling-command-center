@@ -1,0 +1,52 @@
+# subsurface-command-build: retrain triggered by the drift check
+# job run 753993907816317 (https://fevm-oil-pump-monitor.cloud.databricks.com/?o=7474647106303257#job/532814868767936/run/753993907816317)
+# task train_serve_score, task run 244920454748527, SUCCESS, 2026-10-22 15:03:35 UTC to 2026-10-22 15:16:55 UTC
+# Captured with jobs.get_run_output; this is the task's stdout as printed by the job.
+
+/databricks/python/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field "model_name" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+Exception ignored on calling ctypes callback function: <function _ThreadpoolInfo._find_modules_with_dl_iterate_phdr.<locals>.match_module_callback at 0xff382d96e200>
+Traceback (most recent call last):
+  File "/databricks/python/lib/python3.12/site-packages/threadpoolctl.py", line 400, in match_module_callback
+    self._make_module_from_path(filepath)
+  File "/databricks/python/lib/python3.12/site-packages/threadpoolctl.py", line 515, in _make_module_from_path
+    module = module_class(filepath, prefix, user_api, internal_api)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/python/lib/python3.12/site-packages/threadpoolctl.py", line 606, in __init__
+    self.version = self.get_version()
+                   ^^^^^^^^^^^^^^^^^^
+  File "/databricks/python/lib/python3.12/site-packages/threadpoolctl.py", line 646, in get_version
+    config = get_config().split()
+             ^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'split'
+
+
+31189 labelled samples from 13 wells; 2421 samples without DT
+
+
+[1;38;5;208mIf you are using MLflow Tracing, you can migrate your traces to Unity Catalog for unlimited storage, fine-grained access controls, and queryability from notebooks, SQL, and dashboards. [94mLearn more: https://docs.databricks.com/aws/en/mlflow3/genai/tracing/migrate-traces-to-uc[0m
+
+
+  gardner_textbook     MAE  17.23  RMSE  22.25  R2 -1.542  bias +10.93 us/ft
+  gardner_calibrated   MAE  10.68  RMSE  12.34  R2  0.219  bias  -0.92 us/ft
+  faust_calibrated     MAE   6.64  RMSE   8.66  R2  0.615  bias  -0.54 us/ft
+  linear_all_curves    MAE   3.00  RMSE   3.76  R2  0.927  bias  -0.01 us/ft
+  model                MAE   3.05  RMSE   3.81  R2  0.925  bias  -0.01 us/ft
+champion: linear_all_curves (ties within 2% go to the simpler model)
+
+
+/local_disk0/.ephemeral_nfs/envs/pythonEnv-de46cf14-70e1-4045-a739-8fa52aa5f0b7/lib/python3.12/site-packages/mlflow/types/utils.py:440: UserWarning: Hint: Inferred schema contains integer column(s). Integer columns in Python cannot represent missing values. If your input data contains missing values at inference time, it will be encoded as floats and will cause a schema enforcement error. The best way to avoid this problem is to infer the model schema based on a realistic data sample (training dataset) that includes missing values. Alternatively, you can declare integer columns as doubles (float64) whenever these columns may have missing values. See `Handling Integers With Missing Values <https://www.mlflow.org/docs/latest/models.html#handling-integers-with-missing-values>`_ for more details.
+  warnings.warn(
+🔗 View Logged Model at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109/models/m-559997a9ebde426681e740009e3296ba?o=7474647106303257
+Registered model 'oil_pump_monitor_catalog.subsurface_command.synthetic_sonic' already exists. Creating a new version of this model...
+🔗 Created version '3' of model 'oil_pump_monitor_catalog.subsurface_command.synthetic_sonic': https://fevm-oil-pump-monitor.cloud.databricks.com/explore/data/models/oil_pump_monitor_catalog/subsurface_command/synthetic_sonic/version/3?o=7474647106303257
+
+
+🏃 View run synthetic-sonic at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109/runs/b9412f716a8b4cf5bdbfa5ffccb21843
+🧪 View experiment at: https://fevm-oil-pump-monitor.cloud.databricks.com/ml/experiments/3957314298256109
+registered oil_pump_monitor_catalog.subsurface_command.synthetic_sonic v3 @champion (run b9412f716a8b4cf5bdbfa5ffccb21843)
+METRICS_JSON {"model_version": "3", "endpoint": "subsurface-synthetic-sonic", "pooled": {"gardner_textbook": {"mae": 17.232010848586725, "rmse": 22.24683850498781, "r2": -1.5415384709122657, "bias": 10.930637338788275}, "gardner_calibrated": {"mae": 10.683264521734758, "rmse": 12.335819952442405, "r2": 0.2185591189162701, "bias": -0.9183733316388063}, "faust_calibrated": {"mae": 6.6418194180543315, "rmse": 8.656622387451584, "r2": 0.6151805358364035, "bias": -0.5352697019128989}, "linear_all_curves": {"mae": 3.002609694416158, "rmse": 3.7625769256722355, "r2": 0.9273005945330267, "bias": -0.005346666378362636}, "model": {"mae": 3.045673744753881, "rmse": 3.8147364828915955, "r2": 0.9252710002528357, "bias": -0.005691697393667792}}, "per_well_mae": {"gardner_textbook": {"EASTTEXAS-05": 16.781, "ET-OFFSET-08": 16.709, "GR-OFFSET-04": 18.954, "GR-OFFSET-05": 16.728, "PB-OFFSET-06": 15.678, "PB-OFFSET-07": 17.633, "PERMIAN-04": 16.818, "PERMIAN-06": 19.055, "SANJUAN-01": 18.547, "SANJUAN-02": 15.151, "SJ-OFFSET-01": 17.663, "SJ-OFFSET-02": 16.486, "SJ-OFFSET-03": 17.807}, "gardner_calibrated": {"EASTTEXAS-05": 10.266, "ET-OFFSET-08": 10.239, "GR-OFFSET-04": 10.895, "GR-OFFSET-05": 10.44, "PB-OFFSET-06": 9.907, "PB-OFFSET-07": 10.888, "PERMIAN-04": 10.792, "PERMIAN-06": 10.443, "SANJUAN-01": 11.164, "SANJUAN-02": 11.547, "SJ-OFFSET-01": 10.85, "SJ-OFFSET-02": 10.321, "SJ-OFFSET-03": 11.135}, "faust_calibrated": {"EASTTEXAS-05": 6.084, "ET-OFFSET-08": 6.165, "GR-OFFSET-04": 6.601, "GR-OFFSET-05": 6.336, "PB-OFFSET-06": 6.245, "PB-OFFSET-07": 5.976, "PERMIAN-04": 5.877, "PERMIAN-06": 7.232, "SANJUAN-01": 8.29, "SANJUAN-02": 7.761, "SJ-OFFSET-01": 8.432, "SJ-OFFSET-02": 5.21, "SJ-OFFSET-03": 6.164}, "linear_all_curves": {"EASTTEXAS-05": 2.938, "ET-OFFSET-08": 3.393, "GR-OFFSET-04": 3.357, "GR-OFFSET-05": 2.541, "PB-OFFSET-06": 2.623, "PB-OFFSET-07": 2.527, "PERMIAN-04": 2.642, "PERMIAN-06": 2.816, "SANJUAN-01": 2.606, "SANJUAN-02": 4.497, "SJ-OFFSET-01": 3.911, "SJ-OFFSET-02": 2.719, "SJ-OFFSET-03": 2.497}, "model": {"EASTTEXAS-05": 2.925, "ET-OFFSET-08": 3.386, "GR-OFFSET-04": 3.429, "GR-OFFSET-05": 2.549, "PB-OFFSET-06": 2.525, "PB-OFFSET-07": 2.578, "PERMIAN-04": 2.758, "PERMIAN-06": 2.858, "SANJUAN-01": 2.748, "SANJUAN-02": 4.477, "SJ-OFFSET-01": 4.034, "SJ-OFFSET-02": 2.813, "SJ-OFFSET-03": 2.547}}, "champion": "linear_all_curves"}
+GREENRIVER-03 synthetic sonic: 2373 samples, mean 76.0 us/ft
+endpoint subsurface-synthetic-sonic -> oil_pump_monitor_catalog.subsurface_command.synthetic_sonic v3 behind AI Gateway

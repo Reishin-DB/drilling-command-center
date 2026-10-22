@@ -9,7 +9,7 @@
   "rules": 6,
   "glossary_terms": 7,
   "agent": {
-    "note": "The H2S safety audit is 386 days overdue with the well at 12000.0 ppm requiring PPE level-B and EEBA [A1][A2], and the H2S re-sample is 342 days overdue [A4], so immediate safety compliance actions are critical before any operations continue. Three sour-critical parts face imminent stock-outs: P-002 has only 7.2 days of cover against 35 day lead time, P-005 has 25.0 days versus 28 day lead time, and P-008 has 20.0 days versus 60 day lead time [A5][A6][A7]. Five long-lead sour components totaling $12.60M remain not on order despite 18+ week lead times, including Production tubulars/casing at 18 wk, Wellhead & Christmas tree at 22 wk, and ESP pump & motor metallurgy at 24 wk [A3].",
+    "note": "The H2S safety audit is 386 days overdue with the well at 12000.0 ppm requiring PPE level-B and EEBA [A1][A2], and the H2S re-sample is 342 days overdue [A4], making safety compliance the immediate priority. Three sour-critical parts face imminent stockouts: P-002 has only 7.2 days of cover against 35 day lead time, P-005 has 25.0 days versus 28 day lead, and P-008 has 20.0 days versus 60 day lead [A5][A6][A7]. Five long-lead sour components totaling $12.60M remain unordered despite 18+ week delivery times, including Production tubulars / casing at 18 wk, Wellhead & Christmas tree at 22 wk, and ESP pump & motor metallurgy at 24 wk [A3].",
     "served_by": "databricks-claude-sonnet-4-5",
     "validation": {
       "figures_checked": 13,
@@ -281,12 +281,12 @@
   "ticket_round_trip": {
     "created": {
       "ok": true,
-      "ticket_id": "SUB-3D28FF",
+      "ticket_id": "SUB-57FDED",
       "table": "oil_pump_monitor_catalog.subsurface_command.engineer_tickets"
     },
     "found_in_uc": [
       {
-        "ticket_id": "SUB-3D28FF",
+        "ticket_id": "SUB-57FDED",
         "created_by": "reishin.toolsi@databricks.com",
         "rule_id": "R-INV-COVER",
         "well_id": "EASTTEXAS-05",
@@ -298,8 +298,8 @@
   },
   "genie_explains_flag": {
     "question": "Why is EASTTEXAS-05 flagged by rule R-H2S-AUDIT (H2S safety audit)? Show the rule, its glossary definition and the data behind it.",
-    "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\n**EASTTEXAS-05** is flagged by rule **R-H2S-AUDIT** because the rule requires an H2S safety audit at least once every **365 days**, and well **EASTTEXAS-05** shows **386 days** since the last safety audit on **2025-10-01**. The rule title is **\"H2S safety audit overdue\"**; the glossary term is **\"H2S safety audit interval\"** with definition **\"Every sour well needs an on-site H2S safety audit (monitors, alarms, EEBA, contingency plan, training) at least once a year,\"** owned by **HSE** and sourced from **Company H2S standard**; the supporting well data shows **sour_classified = true**, **h2s_ppm_last_measured = 12000.0**, **h2s_measurement_date = 2025-11-14**, **h2s_risk_level = high**, **safety_status = critical**, **ppe_level = level-B**, and **eeba_required = true**.\n\nThis result is consistent with a **critical** H2S compliance issue for well **EASTTEXAS-05** in **East Texas**, and the listed action is to **schedule the H2S safety audit and confirm monitors, alarm set points, EEBA, and the contingency plan**.",
-    "sql": "SELECT r.rule_id, r.title AS rule_title, r.severity, r.owner_role, r.action, g.term AS glossary_term, g.definition, g.threshold, g.threshold_value, g.owner AS definition_owner, g.source, h.well_id, h.well_name, h.basin, h.h2s_risk_level, h.sour_classified, h.h2s_ppm_last_measured, h.h2s_measurement_date, h.last_safety_audit_date, DATEDIFF(CURRENT_DATE(), h.last_safety_audit_date) AS days_since_audit, h.ppe_level, h.eeba_required, h.safety_status\nFROM oil_pump_monitor_catalog.subsurface_command.engineer_rules r\nJOIN oil_pump_monitor_catalog.subsurface_command.business_glossary g ON g.term = r.glossary_term\nJOIN oil_pump_monitor_catalog.subsurface_command.well_h2s_profile h ON h.well_id = 'EASTTEXAS-05'\nWHERE r.rule_id = 'R-H2S-AUDIT'"
+    "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nEASTTEXAS-05 is flagged by **R-H2S-AUDIT** because the rule is **\"H2S safety audit overdue\"** and the glossary definition says **\"Every sour well needs an on-site H2S safety audit ... at least once a year\"** with a threshold of **365 days** from the **Company H2S standard**; EASTTEXAS-05 is a sour well with **sour_classified = true** and **h2s_ppm_last_measured = 12000.0**. The supporting data shows **last_safety_audit_date = 2025-10-01**, **days_since_audit = 386**, **well_name = East Texas 05**, **primary_reservoir = Haynesville shale**, and the current **safety_status = critical**, which is consistent with the overdue audit.",
+    "sql": "SELECT r.rule_id, r.title, r.severity, r.owner_role, r.action, g.term, g.definition, g.threshold, g.threshold_value, g.owner AS definition_owner, g.source, h.well_id, h.well_name, h.basin, h.primary_reservoir, h.h2s_risk_level, h.sour_classified, h.h2s_ppm_last_measured, h.h2s_measurement_date, h.last_safety_audit_date, DATEDIFF(current_date(), h.last_safety_audit_date) AS days_since_audit, h.ppe_level, h.eeba_required, h.nace_mr0175_required, h.safety_status\nFROM oil_pump_monitor_catalog.subsurface_command.engineer_rules r\nJOIN oil_pump_monitor_catalog.subsurface_command.business_glossary g ON g.term = r.glossary_term\nJOIN oil_pump_monitor_catalog.subsurface_command.well_h2s_profile h ON h.well_id = 'EASTTEXAS-05'\nWHERE r.rule_id = 'R-H2S-AUDIT'"
   },
   "threshold_change": {
     "term": "H2S safety audit interval",

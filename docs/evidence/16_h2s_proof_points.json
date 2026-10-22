@@ -1,0 +1,784 @@
+{
+  "captured": "2026-10-22T21:54:50.085176+00:00",
+  "genie_space": "01f17bdeaeee136fbd65013d3eb40261",
+  "genie": [
+    {
+      "question": "Which wells are sour, and what is each one's H2S severity band and last measured ppm?",
+      "status": "COMPLETED",
+      "seconds": 18.9,
+      "conversation_id": "01f1ce6334921209a7adbc08f9138dce",
+      "message_id": "01f1ce63349e1c7687b7f2acab202476",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nThe visible data shows **3 sour wells** with their H2S severity band and last measured ppm:\n- **EASTTEXAS-05** (East Texas 05): **extreme**, **12,000.0 ppm**\n- **PERMIAN-04** (Permian 04): **moderate**, **44.0 ppm**\n- **GREENRIVER-03** (Green River 03): **moderate**, **32.5 ppm**\n\nBased on these results, **EASTTEXAS-05** is the clear outlier with a much higher H2S reading than the other two sour wells.",
+      "sql": "SELECT `well_id`, `well_name`, `basin`, `severity_band`, `h2s_ppm` AS `last_measured_ppm` FROM `oil_pump_monitor_catalog`.`subsurface_command`.`v_well_sour_band` WHERE `sour_classified` = TRUE AND `severity_band` IS NOT NULL AND `h2s_ppm` IS NOT NULL ORDER BY `h2s_ppm` DESC",
+      "columns": [
+        "well_id",
+        "well_name",
+        "basin",
+        "severity_band",
+        "last_measured_ppm"
+      ],
+      "rows": [
+        [
+          "EASTTEXAS-05",
+          "East Texas 05",
+          "East Texas",
+          "extreme",
+          "12000.0"
+        ],
+        [
+          "PERMIAN-04",
+          "Permian 04",
+          "Permian Basin",
+          "moderate",
+          "44.0"
+        ],
+        [
+          "GREENRIVER-03",
+          "Green River 03",
+          "Green River",
+          "moderate",
+          "32.5"
+        ]
+      ]
+    },
+    {
+      "question": "Why is EASTTEXAS-05 flagged for an H2S safety audit? Show the rule, its glossary definition and the data behind it.",
+      "status": "COMPLETED",
+      "seconds": 25.8,
+      "conversation_id": "01f1ce634010122d866f9074026b96f3",
+      "message_id": "01f1ce63401a1567bc6040bf4a3feb53",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\n**EASTTEXAS-05** is flagged by rule **R-H2S-AUDIT** (**H2S safety audit overdue**) because glossary term **H2S safety audit interval** requires an audit at least once a year, with a threshold of **365 days**, and **EASTTEXAS-05** shows **386 days** since the last safety audit on **2025-10-01**. The glossary definition says every sour well needs an on-site H2S safety audit at least once a year, and the supporting well data shows **h2s_ppm_last_measured = 12000.0**, **safety_status = critical**, **ppe_level = level-B**, **eeba_required = true**, and **h2s_measurement_date = 2025-11-14** (**342 days** ago), with the rule owned by **HSE** and sourced from **Company H2S standard**.",
+      "sql": "SELECT r.`rule_id`, r.`title`, g.`term`, g.`definition`, g.`threshold`, g.`threshold_value`, g.`owner`, g.`source`, h.`well_id`, h.`well_name`, h.`basin`, h.`h2s_ppm_last_measured`, h.`last_safety_audit_date`, DATEDIFF(CURRENT_DATE(), h.`last_safety_audit_date`) AS `days_since_audit`, h.`h2s_measurement_date`, DATEDIFF(CURRENT_DATE(), h.`h2s_measurement_date`) AS `days_since_h2s_test`, h.`safety_status`, h.`ppe_level`, h.`eeba_required` FROM `oil_pump_monitor_catalog`.`subsurface_command`.`engineer_rules` r JOIN `oil_pump_monitor_catalog`.`subsurface_command`.`business_glossary` g ON g.`term` = r.`glossary_term` CROSS JOIN `oil_pump_monitor_catalog`.`subsurface_command`.`well_h2s_profile` h WHERE r.`rule_id` = 'R-H2S-AUDIT' AND h.`well_id` = 'EASTTEXAS-05'",
+      "columns": [
+        "rule_id",
+        "title",
+        "term",
+        "definition",
+        "threshold",
+        "threshold_value",
+        "owner",
+        "source",
+        "well_id",
+        "well_name",
+        "basin",
+        "h2s_ppm_last_measured",
+        "last_safety_audit_date",
+        "days_since_audit",
+        "h2s_measurement_date",
+        "days_since_h2s_test",
+        "safety_status",
+        "ppe_level",
+        "eeba_required"
+      ],
+      "rows": [
+        [
+          "R-H2S-AUDIT",
+          "H2S safety audit overdue",
+          "H2S safety audit interval",
+          "Every sour well needs an on-site H2S safety audit (monitors, alarms, EEBA, contingency plan, training) at least once a year.",
+          "365 days",
+          "365.0",
+          "HSE",
+          "Company H2S standard",
+          "EASTTEXAS-05",
+          "East Texas 05",
+          "East Texas",
+          "12000.0",
+          "2025-10-01",
+          "386",
+          "2025-11-14",
+          "342",
+          "critical",
+          "level-B",
+          "true"
+        ]
+      ]
+    },
+    {
+      "question": "What does the glossary say the H2S re-sample interval is, and which wells are overdue?",
+      "status": "COMPLETED",
+      "seconds": 24.3,
+      "conversation_id": "01f1ce634fb710d59c0f4b9a00de2d81",
+      "message_id": "01f1ce634fc11cc68df476a6416fa933",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nThe glossary says the **H2S re-sample interval** is **180 days**: H2S in the production stream must be re-measured on sour wells at least every six months. The overdue wells are **PERMIAN-04** (**185 days overdue**), **EASTTEXAS-05** (**162 days overdue**), and **GREENRIVER-03** (**143 days overdue**). Among these 3 overdue wells, **EASTTEXAS-05** stands out as the most severe case with **12,000 ppm** and an **extreme** severity band.",
+      "sql": "-- \u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nWITH rule_glossary AS (\n  SELECT\n    r.rule_id,\n    r.title,\n    g.term,\n    g.definition,\n    g.threshold,\n    g.threshold_value,\n    g.owner,\n    g.source\n  FROM oil_pump_monitor_catalog.subsurface_command.engineer_rules r\n  INNER JOIN oil_pump_monitor_catalog.subsurface_command.business_glossary g\n    ON g.term = r.glossary_term\n  WHERE r.rule_id = 'R-H2S-SAMPLE'\n)\nSELECT\n  rg.rule_id,\n  rg.title,\n  rg.term,\n  rg.definition,\n  rg.threshold,\n  rg.threshold_value,\n  rg.owner,\n  rg.source,\n  h.well_id,\n  h.well_name,\n  h.basin,\n  v.severity_band,\n  h.h2s_ppm_last_measured,\n  h.h2s_measurement_date,\n  DATEDIFF(current_date(), h.h2s_measurement_date) AS days_since_h2s_test,\n  DATEDIFF(current_date(), h.h2s_measurement_date) - CAST(rg.threshold_value AS INT) AS days_overdue,\n  h.ppe_level,\n  h.eeba_required,\n  h.safety_status\nFROM oil_pump_monitor_catalog.subsurface_command.well_h2s_profile h\nINNER JOIN oil_pump_monitor_catalog.subsurface_command.v_well_sour_band v\n  ON v.well_id = h.well_id\nCROSS JOIN rule_glossary rg\nWHERE h.sour_classified = TRUE\n  AND h.h2s_measurement_date IS NOT NULL\n  AND v.severity_band IS NOT NULL\n  AND h.h2s_ppm_last_measured IS NOT NULL\n  AND DATEDIFF(current_date(), h.h2s_measurement_date) > CAST(rg.threshold_value AS INT)\nORDER BY days_overdue DESC, h.h2s_ppm_last_measured DESC",
+      "columns": [
+        "rule_id",
+        "title",
+        "term",
+        "definition",
+        "threshold",
+        "threshold_value",
+        "owner",
+        "source",
+        "well_id",
+        "well_name",
+        "basin",
+        "severity_band",
+        "h2s_ppm_last_measured",
+        "h2s_measurement_date",
+        "days_since_h2s_test",
+        "days_overdue",
+        "ppe_level",
+        "eeba_required",
+        "safety_status"
+      ],
+      "rows": [
+        [
+          "R-H2S-SAMPLE",
+          "H2S re-sample overdue",
+          "H2S re-sample interval",
+          "H2S concentration in the production stream must be re-measured on sour wells at least every six months, because souring increases with time and water injection.",
+          "180 days",
+          "180.0",
+          "Production engineering",
+          "Company H2S standard",
+          "PERMIAN-04",
+          "Permian 04",
+          "Permian Basin",
+          "moderate",
+          "44.0",
+          "2025-10-22",
+          "365",
+          "185",
+          "level-C",
+          "true",
+          "overdue"
+        ],
+        [
+          "R-H2S-SAMPLE",
+          "H2S re-sample overdue",
+          "H2S re-sample interval",
+          "H2S concentration in the production stream must be re-measured on sour wells at least every six months, because souring increases with time and water injection.",
+          "180 days",
+          "180.0",
+          "Production engineering",
+          "Company H2S standard",
+          "EASTTEXAS-05",
+          "East Texas 05",
+          "East Texas",
+          "extreme",
+          "12000.0",
+          "2025-11-14",
+          "342",
+          "162",
+          "level-B",
+          "true",
+          "critical"
+        ],
+        [
+          "R-H2S-SAMPLE",
+          "H2S re-sample overdue",
+          "H2S re-sample interval",
+          "H2S concentration in the production stream must be re-measured on sour wells at least every six months, because souring increases with time and water injection.",
+          "180 days",
+          "180.0",
+          "Production engineering",
+          "Company H2S standard",
+          "GREENRIVER-03",
+          "Green River 03",
+          "Green River",
+          "moderate",
+          "32.5",
+          "2025-12-03",
+          "323",
+          "143",
+          "level-C",
+          "false",
+          "overdue"
+        ]
+      ]
+    },
+    {
+      "question": "What sour-service equipment does EASTTEXAS-05 need, and what is the longest lead time?",
+      "status": "COMPLETED",
+      "seconds": 25.2,
+      "conversation_id": "01f1ce635e71143e875bd0034de19fee",
+      "message_id": "01f1ce635e7d196a81bcffb457181e52",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nEASTTEXAS-05 has **8** required sour-service equipment upgrades, and the **longest lead time is 24 weeks** for **ESP pump & motor metallurgy** with a required spec of **Full Inconel / Hastelloy wetted path**. Examples include:\n- **ESP pump & motor metallurgy** \u2014 **24 weeks**\n- **Wellhead & Christmas tree** \u2014 **22 weeks**\n- **Flowlines & gathering** \u2014 **20 weeks**\n- **Valves & BOP stack** \u2014 **20 weeks**\n- **Production tubulars / casing** \u2014 **18 weeks**\nThe lead times range from **6 to 24 weeks**, with the highest-risk items clustered among the longer-lead upgrades.",
+      "sql": "SELECT component_name, required_spec, degradation_mechanism, risk_score, upgrade_capex_musd, upgrade_lead_weeks\nFROM oil_pump_monitor_catalog.subsurface_command.well_equipment_integrity\nWHERE well_id = 'EASTTEXAS-05' AND upgrade_required = TRUE AND component_name IS NOT NULL AND upgrade_lead_weeks IS NOT NULL\nORDER BY upgrade_lead_weeks DESC, component_name ASC",
+      "columns": [
+        "component_name",
+        "required_spec",
+        "degradation_mechanism",
+        "risk_score",
+        "upgrade_capex_musd",
+        "upgrade_lead_weeks"
+      ],
+      "rows": [
+        [
+          "ESP pump & motor metallurgy",
+          "Full Inconel / Hastelloy wetted path",
+          "SSC + HIC + erosion",
+          "95",
+          "1.60",
+          "24"
+        ],
+        [
+          "Wellhead & Christmas tree",
+          "API 6A HH CRA-clad sour trim",
+          "SSC + HIC",
+          "92",
+          "2.20",
+          "22"
+        ],
+        [
+          "Flowlines & gathering",
+          "Solid 2205 duplex line pipe",
+          "HIC + wt. loss",
+          "94",
+          "2.80",
+          "20"
+        ],
+        [
+          "Valves & BOP stack",
+          "Full CRA sour BOP & valve suite",
+          "SSC + HIC",
+          "91",
+          "2.40",
+          "20"
+        ],
+        [
+          "Production tubulars / casing",
+          "25Cr super-duplex CRA",
+          "SSC + HIC + wt. loss",
+          "96",
+          "3.60",
+          "18"
+        ],
+        [
+          "ESP elastomers & seal section",
+          "FFKM seal section",
+          "H2S + thermal",
+          "93",
+          "0.55",
+          "13"
+        ],
+        [
+          "Packers & downhole elastomers / seals",
+          "FFKM / Aflas, ED + high-temp rated",
+          "ED + thermal",
+          "90",
+          "0.75",
+          "12"
+        ],
+        [
+          "Corrosion inhibitor & monitoring",
+          "Continuous inhibitor + inline inspection",
+          "wt. loss",
+          "80",
+          "0.45",
+          "6"
+        ]
+      ]
+    },
+    {
+      "question": "Which wellhead and casing parts will stock out before a reorder arrives?",
+      "status": "COMPLETED",
+      "seconds": 18.5,
+      "conversation_id": "01f1ce636db41268bc4ef6e9f8bdaceb",
+      "message_id": "01f1ce636dbc1265895a008e1fc2600b",
+      "text": "**3 parts** in the **Wellhead** and **Casing** categories will run out before a reorder arrives based on current usage and lead times. The most urgent are **13-3/8in casing joint** with **7.2 days** of cover versus **35 days** lead time, **Wellhead spool** with **20.0 days** versus **60 days**, and **BOP ram seal kit** with **25.0 days** versus **28 days**; among these, the casing joint is the tightest shortage risk.",
+      "sql": "SELECT drilling_inventory.part_id, drilling_inventory.part_name, drilling_inventory.category, drilling_inventory.on_hand_qty, drilling_inventory.daily_burn, ROUND(try_divide(drilling_inventory.on_hand_qty,drilling_inventory.daily_burn), 1) AS days_of_cover, drilling_inventory.lead_time_days, drilling_inventory.supplier\nFROM oil_pump_monitor_catalog.subsurface_command.drilling_inventory\nWHERE drilling_inventory.category IN ('Wellhead', 'Casing')\n  AND try_divide(drilling_inventory.on_hand_qty,drilling_inventory.daily_burn) < drilling_inventory.lead_time_days\nORDER BY days_of_cover",
+      "columns": [
+        "part_id",
+        "part_name",
+        "category",
+        "on_hand_qty",
+        "daily_burn",
+        "days_of_cover",
+        "lead_time_days",
+        "supplier"
+      ],
+      "rows": [
+        [
+          "P-002",
+          "13-3/8in casing joint",
+          "Casing",
+          "18",
+          "2.50",
+          "7.2",
+          "35",
+          "Tubular Supplier"
+        ],
+        [
+          "P-008",
+          "Wellhead spool",
+          "Wellhead",
+          "1",
+          "0.05",
+          "20.0",
+          "60",
+          "Wellhead Supplier"
+        ],
+        [
+          "P-005",
+          "BOP ram seal kit",
+          "Wellhead",
+          "5",
+          "0.20",
+          "25.0",
+          "28",
+          "Wellhead Supplier"
+        ]
+      ]
+    },
+    {
+      "question": "What do the engineer action rules mean, and who owns each threshold?",
+      "status": "COMPLETED",
+      "seconds": 18.9,
+      "conversation_id": "01f1ce6379311ffe8ee39dc0d34c7667",
+      "message_id": "01f1ce63793a1d188774b94ee8848e98",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nThe engineer action rules in the catalog are all owned operationally by the **Production engineer**, while the threshold definitions are owned by **Finance**, **Supply chain**, **HSE**, or **Production engineering** depending on the rule. Examples include:\n- **R-ECON-SOURCAPEX** \u2014 threshold owner: **Finance**; trigger: **>= 10% of NPV10**\n- **R-EQ-LONGLEAD** \u2014 threshold owner: **Supply chain**; trigger: **risk score >= 90 and lead >= 18 weeks**\n- **R-H2S-AUDIT** \u2014 threshold owner: **HSE**; trigger: **365 days**\n- **R-H2S-SAMPLE** \u2014 threshold owner: **Production engineering**; trigger: **180 days**\n- **R-INV-COVER** \u2014 threshold owner: **Supply chain**; trigger: **days of cover < lead time**\n\nAcross the 6 rules shown, **Production engineer** owns every rule, and **HSE** owns the two **critical** threshold definitions.",
+      "sql": "SELECT `rule_id`, `rule_title`, `severity`, `rule_owner`, `glossary_term`, `definition`, `threshold`, `threshold_value`, `definition_owner`, `source`, `action`, `open_items_today`\nFROM `oil_pump_monitor_catalog`.`subsurface_command`.`v_engineer_rule_catalog`\nWHERE `rule_id` IS NOT NULL\n  AND `glossary_term` IS NOT NULL\nORDER BY `rule_id`",
+      "columns": [
+        "rule_id",
+        "rule_title",
+        "severity",
+        "rule_owner",
+        "glossary_term",
+        "definition",
+        "threshold",
+        "threshold_value",
+        "definition_owner",
+        "source",
+        "action",
+        "open_items_today"
+      ],
+      "rows": [
+        [
+          "R-ECON-SOURCAPEX",
+          "Sour capex material to the AFE",
+          "medium",
+          "Production engineer",
+          "Sour capex materiality",
+          "Sour-service upgrade capex that is 10% or more of the well live NPV10 must be carried explicitly in the AFE.",
+          ">= 10% of NPV10",
+          "10.0",
+          "Finance",
+          "well_economics + well_equipment_integrity",
+          "Carry the sour-service upgrade capex explicitly in the well AFE and flag it to finance.",
+          "2"
+        ],
+        [
+          "R-EQ-LONGLEAD",
+          "Long-lead sour components not on order",
+          "high",
+          "Production engineer",
+          "Long-lead sour component",
+          "A sour-service component rated high risk (risk score 90 or more) whose upgrade takes 18 weeks or more to procure; it must be on order before the next intervention window.",
+          "risk_score >= 90 and lead >= 18 weeks",
+          "18.0",
+          "Supply chain",
+          "well_equipment_integrity",
+          "Raise procurement for every long-lead sour component so it lands before the next intervention window.",
+          "1"
+        ],
+        [
+          "R-H2S-AUDIT",
+          "H2S safety audit overdue",
+          "critical",
+          "Production engineer",
+          "H2S safety audit interval",
+          "Every sour well needs an on-site H2S safety audit (monitors, alarms, EEBA, contingency plan, training) at least once a year.",
+          "365 days",
+          "365.0",
+          "HSE",
+          "Company H2S standard",
+          "Schedule the H2S safety audit and confirm monitors, alarm set points, EEBA and the contingency plan.",
+          "2"
+        ],
+        [
+          "R-H2S-SAMPLE",
+          "H2S re-sample overdue",
+          "high",
+          "Production engineer",
+          "H2S re-sample interval",
+          "H2S concentration in the production stream must be re-measured on sour wells at least every six months, because souring increases with time and water injection.",
+          "180 days",
+          "180.0",
+          "Production engineering",
+          "Company H2S standard",
+          "Take a fresh H2S sample from the production stream and update the well profile.",
+          "3"
+        ],
+        [
+          "R-INV-COVER",
+          "Sour-critical parts will stock out",
+          "high",
+          "Production engineer",
+          "Days of cover",
+          "Stock on hand divided by daily burn. When days of cover is shorter than the supplier lead time, the part will stock out before a reorder arrives.",
+          "days of cover < lead time",
+          null,
+          "Supply chain",
+          "drilling_inventory",
+          "Reorder now: these wellhead and tubular parts run out before a reorder can arrive.",
+          "3"
+        ],
+        [
+          "R-SAF-CRIT",
+          "Critical H2S safety status",
+          "critical",
+          "Production engineer",
+          "Sour service",
+          "A well whose produced fluids contain enough H2S to cause sulfide stress cracking in standard steels. Here: H2S at or above 100 ppm, or classified sour by HSE.",
+          "H2S >= 100 ppm or sour_classified",
+          "100.0",
+          "HSE",
+          "NACE MR0175 / ISO 15156",
+          "Walk the H2S contingency plan with the site supervisor; confirm continuous monitoring, EEBA availability and Level-B PPE before any work on the well.",
+          "1"
+        ]
+      ]
+    },
+    {
+      "question": "How much sour-service upgrade capex does EASTTEXAS-05 carry relative to its live NPV?",
+      "status": "COMPLETED",
+      "seconds": 24.4,
+      "conversation_id": "01f1ce6384bf170f92e68de1c52df2a9",
+      "message_id": "01f1ce6384c9109c8947ec9c759f963c",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nFor well **EASTTEXAS-05** (East Texas 05) in **East Texas**, total sour-service upgrade capex is **14.35 MUSD** against live NPV of **129.85 MUSD**, which is **11.05%** of live NPV. This means well **EASTTEXAS-05** is carrying sour-service upgrade capex equal to about **0.111x** its live NPV.",
+      "sql": "SELECT\n  e.`well_id`,\n  e.`well_name`,\n  e.`basin`,\n  SUM(CASE WHEN i.`upgrade_required` = TRUE THEN CAST(i.`upgrade_capex_musd` AS DOUBLE) ELSE 0 END) AS `total_sour_upgrade_capex_musd`,\n  e.`npv10_live_musd`,\n  CASE\n    WHEN e.`npv10_live_musd` IS NOT NULL AND e.`npv10_live_musd` <> 0\n      THEN try_divide(SUM(CASE WHEN i.`upgrade_required` = TRUE THEN CAST(i.`upgrade_capex_musd` AS DOUBLE) ELSE 0 END),e.`npv10_live_musd`)\n    ELSE NULL\n  END AS `capex_to_npv_ratio`,\n  CASE\n    WHEN e.`npv10_live_musd` IS NOT NULL AND e.`npv10_live_musd` <> 0\n      THEN try_divide(100 * SUM(CASE WHEN i.`upgrade_required` = TRUE THEN CAST(i.`upgrade_capex_musd` AS DOUBLE) ELSE 0 END),e.`npv10_live_musd`)\n    ELSE NULL\n  END AS `capex_to_npv_pct`\nFROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_economics` e\nJOIN `oil_pump_monitor_catalog`.`subsurface_command`.`well_equipment_integrity` i\n  ON e.`well_id` = i.`well_id`\nWHERE e.`well_id` = 'EASTTEXAS-05'\n  AND e.`status` IN ('gold', 'qc_complete', 'corrected')\nGROUP BY e.`well_id`, e.`well_name`, e.`basin`, e.`npv10_live_musd`",
+      "columns": [
+        "well_id",
+        "well_name",
+        "basin",
+        "total_sour_upgrade_capex_musd",
+        "npv10_live_musd",
+        "capex_to_npv_ratio",
+        "capex_to_npv_pct"
+      ],
+      "rows": [
+        [
+          "EASTTEXAS-05",
+          "East Texas 05",
+          "East Texas",
+          "14.350000000000001",
+          "129.85",
+          "0.11051212938005392",
+          "11.051212938005394"
+        ]
+      ]
+    },
+    {
+      "question": "What PPE and monitoring does EASTTEXAS-05 require?",
+      "status": "COMPLETED",
+      "seconds": 19.1,
+      "conversation_id": "01f1ce6393951e4b8ef038c9509bdf6e",
+      "message_id": "01f1ce6393a0175697d19b6f35e3d08e",
+      "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nFor well **EASTTEXAS-05**, the required protection and monitoring are **PPE level-B**, **continuous monitoring = true**, **EEBA required = true**, **H2S training required = true**, and **H2S monitor alarm = 10 ppm**. As added context for operations, well **EASTTEXAS-05** is **sour_classified = true**, has **h2s_ppm_last_measured = 12000.0**, and has **safety_status = critical**.",
+      "sql": "SELECT `well_id`, `well_name`, `basin`, `h2s_ppm_last_measured`, `h2s_risk_level`, `sour_classified`, `ppe_level`, `continuous_monitor_required`, `eeba_required`, `h2s_monitor_alarm_ppm`, `nace_mr0175_required`, `h2s_training_required`, `safety_status`, `last_safety_audit_date`, `h2s_measurement_date`\nFROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_h2s_profile`\nWHERE `well_id` = 'EASTTEXAS-05'",
+      "columns": [
+        "well_id",
+        "well_name",
+        "basin",
+        "h2s_ppm_last_measured",
+        "h2s_risk_level",
+        "sour_classified",
+        "ppe_level",
+        "continuous_monitor_required",
+        "eeba_required",
+        "h2s_monitor_alarm_ppm",
+        "nace_mr0175_required",
+        "h2s_training_required",
+        "safety_status",
+        "last_safety_audit_date",
+        "h2s_measurement_date"
+      ],
+      "rows": [
+        [
+          "EASTTEXAS-05",
+          "East Texas 05",
+          "East Texas",
+          "12000.0",
+          "high",
+          "true",
+          "level-B",
+          "true",
+          "true",
+          "10",
+          "true",
+          "true",
+          "critical",
+          "2025-10-01",
+          "2025-11-14"
+        ]
+      ]
+    }
+  ],
+  "sql": [
+    {
+      "title": "The rule catalog: each rule with its glossary definition, owner, live threshold and open items today",
+      "sql": "SELECT rule_id, rule_title, glossary_term, threshold_value, definition_owner, open_items_today FROM oil_pump_monitor_catalog.subsurface_command.v_engineer_rule_catalog ORDER BY rule_id",
+      "columns": [
+        "rule_id",
+        "rule_title",
+        "glossary_term",
+        "threshold_value",
+        "definition_owner",
+        "open_items_today"
+      ],
+      "rows": [
+        [
+          "R-ECON-SOURCAPEX",
+          "Sour capex material to the AFE",
+          "Sour capex materiality",
+          "10.0",
+          "Finance",
+          "2"
+        ],
+        [
+          "R-EQ-LONGLEAD",
+          "Long-lead sour components not on order",
+          "Long-lead sour component",
+          "18.0",
+          "Supply chain",
+          "1"
+        ],
+        [
+          "R-H2S-AUDIT",
+          "H2S safety audit overdue",
+          "H2S safety audit interval",
+          "365.0",
+          "HSE",
+          "2"
+        ],
+        [
+          "R-H2S-SAMPLE",
+          "H2S re-sample overdue",
+          "H2S re-sample interval",
+          "180.0",
+          "Production engineering",
+          "3"
+        ],
+        [
+          "R-INV-COVER",
+          "Sour-critical parts will stock out",
+          "Days of cover",
+          null,
+          "Supply chain",
+          "3"
+        ],
+        [
+          "R-SAF-CRIT",
+          "Critical H2S safety status",
+          "Sour service",
+          "100.0",
+          "HSE",
+          "1"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "title": "Glossary terms attached to the columns they govern (Unity Catalog column tags)",
+      "sql": "SELECT g.term, g.owner, g.threshold, concat_ws(', ', collect_list(concat(t.table_name, '.', t.column_name))) AS governs\n         FROM oil_pump_monitor_catalog.subsurface_command.business_glossary g JOIN oil_pump_monitor_catalog.information_schema.column_tags t\n           ON t.tag_name = 'glossary_term' AND t.tag_value = g.term AND t.schema_name = 'subsurface_command'\n         GROUP BY g.term, g.owner, g.threshold ORDER BY g.term",
+      "columns": [
+        "term",
+        "owner",
+        "threshold",
+        "governs"
+      ],
+      "rows": [
+        [
+          "Days of cover",
+          "Supply chain",
+          "days of cover < lead time",
+          "drilling_inventory.on_hand_qty, drilling_inventory.lead_time_days"
+        ],
+        [
+          "H2S re-sample interval",
+          "Production engineering",
+          "180 days",
+          "well_h2s_profile.h2s_measurement_date"
+        ],
+        [
+          "H2S safety audit interval",
+          "HSE",
+          "365 days",
+          "well_h2s_profile.last_safety_audit_date"
+        ],
+        [
+          "Long-lead sour component",
+          "Supply chain",
+          "risk_score >= 90 and lead >= 18 weeks",
+          "equipment_component_spec.lead_weeks"
+        ],
+        [
+          "Severity band",
+          "Engineering",
+          "sweet / low / moderate / high / extreme",
+          "equipment_component_spec.band"
+        ],
+        [
+          "Sour capex materiality",
+          "Finance",
+          ">= 10% of NPV10",
+          "well_economics.npv10_live_musd"
+        ],
+        [
+          "Sour service",
+          "HSE",
+          "H2S >= 100 ppm or sour_classified",
+          "well_h2s_profile.sour_classified, well_h2s_profile.h2s_ppm_last_measured"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "title": "The H2S safety audit rule evaluated live, reading its threshold from the glossary",
+      "sql": "SELECT h.well_id, h.h2s_ppm_last_measured, h.last_safety_audit_date,\n                datediff(current_date(), h.last_safety_audit_date) AS days_since_audit,\n                g.threshold_value AS glossary_interval_days, g.owner AS threshold_owner,\n                datediff(current_date(), h.last_safety_audit_date) > g.threshold_value AS overdue\n         FROM oil_pump_monitor_catalog.subsurface_command.well_h2s_profile h CROSS JOIN oil_pump_monitor_catalog.subsurface_command.business_glossary g\n         WHERE g.term = 'H2S safety audit interval' AND (h.sour_classified OR h.h2s_ppm_last_measured >= 100)\n         ORDER BY days_since_audit DESC",
+      "columns": [
+        "well_id",
+        "h2s_ppm_last_measured",
+        "last_safety_audit_date",
+        "days_since_audit",
+        "glossary_interval_days",
+        "threshold_owner",
+        "overdue"
+      ],
+      "rows": [
+        [
+          "PERMIAN-04",
+          "44.0",
+          "2025-09-30",
+          "387",
+          "365.0",
+          "HSE",
+          "true"
+        ],
+        [
+          "EASTTEXAS-05",
+          "12000.0",
+          "2025-10-01",
+          "386",
+          "365.0",
+          "HSE",
+          "true"
+        ],
+        [
+          "GREENRIVER-03",
+          "32.5",
+          "2025-11-15",
+          "341",
+          "365.0",
+          "HSE",
+          "false"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "title": "Relationships declared in Unity Catalog for the glossary layer (primary and foreign keys)",
+      "sql": "SELECT tc.table_name AS from_table, tc.constraint_name, ccu.table_name AS to_table\n         FROM oil_pump_monitor_catalog.information_schema.referential_constraints rc\n         JOIN oil_pump_monitor_catalog.information_schema.table_constraints tc ON tc.constraint_name = rc.constraint_name AND tc.constraint_schema = rc.constraint_schema\n         JOIN oil_pump_monitor_catalog.information_schema.constraint_table_usage ccu ON ccu.constraint_name = rc.unique_constraint_name AND ccu.constraint_schema = rc.unique_constraint_schema\n         WHERE tc.table_schema = 'subsurface_command' AND tc.table_name IN ('engineer_rules', 'engineer_tickets', 'well_h2s_profile') ORDER BY 1",
+      "columns": [
+        "from_table",
+        "constraint_name",
+        "to_table"
+      ],
+      "rows": [
+        [
+          "engineer_rules",
+          "rules_glossary_fk",
+          "business_glossary"
+        ],
+        [
+          "engineer_tickets",
+          "tickets_rule_fk",
+          "engineer_rules"
+        ],
+        [
+          "engineer_tickets",
+          "tickets_well_fk",
+          "operator_wells"
+        ],
+        [
+          "well_h2s_profile",
+          "h2s_well_fk",
+          "operator_wells"
+        ]
+      ],
+      "error": null
+    },
+    {
+      "title": "Sour-service equipment for the extreme-sour well, from the governed equipment view",
+      "sql": "SELECT component_name, required_spec, degradation_mechanism, risk_score, upgrade_capex_musd, upgrade_lead_weeks\n         FROM oil_pump_monitor_catalog.subsurface_command.well_equipment_integrity WHERE well_id = 'EASTTEXAS-05' ORDER BY upgrade_lead_weeks DESC",
+      "columns": [
+        "component_name",
+        "required_spec",
+        "degradation_mechanism",
+        "risk_score",
+        "upgrade_capex_musd",
+        "upgrade_lead_weeks"
+      ],
+      "rows": [
+        [
+          "ESP pump & motor metallurgy",
+          "Full Inconel / Hastelloy wetted path",
+          "SSC + HIC + erosion",
+          "95",
+          "1.60",
+          "24"
+        ],
+        [
+          "Wellhead & Christmas tree",
+          "API 6A HH CRA-clad sour trim",
+          "SSC + HIC",
+          "92",
+          "2.20",
+          "22"
+        ],
+        [
+          "Flowlines & gathering",
+          "Solid 2205 duplex line pipe",
+          "HIC + wt. loss",
+          "94",
+          "2.80",
+          "20"
+        ],
+        [
+          "Valves & BOP stack",
+          "Full CRA sour BOP & valve suite",
+          "SSC + HIC",
+          "91",
+          "2.40",
+          "20"
+        ],
+        [
+          "Production tubulars / casing",
+          "25Cr super-duplex CRA",
+          "SSC + HIC + wt. loss",
+          "96",
+          "3.60",
+          "18"
+        ],
+        [
+          "ESP elastomers & seal section",
+          "FFKM seal section",
+          "H2S + thermal",
+          "93",
+          "0.55",
+          "13"
+        ],
+        [
+          "Packers & downhole elastomers / seals",
+          "FFKM / Aflas, ED + high-temp rated",
+          "ED + thermal",
+          "90",
+          "0.75",
+          "12"
+        ],
+        [
+          "Corrosion inhibitor & monitoring",
+          "Continuous inhibitor + inline inspection",
+          "wt. loss",
+          "80",
+          "0.45",
+          "6"
+        ]
+      ],
+      "error": null
+    }
+  ]
+}

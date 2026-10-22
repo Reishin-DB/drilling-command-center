@@ -30,7 +30,7 @@ LOG_TABLE = f"{FQS}.gold_action_plans"
 SYSTEM = (
     "You write a decision brief for Landman Oil's SVP Digital Operations and VP of Engineering about one proposed step-out well. "
     "Use ONLY the numbered facts provided. Cite every number with its fact id in square brackets, like [F3]. "
-    "Copy every figure exactly as written in the facts; never round, invent or recompute numbers; never use em dashes. Plain business English, at most 230 words, in exactly these sections:\n"
+    "Copy every figure exactly as written in the facts; never round, invent or recompute numbers; never use em dashes. Plain business English, 180 to 220 words (hard limit), citing at least five different facts, in exactly these sections:\n"
     "**Recommendation** (one sentence)\n"
     "**Why this well** (2 to 3 bullets)\n"
     "**Why now** (1 to 2 bullets)\n"
@@ -144,19 +144,36 @@ async def decision_brief(anchor_well: str) -> dict:
     plan, served_by, usage, err = await generate(messages)
     if not plan:
         return {"error": f"All model endpoints failed: {err}", "facts": facts}
+    def problems(text, chk):
+        # What the eval set checks: grounding, enough citations, and length.
+        out = []
+        if chk["unsupported"]:
+            out.append("these figures are not in the facts and must not appear: " + ", ".join(chk["unsupported"]))
+        if len(chk["facts_cited"]) < 5:
+            out.append(f"cite at least five different facts (you cited {len(chk['facts_cited'])})")
+        words = len(re.findall(r"\w+", re.sub(r"\[[A-Z]\d+\]", "", text)))
+        if words > 230:
+            out.append(f"cut it to at most 220 words (it is {words})")
+        return out
+
     check = validate(plan, facts)
     attempts = [{"plan": plan, "validation": check}]
-    if check["unsupported"]:
+    issues = problems(plan, check)
+    for _ in range(2):   # at most two correction passes
+        if not issues:
+            break
         fix = messages + [{"role": "assistant", "content": plan},
-                          {"role": "user", "content": "These figures are not in the facts and must not appear: "
-                           + ", ".join(check["unsupported"]) + ". Rewrite the brief without them, using only figures exactly as written in the facts."}]
+                          {"role": "user", "content": "Rewrite the brief: " + "; ".join(issues)
+                           + ". Use only figures exactly as written in the facts, and cite each fact you use with its own [F#]."}]
         plan2, sb2, usage2, _ = await generate(fix)
-        if plan2:
-            check2 = validate(plan2, facts)
-            attempts.append({"plan": plan2, "validation": check2})
-            if len(check2["unsupported"]) <= len(check["unsupported"]):
-                plan, served_by, check = plan2, sb2, check2
-                usage = {k: int(usage.get(k) or 0) + int(usage2.get(k) or 0) for k in ("prompt_tokens", "completion_tokens")}
+        if not plan2:
+            break
+        check2 = validate(plan2, facts)
+        issues2 = problems(plan2, check2)
+        attempts.append({"plan": plan2, "validation": check2})
+        if len(issues2) <= len(issues) and len(check2["unsupported"]) <= len(check["unsupported"]):
+            plan, served_by, check, issues = plan2, sb2, check2, issues2
+            usage = {k: int(usage.get(k) or 0) + int(usage2.get(k) or 0) for k in ("prompt_tokens", "completion_tokens")}
 
     brief_id = str(uuid.uuid4())
     logged = False

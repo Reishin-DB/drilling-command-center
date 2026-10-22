@@ -1,0 +1,101 @@
+# Lakeflow pipeline subsurface-command-pipeline (95216d7e-1691-44ee-bc12-ab02ee7d6225), latest update, read from event_log()
+
+timestamp | event_type | level | message
+2026-10-21T17:04:47.780Z | user_action | INFO | Principal 'reishin.toolsi@databricks.com' started an update.
+2026-10-21T17:04:47.790Z | create_update | INFO | Update 6eca92 started by JOB_TASK.
+2026-10-21T17:04:49.588Z | update_progress | INFO | Update 6eca92 is WAITING_FOR_RESOURCES.
+2026-10-21T17:04:54.944Z | runtime_details | INFO | Resolved runtime environment details for update 6eca92.
+2026-10-21T17:05:00.235Z | update_progress | INFO | Update 6eca92 is INITIALIZING.
+2026-10-21T17:05:15.994Z | user_code_context | INFO | User code context captured for this update.
+2026-10-21T17:05:34.474Z | update_progress | INFO | Update 6eca92 is RESETTING.
+2026-10-21T17:05:34.522Z | update_progress | INFO | Update 6eca92 is SETTING_UP_TABLES.
+2026-10-21T17:05:34.961Z | dataset_life_cycle | INFO | Streaming Table `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_logs` has been created.
+2026-10-21T17:05:35.144Z | dataset_life_cycle | INFO | Streaming Table `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_formation_tops` has been created.
+2026-10-21T17:05:35.250Z | dataset_life_cycle | INFO | Streaming Table `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_well_header` has been created.
+2026-10-21T17:05:43.324Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_well_header` defined as APPEND.
+2026-10-21T17:05:43.366Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_logs` defined as APPEND.
+2026-10-21T17:05:43.371Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_formation_tops` defined as APPEND.
+2026-10-21T17:05:43.375Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`silver_logs` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.379Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`silver_wells` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.389Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`gold_petrophysics` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.396Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`gold_zone_summary` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.400Z | flow_definition | INFO | Flow `oil_pump_monitor_catalog`.`subsurface_command`.`gold_sonic_features` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.419Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_formation_tops` defined as STREAMING_TABLE.
+2026-10-21T17:05:43.438Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`gold_sonic_features` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.446Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`gold_zone_summary` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.455Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`gold_petrophysics` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.463Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_logs` defined as STREAMING_TABLE.
+2026-10-21T17:05:43.472Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`silver_logs` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.495Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`bronze_well_header` defined as STREAMING_TABLE.
+2026-10-21T17:05:43.504Z | dataset_definition | INFO | Dataset `oil_pump_monitor_catalog`.`subsurface_command`.`silver_wells` defined as MATERIALIZED_VIEW.
+2026-10-21T17:05:43.564Z | graph_created | INFO | Dataflow graph successfully loaded.
+2026-10-21T17:05:43.570Z | update_progress | INFO | Update 6eca92 is RUNNING.
+2026-10-21T17:05:43.580Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops' is QUEUED.
+2026-10-21T17:05:43.589Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is QUEUED.
+2026-10-21T17:05:43.591Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is QUEUED.
+2026-10-21T17:05:43.593Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is QUEUED.
+2026-10-21T17:05:43.594Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' is QUEUED.
+2026-10-21T17:05:43.595Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is QUEUED.
+2026-10-21T17:05:43.597Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is QUEUED.
+2026-10-21T17:05:43.598Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header' is QUEUED.
+2026-10-21T17:05:43.728Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header' is STARTING.
+2026-10-21T17:05:45.208Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header' is RUNNING.
+2026-10-21T17:05:45.512Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops' is STARTING.
+2026-10-21T17:05:46.094Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops' is RUNNING.
+2026-10-21T17:05:46.209Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' is STARTING.
+2026-10-21T17:05:46.876Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' is RUNNING.
+2026-10-21T17:05:52.032Z | flow_progress | INFO | Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header'.
+2026-10-21T17:05:52.080Z | stream_progress | METRICS | Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header'.
+2026-10-21T17:05:52.109Z | flow_progress | INFO | Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops'.
+2026-10-21T17:05:52.111Z | stream_progress | METRICS | Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops'.
+2026-10-21T17:05:52.128Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops' has COMPLETED.
+2026-10-21T17:05:52.134Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header' has COMPLETED.
+2026-10-21T17:05:52.145Z | flow_progress | INFO | Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_logs'.
+2026-10-21T17:05:52.148Z | stream_progress | METRICS | Completed a streaming update of 'oil_pump_monitor_catalog.subsurface_command.bronze_logs'.
+2026-10-21T17:05:52.153Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.bronze_logs' has COMPLETED.
+2026-10-21T17:05:52.224Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is PLANNING.
+2026-10-21T17:05:52.226Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is PLANNING.
+2026-10-21T17:05:53.252Z | planning_information | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' has been planned to be executed as COMPLETE_RECOMPUTE.
+2026-10-21T17:05:53.271Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is STARTING.
+2026-10-21T17:05:53.371Z | planning_information | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' has been planned to be executed as COMPLETE_RECOMPUTE.
+2026-10-21T17:05:53.374Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is STARTING.
+2026-10-21T17:05:53.378Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' is RUNNING.
+2026-10-21T17:05:53.409Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' is RUNNING.
+2026-10-21T17:05:54.681Z | aggregated_flow_metrics | METRICS | `oil_pump_monitor_catalog`.`subsurface_command`.`__materialization_mat_95216d7e_1691_44ee_bc12_ab02ee7d6225_silver_wells_1` finished with ex
+2026-10-21T17:05:55.309Z | aggregated_flow_metrics | METRICS | `oil_pump_monitor_catalog`.`subsurface_command`.`__materialization_mat_95216d7e_1691_44ee_bc12_ab02ee7d6225_silver_logs_1` finished with exe
+2026-10-21T17:05:57.316Z | dataset_life_cycle | INFO | Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`silver_logs` has been created.
+2026-10-21T17:05:57.357Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_logs' has COMPLETED.
+2026-10-21T17:05:57.371Z | dataset_life_cycle | INFO | Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`silver_wells` has been created.
+2026-10-21T17:05:57.418Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.silver_wells' has COMPLETED.
+2026-10-21T17:05:57.424Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is PLANNING.
+2026-10-21T17:05:58.144Z | planning_information | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' has been planned to be executed as COMPLETE_RECOMPUTE.
+2026-10-21T17:05:58.148Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is STARTING.
+2026-10-21T17:05:58.200Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' is RUNNING.
+2026-10-21T17:05:59.684Z | aggregated_flow_metrics | METRICS | `oil_pump_monitor_catalog`.`subsurface_command`.`__materialization_mat_95216d7e_1691_44ee_bc12_ab02ee7d6225_gold_petrophysics_1` finished wi
+2026-10-21T17:06:00.558Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.silver_wells'.
+2026-10-21T17:06:00.571Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.silver_logs'.
+2026-10-21T17:06:00.573Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.bronze_logs'.
+2026-10-21T17:06:00.576Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.bronze_formation_tops'.
+2026-10-21T17:06:00.578Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.bronze_well_header'.
+2026-10-21T17:06:00.580Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'pipelines.flowTimeMetrics.missingFlowName'.
+2026-10-21T17:06:00.582Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics'.
+2026-10-21T17:06:01.189Z | dataset_life_cycle | INFO | Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`gold_petrophysics` has been created.
+2026-10-21T17:06:01.228Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_petrophysics' has COMPLETED.
+2026-10-21T17:06:01.233Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is PLANNING.
+2026-10-21T17:06:01.235Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is PLANNING.
+2026-10-21T17:06:01.451Z | planning_information | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' has been planned to be executed as COMPLETE_RECOMPUTE.
+2026-10-21T17:06:01.453Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is STARTING.
+2026-10-21T17:06:01.469Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' is RUNNING.
+2026-10-21T17:06:01.686Z | planning_information | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' has been planned to be executed as COMPLETE_RECOMPUTE.
+2026-10-21T17:06:01.688Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is STARTING.
+2026-10-21T17:06:01.721Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' is RUNNING.
+2026-10-21T17:06:02.626Z | aggregated_flow_metrics | METRICS | `oil_pump_monitor_catalog`.`subsurface_command`.`__materialization_mat_95216d7e_1691_44ee_bc12_ab02ee7d6225_gold_sonic_features_1` finished 
+2026-10-21T17:06:03.048Z | aggregated_flow_metrics | METRICS | `oil_pump_monitor_catalog`.`subsurface_command`.`__materialization_mat_95216d7e_1691_44ee_bc12_ab02ee7d6225_gold_zone_summary_1` finished wi
+2026-10-21T17:06:04.306Z | dataset_life_cycle | INFO | Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`gold_sonic_features` has been created.
+2026-10-21T17:06:04.367Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features' has COMPLETED.
+2026-10-21T17:06:04.384Z | dataset_life_cycle | INFO | Materialized View `oil_pump_monitor_catalog`.`subsurface_command`.`gold_zone_summary` has been created.
+2026-10-21T17:06:04.436Z | flow_progress | INFO | Flow 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary' has COMPLETED.
+2026-10-21T17:06:04.463Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.gold_sonic_features'.
+2026-10-21T17:06:04.466Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'oil_pump_monitor_catalog.subsurface_command.gold_zone_summary'.
+2026-10-21T17:06:04.469Z | flow_progress | METRICS | Reported flow time metrics for flowName: 'pipelines.flowTimeMetrics.missingFlowName'.
+2026-10-21T17:06:04.473Z | update_progress | INFO | Update 6eca92 is COMPLETED.
