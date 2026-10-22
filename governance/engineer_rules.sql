@@ -84,3 +84,6 @@ INSERT INTO ${schema}.engineer_rules VALUES
    'Carry the sour-service upgrade capex explicitly in the well AFE and flag it to finance.',
    'SELECT e.well_id, \'Sour-service capex\' AS subject, concat(\'$\', CAST(round(sum(q.upgrade_capex_musd), 2) AS STRING), \'M upgrade capex is \', CAST(round(100 * sum(q.upgrade_capex_musd) / max(e.npv10_live_musd), 1) AS STRING), \'% of the well live NPV10 of $\', CAST(round(max(e.npv10_live_musd), 1) AS STRING), \'M\') AS evidence, round(100 * sum(q.upgrade_capex_musd) / max(e.npv10_live_musd), 1) AS metric, (SELECT threshold_value FROM ${schema}.business_glossary WHERE term = \'Sour capex materiality\') AS threshold FROM ${schema}.well_economics e JOIN ${schema}.well_equipment_integrity q ON q.well_id = e.well_id GROUP BY e.well_id HAVING 100 * sum(q.upgrade_capex_musd) / max(e.npv10_live_musd) >= (SELECT threshold_value FROM ${schema}.business_glossary WHERE term = \'Sour capex materiality\')',
    '[{"label":"Open Value the Well","kind":"app","target":"economics"},{"label":"Create AFE ticket","kind":"ticket"}]');
+
+
+-- One page with the rules and the glossary behind each one: governance/engineer_rule_catalog.sql

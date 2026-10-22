@@ -19,7 +19,7 @@ import uuid
 from databricks.sdk import WorkspaceClient
 
 SPACE_ID = "01f17bdeaeee136fbd65013d3eb40261"
-TABLES = ["business_glossary", "engineer_rules", "engineer_tickets", "engineer_action_log",
+TABLES = ["v_engineer_rule_catalog", "business_glossary", "engineer_rules", "engineer_tickets", "engineer_action_log",
           "well_h2s_profile", "well_equipment_integrity", "drilling_inventory"]
 MARKER = "### Engineer action items, glossary, and H2S rules"
 NEXT_MARKER = "### Petrophysics, net pay, and synthetic sonic"
@@ -38,6 +38,8 @@ INSTRUCTIONS = MARKER + """
 - A sour well is h2s_ppm_last_measured >= 100 or sour_classified. EASTTEXAS-05 is the extreme-sour well (12,000 ppm).
 - engineer_tickets holds tickets raised from action items (ticket_id, item_key, rule_id, well_id, title, status);
   engineer_action_log holds close-outs. item_key is rule_id|well_id|subject.
+- v_engineer_rule_catalog: one row per rule with its glossary definition, owner, live threshold_value and
+  open_items_today. Use it first for "what are the rules", "who owns this threshold", "how many items does each rule raise".
 - Use current_date() for "days since" questions. Never invent thresholds: read them from business_glossary.
 """
 
@@ -57,8 +59,8 @@ EXAMPLES = [
      "       lead_time_days, supplier\nFROM {fq}.drilling_inventory\n"
      "WHERE category IN ('Wellhead', 'Casing') AND on_hand_qty / daily_burn < lead_time_days\nORDER BY days_of_cover"),
     ("What do the engineer action rules mean?",
-     "SELECT r.rule_id, r.title, r.severity, r.owner_role, g.term, g.definition, g.threshold, r.action\n"
-     "FROM {fq}.engineer_rules r JOIN {fq}.business_glossary g ON g.term = r.glossary_term\nORDER BY r.rule_id"),
+     "SELECT rule_id, rule_title, severity, glossary_term, definition, threshold_value, definition_owner, open_items_today\n"
+     "FROM {fq}.v_engineer_rule_catalog\nORDER BY rule_id"),
     ("Which tickets have engineers raised from action items?",
      "SELECT ticket_id, created_at, created_by, rule_id, well_id, title, status\nFROM {fq}.engineer_tickets\n"
      "ORDER BY created_at DESC"),
