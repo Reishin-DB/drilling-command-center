@@ -1,6 +1,6 @@
 # Execution evidence
 
-Captured from the live FEVM workspace on 2026-10-22 16:04 UTC by `scripts/collect_evidence.py`. Every number below comes from the JSON files in this folder, which hold the raw API responses.
+Captured from the live FEVM workspace on 2026-10-22 17:53 UTC by `scripts/collect_evidence.py`. Every number below comes from the JSON files in this folder, which hold the raw API responses.
 
 ## 1. Bundle job run (`01_job_run.json`)
 
@@ -73,7 +73,7 @@ Logged leave-one-well-out metrics (us/ft):
 
 ## 4. Served model and AI Gateway (`04_serving.json`)
 
-Endpoint `subsurface-synthetic-sonic` **READY**, live call returned 8 predictions in 0.174 s. On SANJUAN-01 samples with measured sonic:
+Endpoint `subsurface-synthetic-sonic` **READY**, live call returned 8 predictions in 117.944 s. On SANJUAN-01 samples with measured sonic:
 
 | MD ft | Measured DT | Predicted DT | Abs error |
 |---|---|---|---|
@@ -86,54 +86,74 @@ Endpoint `subsurface-synthetic-sonic` **READY**, live call returned 8 prediction
 | 5012.0 | 91.65 | 90.03 | 1.62 |
 | 5014.0 | 90.33 | 89.23 | 1.1 |
 
-AI Gateway: usage tracking on, rate limit 600 calls/min, inference table `sonic_endpoint_payload`: 185 logged requests (185 HTTP 200) from 2026-10-21T17:32:54.403Z to 2026-10-22T15:38:44.291Z.
+AI Gateway: usage tracking on, rate limit 600 calls/min, inference table `sonic_endpoint_payload`: 193 logged requests (193 HTTP 200) from 2026-10-21T17:32:54.403Z to 2026-10-22T16:02:28.983Z.
 
 ## 5. Genie conversation (`05_genie_conversation.json`)
 
-**Q: Which basin has the highest total live NPV?** (COMPLETED, 25.8 s)
+**Q: Which basin has the highest total live NPV?** (COMPLETED, 18.8 s)
 
-A: The basin with the **highest** total live NPV is **San Juan**, with total live NPV of **155.92 million USD**. Based on the result shown, **San Juan** is the top basin on this measure.
+A: **San Juan** has the highest total live NPV at **155.92 million USD**. In the returned result set, **San Juan** is the top-ranked basin by total live NPV.
 
 ```sql
-WITH basin_npv AS (
+WITH basin_totals AS (
   SELECT
-    well_economics.basin,
-    SUM(well_economics.npv10_live_musd) AS total_live_npv_musd
-  FROM oil_pump_monitor_catalog.subsurface_command.well_economics
-  WHERE well_economics.status IN ('gold', 'qc_complete', 'corrected')
-    AND well_economics.basin IS NOT NULL
-    AND well_economics.npv10_live_musd IS NOT NULL
-  GROUP BY well_economics.basin
+    `basin`,
+    SUM(`npv10_live_musd`) AS `total_live_npv_musd`
+  FROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_economics`
+  WHERE `status` IN ('gold', 'qc_complete', 'corrected')
+    AND `basin` IS NOT NULL
+    AND `npv10_live_musd` IS NOT NULL
+  GROUP BY `basin`
+), ranked AS (
+  SELECT
+    `basin`,
+    `total_live_npv_musd`,
+    RANK() OVER (ORDER BY `total_live_npv_musd` DESC) AS `rnk`
+  FROM basin_totals
 )
-SELECT basin, total_live_npv_musd
-FROM basin_npv
-WHERE total_live_npv_musd = (
-  SELECT MAX(total_live_npv_musd) FROM basin_npv
-)
+SELECT
+  `basin`,
+  `total_live_npv_musd`
+FROM ranked
+WHERE `rnk` = 1
 ```
 
 Rows: `[{"basin": "San Juan", "total_live_npv_musd": "155.92000000000002"}]`
 
-**Q: Which wells are within 50 km of SANJUAN-01 and how far are they?** (COMPLETED, 24.5 s)
+**Q: Which wells are within 50 km of SANJUAN-01 and how far are they?** (COMPLETED, 19.5 s)
 
-A: Within 50 km of **SANJUAN-01**, the visible result shows **SANJUAN-02** (**San Juan 02**) at **7.4 km** in the **San Juan** basin, with **same_basin = true**. Based on the returned data, **SANJUAN-02** is the nearby well shown and it is in the same basin as **SANJUAN-01**.
+A: Within 50 km of SANJUAN-01, the only well shown is **SANJUAN-02** (well name **San Juan 02**) in the **San Juan** basin at **7.4 km** away, with **same_basin = true**. Based on the visible result, **SANJUAN-02** is also the closest well returned for SANJUAN-01.
 
 ```sql
-SELECT `to_well` AS `well_id`, `to_name` AS `well_name`, `to_basin` AS `basin`, ROUND(`km`, 1) AS `km`, `same_basin` FROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_distances` WHERE `from_well` = 'SANJUAN-01' AND `km` <= 50 AND `to_well` <> 'SANJUAN-01' ORDER BY `km`
+SELECT `to_well` AS `well_id`, `to_name` AS `well_name`, `to_basin` AS `basin`, ROUND(`km`, 1) AS `km`, `same_basin`
+FROM `oil_pump_monitor_catalog`.`subsurface_command`.`well_distances`
+WHERE `from_well` = 'SANJUAN-01'
+  AND `to_well` <> 'SANJUAN-01'
+  AND `km` <= 50
+ORDER BY `km`
 ```
 
 Rows: `[{"well_id": "SANJUAN-02", "well_name": "San Juan 02", "basin": "San Juan", "km": "7.4", "same_basin": "true"}]`
 
-**Q: What is the net pay in the Westwater formation for GREENRIVER-03?** (COMPLETED, 18.6 s)
+**Q: What is the net pay in the Westwater formation for GREENRIVER-03?** (COMPLETED, 18.4 s)
 
-A: For well **GREENRIVER-03** in the **Green River** basin, net pay in the **Westwater** formation is **1,140.0 ft**. As added context from the same result, **GREENRIVER-03** has **0.95** net-to-gross, **0.1696** average pay porosity, **0.1835** average pay water saturation, and **157.879** hydrocarbon pore feet in **Westwater**.
+A: For well ID **GREENRIVER-03** in the **Westwater** formation, net pay is **1,140.0 ft**. In the single returned record, **GREENRIVER-03** also shows net-to-gross of **0.95**, which indicates a very high proportion of pay within the interval.
 
 ```sql
-SELECT `well_id`, `basin`, `formation_name`, `net_pay_ft`, `net_to_gross`, `avg_pay_phi`, `avg_pay_sw`, `hc_pore_ft`
-FROM `oil_pump_monitor_catalog`.`subsurface_command`.`gold_zone_summary`
-WHERE `role` = 'app_well'
-  AND `well_id` = 'GREENRIVER-03'
-  AND `formation_name` = 'Westwater'
+SELECT
+  gold_zone_summary.well_id,
+  gold_zone_summary.basin,
+  gold_zone_summary.formation_name,
+  gold_zone_summary.net_pay_ft,
+  gold_zone_summary.net_to_gross,
+  gold_zone_summary.avg_pay_phi,
+  gold_zone_summary.avg_pay_sw,
+  gold_zone_summary.hc_pore_ft
+FROM oil_pump_monitor_catalog.subsurface_command.gold_zone_summary
+WHERE gold_zone_summary.role = 'app_well'
+  AND gold_zone_summary.well_id = 'GREENRIVER-03'
+  AND gold_zone_summary.formation_name = 'Westwater'
+  AND gold_zone_summary.net_pay_ft IS NOT NULL
 ```
 
 Rows: `[{"well_id": "GREENRIVER-03", "basin": "Green River", "formation_name": "Westwater", "net_pay_ft": "1140.0", "net_to_gross": "0.95", "avg_pay_phi": "0.1696", "avg_pay_sw": "0.1835", "hc_pore_ft": "157.879"}]`
@@ -165,7 +185,7 @@ The same policy on the equipment and H2S data (row filter on `well_h2s_profile`,
 
 ## 8. Tests (`08_tests.txt`)
 
-`pytest tests -v`: ============================== 31 passed in 0.37s ==============================
+`pytest tests -v`: ============================== 31 passed in 0.43s ==============================
 
 ## 9. Workspace notebook run (`09_notebook_result.json`, `09_notebook_run.html`)
 
@@ -192,33 +212,39 @@ Triggered retrain: `subsurface-command-build` run 753993907816317, task train_se
 
 ## 11. Decision brief (`11_decision_brief.json`)
 
-`POST /api/voxels/decision_brief/SANJUAN-01`, served by `databricks-claude-sonnet-4-5` through the AI Gateway routing chain, 686 prompt and 495 completion tokens. Validator: 24 figures checked, 0 not in the governed facts, facts cited F3, F6, F8, F9, F10. Logged to `oil_pump_monitor_catalog.subsurface_command.gold_action_plans` (4 briefs logged, 3 fully grounded).
+`POST /api/voxels/decision_brief/SANJUAN-01`, served by `databricks-claude-sonnet-4-5` through the AI Gateway routing chain, 686 prompt and 508 completion tokens. Validator: 21 figures checked, 0 not in the governed facts, facts cited F1, F2, F3, F5, F6, F8, F9, F10, F11, F12. Logged to `oil_pump_monitor_catalog.subsurface_command.gold_action_plans` (5 briefs logged, 4 fully grounded).
 
 > **Recommendation**
 >
-> Approve the step-out well 2,616 ft from SANJUAN-01 with $58M capex authorization [F1, F6].
+> Drill the Blanco field step-out well 2,616 ft from SANJUAN-01 [F1].
 >
 > **Why this well**
 >
-> - Delivers $40.3M NPV10 at 34% IRR with 2.0 yr payback and $53 break-even WTI, well below current $79.18 strip [F5, F6].
-> - Voxel model predicts 253.0 ft hydrocarbon pore thickness vs 238.6 ft at SANJUAN-01, risked to 167.5 ft for distance from control [F2, F3].
-> - Synthetic-sonic model demonstrates 3.0 us/ft accuracy on held-out wells, significantly outperforming calibrated Gardner at 10.7 us/ft [F9].
+> • Voxel model predicts 253.0 ft hydrocarbon pore thickness, exceeding SANJUAN-01's 238.6 ft [F2], with risked economics of $40.3M NPV10, 34% IRR, and 2.0 yr payback at $79.18 WTI [F5].
+>
+> • Break-even WTI of $53 provides substantial downside protection in current $79.18 price environment [F5] [F6].
+>
+> • Synthetic-sonic model demonstrates strong predictive accuracy (3.0 us/ft error vs 10.7 us/ft for calibrated Gardner on held-out wells) [F9], supporting confidence in subsurface interpretation.
 >
 > **Why now**
 >
-> - Six-month delay costs $1.9M (4.7% of risked NPV) due to discounting [F8].
-> - Structural closure of 158 ft and 140 ft normal fault support hydrocarbon column with free-water level at 9275 ft [F10].
+> • Six-month delay costs $1.9M (4.7% of risked NPV) [F8], eroding project returns in a favorable price environment.
+>
+> • 158 ft closure and 140 ft normal fault provide adequate structural definition [F10] to proceed without additional data acquisition.
 >
 > **Risks and how they are controlled**
 >
-> - Subsurface uncertainty of 0.68 (moderate-high on 0-1 scale) reflects 2,616 ft distance from control; risked economics haircut pore thickness from 253.0 ft to 167.5 ft [F3, F2].
-> - H2S risk is low at 1.2 ppm with no NACE MR0175 requirement and $0.00M sour-service upgrade [F11, F12].
+> • Subsurface uncertainty: Model uncertainty of 0.68 [F3] reflects 2,616 ft distance from control [F1]; risked pore thickness of 167.5 ft [F3] vs unrisked 253.0 ft [F2] appropriately haircuts geological risk.
+>
+> • Sour service: H2S measured at 1.2 ppm with NACE MR0175 not required [F11]; no equipment upgrade cost or schedule impact [F12].
 >
 > **Next actions**
 >
-> - **Asset team**: Finalize drilling AFE at $58M capex using offset well design [F6].
-> - **VP of Engineering**: Confirm wellbore design incorporates 140 ft fault crossing and free-water level at 9275 ft [F10].
-> - **SVP Digital Operations**: Commission post-drill voxel model calibration to reduce uncertainty for future step-outs [F3].
+> • **Asset team**: Finalize $58M AFE using offset well design [F6] and secure rig contract.
+>
+> • **VP of Engineering**: Confirm well design incorporates free-water level at 9275 ft [F10] and H2S monitoring protocols [F11].
+>
+> • **SVP Digital Operations**: Validate voxel model calibration at step-out location after drilling to refine future predictions.
 
 ## 12. Engineer morning briefing (`12_engineer_briefing.json`)
 
@@ -239,46 +265,59 @@ The operations agent ran 6 governed rules (7 glossary terms in `business_glossar
 | R-H2S-SAMPLE | high | PERMIAN-04 | Last measured 2025-10-22, 365 days ago (interval 180 days) at 44.0 ppm | dashboard, ticket, genie |
 | R-ECON-SOURCAPEX | medium | PERMIAN-04 | $3.37M upgrade capex is 12.3% of the well live NPV10 of $27.4M | app, ticket, genie |
 
-Agent note by `databricks-claude-sonnet-4-5`, validator: 12 figures checked, 0 not in the items:
+Agent note by `databricks-claude-sonnet-4-5`, validator: 13 figures checked, 0 not in the items:
 
-> The H2S safety audit is 386 days overdue and must be completed immediately given the critical 12000.0 ppm concentration requiring PPE level-B and EEBA [A1][A2]. The H2S re-sample is also overdue at 342 days past its 180 day interval [A4], and three sour-critical parts will stock out before their lead times: P-002 has only 7.2 days of cover versus 35 day lead time, P-005 has 25.0 days versus 28 days, and P-008 has 20.0 days versus 60 days [A5][A6][A7]. Additionally, 5 long-lead sour components with 18+ week lead times totaling $12.60M capex remain not on order [A3].
+> The H2S safety audit is 386 days overdue with the well at 12000.0 ppm requiring PPE level-B and EEBA [A1][A2], and the H2S re-sample is 342 days overdue [A4], so immediate safety compliance actions are critical before any operations continue. Three sour-critical parts face imminent stock-outs: P-002 has only 7.2 days of cover against 35 day lead time, P-005 has 25.0 days versus 28 day lead time, and P-008 has 20.0 days versus 60 day lead time [A5][A6][A7]. Five long-lead sour components totaling $12.60M remain not on order despite 18+ week lead times, including Production tubulars/casing at 18 wk, Wellhead & Christmas tree at 22 wk, and ESP pump & motor metallurgy at 24 wk [A3].
 
 Governed threshold drives the briefing: with the glossary's H2S safety audit interval at 365 days there are 2 audit items (8 open on EASTTEXAS-05); raised to 400 days through the app, 0 (7 open); restored to 365, 2. No code changed.
 
-Ticket round trip: `SUB-A5923F` created through the app, found in `engineer_tickets` as [{'ticket_id': 'SUB-A5923F', 'created_by': 'reishin.toolsi@databricks.com', 'rule_id': 'R-INV-COVER', 'well_id': 'EASTTEXAS-05', 'title': 'Reorder ticket: EASTTEXAS-05 13-3/8in casing joint', 'status': 'open'}], then deleted.
+Ticket round trip: `SUB-3D28FF` created through the app, found in `engineer_tickets` as [{'ticket_id': 'SUB-3D28FF', 'created_by': 'reishin.toolsi@databricks.com', 'rule_id': 'R-INV-COVER', 'well_id': 'EASTTEXAS-05', 'title': 'Reorder ticket: EASTTEXAS-05 13-3/8in casing joint', 'status': 'open'}], then deleted.
 
 Genie explains the flag: **Why is EASTTEXAS-05 flagged by rule R-H2S-AUDIT (H2S safety audit)? Show the rule, its glossary definition and the data behind it.**
 
 ```sql
-SELECT
-  r.`rule_id`,
-  r.`title`,
-  r.`glossary_term`,
-  g.`definition`,
-  g.`threshold`,
-  g.`threshold_value`,
-  g.`owner`,
-  g.`source`,
-  h.`well_id`,
-  h.`well_name`,
-  h.`basin`,
-  h.`h2s_risk_level`,
-  h.`sour_classified`,
-  h.`h2s_ppm_last_measured`,
-  h.`h2s_measurement_date`,
-  h.`last_safety_audit_date`,
-  DATEDIFF(CURRENT_DATE(), h.`last_safety_audit_date`) AS `days_since_audit`,
-  h.`safety_status`,
-  h.`ppe_level`,
-  h.`eeba_required`,
-  h.`continuous_monitor_required`,
-  h.`notes`
-FROM `oil_pump_monitor_catalog`.`subsurface_command`.`engineer_rules` r
-JOIN `oil_pump_monitor_catalog`.`subsurface_command`.`business_glossary` g
-  ON g.`term` = r.`glossary_term`
-CROSS JOIN `oil_pump_monitor_catalog`.`subsurface_command`.`well_h2s_profile` h
-WHERE r.`rule_id` = 'R-H2S-AUDIT'
-  AND h.`well_id` = 'EASTTEXAS-05'
+SELECT r.rule_id, r.title AS rule_title, r.severity, r.owner_role, r.action, g.term AS glossary_term, g.definition, g.threshold, g.threshold_value, g.owner AS definition_owner, g.source, h.well_id, h.well_name, h.basin, h.h2s_risk_level, h.sour_classified, h.h2s_ppm_last_measured, h.h2s_measurement_date, h.last_safety_audit_date, DATEDIFF(CURRENT_DATE(), h.last_safety_audit_date) AS days_since_audit, h.ppe_level, h.eeba_required, h.safety_status
+FROM oil_pump_monitor_catalog.subsurface_command.engineer_rules r
+JOIN oil_pump_monitor_catalog.subsurface_command.business_glossary g ON g.term = r.glossary_term
+JOIN oil_pump_monitor_catalog.subsurface_command.well_h2s_profile h ON h.well_id = 'EASTTEXAS-05'
+WHERE r.rule_id = 'R-H2S-AUDIT'
 ```
 
-> ⚠️ H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions — contact your HSE officer.  EASTTEXAS-05 is flagged by **R-H2S-AUDIT** because the rule **"H2S safety audit overdue"** uses the glossary term **"H2S safety audit interval"**, defined as **"Every sour well needs an on-site H2S safety audit (monitors, alarms, EEBA, contingency plan, training) at least once a year"** with a threshold of **365 days** from **Company H2S standard** owned by **HSE**. For EASTTEXAS-05, the supporting data shows **sour_classified = true**, **h2s_ppm_last_measured = 12000.0**, **last_safety_audit_date = 2025-10-01**, and **days_since_audit = 386**, which is **21 days over** the **365-day** limit. EASTTEXAS-05 also shows **h2s_risk_level = high** and **safety_status = critical**, which 
+> ⚠️ H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions — contact your HSE officer.  **EASTTEXAS-05** is flagged by rule **R-H2S-AUDIT** because the rule requires an H2S safety audit at least once every **365 days**, and well **EASTTEXAS-05** shows **386 days** since the last safety audit on **2025-10-01**. The rule title is **"H2S safety audit overdue"**; the glossary term is **"H2S safety audit interval"** with definition **"Every sour well needs an on-site H2S safety audit (monitors, alarms, EEBA, contingency plan, training) at least once a year,"** owned by **HSE** and sourced from **Company H2S standard**; the supporting well data shows **sour_classified = true**, **h2s_ppm_last_measured = 12000.0**, **h2s_measurement_date = 2025-11-14**, **h2s_risk_level = hi
+
+## 13. Ontology in Unity Catalog (`13_ontology.json`)
+
+Glossary terms tagged on the columns they govern (`information_schema.column_tags`, tag `glossary_term`):
+
+| Glossary term | Governs |
+|---|---|
+| Days of cover | drilling_inventory.on_hand_qty, drilling_inventory.lead_time_days |
+| H2S re-sample interval | well_h2s_profile.h2s_measurement_date |
+| H2S safety audit interval | well_h2s_profile.last_safety_audit_date |
+| Long-lead sour component | equipment_component_spec.lead_weeks |
+| Severity band | equipment_component_spec.band |
+| Sour capex materiality | well_economics.npv10_live_musd |
+| Sour service | well_h2s_profile.h2s_ppm_last_measured, well_h2s_profile.sour_classified |
+
+Declared relationships (`information_schema.referential_constraints`), with `operator_wells` as the hub:
+
+| From | Constraint | To |
+|---|---|---|
+| engineer_rules | rules_glossary_fk | business_glossary |
+| engineer_tickets | tickets_rule_fk | engineer_rules |
+| engineer_tickets | tickets_well_fk | operator_wells |
+| well_distances | dist_to_fk | operator_wells |
+| well_distances | dist_from_fk | operator_wells |
+| well_economics | econ_well_fk | operator_wells |
+| well_h2s_profile | h2s_well_fk | operator_wells |
+
+`v_engineer_rule_catalog`: each rule with its glossary term, live threshold, owner and open items today:
+
+| Rule | Glossary term | Threshold | Owner | Open items |
+|---|---|---|---|---|
+| R-ECON-SOURCAPEX | Sour capex materiality | 10.0 | Finance | 2 |
+| R-EQ-LONGLEAD | Long-lead sour component | 18.0 | Supply chain | 1 |
+| R-H2S-AUDIT | H2S safety audit interval | 365.0 | HSE | 2 |
+| R-H2S-SAMPLE | H2S re-sample interval | 180.0 | Production engineering | 3 |
+| R-INV-COVER | Days of cover | None | Supply chain | 3 |
+| R-SAF-CRIT | Sour service | 100.0 | HSE | 1 |

@@ -29,7 +29,7 @@ const BEATS: Beat[] = [
     say: 'Switch persona: rows and columns disappear for an external partner, and it holds in Genie because agents run as the user.',
     land: 'Unity Catalog governs the data and the AI with one set of policies.' },
   { tab: "The engineer's morning", tabId: 'engineer', time: '2 min',
-    say: 'Switch the header to Engineer. The operations agent has run the governed glossary rules over this morning\'s data: seven items on the 12,000 ppm well, from an overdue H2S audit to a wellhead spool that stocks out before a reorder lands. Create the reorder ticket, then Ask Genie why on the audit item.',
+    say: 'Switch the header to Engineer. The operations agent has run the governed glossary rules over this morning\'s data: seven items on the 12,000 ppm well, from an overdue H2S audit to a wellhead spool that stocks out before a reorder lands. Open The rules behind this briefing: change the H2S audit interval from 365 to 400, the audit item drops off; set it back. Create the reorder ticket, then Ask Genie why on the audit item.',
     land: 'The agent, the dashboard, the ticket and Genie all read one governed definition of what matters this morning.' },
   { tab: 'How It Works', tabId: 'dataflow', time: '45 s',
     say: 'Volume, SDP bronze/silver/gold, MLflow training against the baseline, Model Serving, Genie and the app on top. One bundle job rebuilds it.',

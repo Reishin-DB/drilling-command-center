@@ -265,6 +265,21 @@ def engineer(w):
     return rec
 
 
+def ontology(w):
+    terms = sql(w, f"""SELECT tag_value AS glossary_term, concat_ws(', ', collect_list(concat(table_name, '.', column_name))) AS governs
+                       FROM {CAT}.information_schema.column_tags WHERE schema_name = '{SCH}' AND tag_name = 'glossary_term' GROUP BY tag_value ORDER BY 1""")
+    fks = sql(w, f"""SELECT tc.table_name AS from_table, tc.constraint_name, ccu.table_name AS to_table
+                     FROM {CAT}.information_schema.referential_constraints rc
+                     JOIN {CAT}.information_schema.table_constraints tc ON tc.constraint_name = rc.constraint_name AND tc.constraint_schema = rc.constraint_schema
+                     JOIN {CAT}.information_schema.constraint_table_usage ccu ON ccu.constraint_name = rc.unique_constraint_name AND ccu.constraint_schema = rc.unique_constraint_schema
+                     WHERE tc.table_schema = '{SCH}' ORDER BY 1""")
+    rules = sql(w, f"SELECT rule_id, glossary_term, threshold_value, definition_owner, open_items_today FROM {FQS}.v_engineer_rule_catalog ORDER BY rule_id")
+    tags = sql(w, f"SELECT table_name, tag_name, tag_value FROM {CAT}.information_schema.table_tags WHERE schema_name = '{SCH}' AND table_name IN ('business_glossary', 'engineer_rules', 'v_engineer_rule_catalog') ORDER BY 1")
+    rec = {"glossary_terms_on_columns": terms, "foreign_keys": fks, "rule_catalog": rules, "table_tags": tags}
+    save("13_ontology.json", rec)
+    return rec
+
+
 def app(w):
     token = w.config.authenticate()["Authorization"]
     out = {}
@@ -288,7 +303,7 @@ def tests():
     return p.stdout.strip().splitlines()[-1] if p.stdout else p.stderr[-200:]
 
 
-def summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr=None, br=None, en=None):
+def summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr=None, br=None, en=None, on=None):
     m = ml["metrics"]
     sv = app_out["/api/voxels/stepout_value/SANJUAN-01"]["body"]
     lines = [
@@ -421,6 +436,15 @@ def summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr=None, br=None, 
                   f"Genie explains the flag: **{en['genie_explains_flag']['question']}**", "",
                   f"```sql\n{en['genie_explains_flag']['sql']}\n```", "",
                   "> " + (en["genie_explains_flag"]["text"] or "").replace("\n", " ")[:1200], ""]
+    if on:
+        lines += ["## 13. Ontology in Unity Catalog (`13_ontology.json`)", "",
+                  "Glossary terms tagged on the columns they govern (`information_schema.column_tags`, tag `glossary_term`):", "",
+                  "| Glossary term | Governs |", "|---|---|", *[f"| {r['glossary_term']} | {r['governs']} |" for r in on["glossary_terms_on_columns"]], "",
+                  "Declared relationships (`information_schema.referential_constraints`), with `operator_wells` as the hub:", "",
+                  "| From | Constraint | To |", "|---|---|---|", *[f"| {r['from_table']} | {r['constraint_name']} | {r['to_table']} |" for r in on["foreign_keys"]], "",
+                  "`v_engineer_rule_catalog`: each rule with its glossary term, live threshold, owner and open items today:", "",
+                  "| Rule | Glossary term | Threshold | Owner | Open items |", "|---|---|---|---|---|",
+                  *[f"| {r['rule_id']} | {r['glossary_term']} | {r['threshold_value']} | {r['definition_owner']} | {r['open_items_today']} |" for r in on["rule_catalog"]], ""]
     (OUT / "EVIDENCE.md").write_text("\n".join(lines))
     print("wrote EVIDENCE.md")
 
@@ -442,8 +466,9 @@ def main():
     dr = drift(w)
     br = brief(w)
     en = engineer(w)
+    on = ontology(w)
     test_line = tests()
-    summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr, br, en)
+    summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr, br, en, on)
 
 
 if __name__ == "__main__":

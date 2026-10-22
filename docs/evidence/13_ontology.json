@@ -1,0 +1,135 @@
+{
+  "glossary_terms_on_columns": [
+    {
+      "glossary_term": "Days of cover",
+      "governs": "drilling_inventory.on_hand_qty, drilling_inventory.lead_time_days"
+    },
+    {
+      "glossary_term": "H2S re-sample interval",
+      "governs": "well_h2s_profile.h2s_measurement_date"
+    },
+    {
+      "glossary_term": "H2S safety audit interval",
+      "governs": "well_h2s_profile.last_safety_audit_date"
+    },
+    {
+      "glossary_term": "Long-lead sour component",
+      "governs": "equipment_component_spec.lead_weeks"
+    },
+    {
+      "glossary_term": "Severity band",
+      "governs": "equipment_component_spec.band"
+    },
+    {
+      "glossary_term": "Sour capex materiality",
+      "governs": "well_economics.npv10_live_musd"
+    },
+    {
+      "glossary_term": "Sour service",
+      "governs": "well_h2s_profile.h2s_ppm_last_measured, well_h2s_profile.sour_classified"
+    }
+  ],
+  "foreign_keys": [
+    {
+      "from_table": "engineer_rules",
+      "constraint_name": "rules_glossary_fk",
+      "to_table": "business_glossary"
+    },
+    {
+      "from_table": "engineer_tickets",
+      "constraint_name": "tickets_rule_fk",
+      "to_table": "engineer_rules"
+    },
+    {
+      "from_table": "engineer_tickets",
+      "constraint_name": "tickets_well_fk",
+      "to_table": "operator_wells"
+    },
+    {
+      "from_table": "well_distances",
+      "constraint_name": "dist_to_fk",
+      "to_table": "operator_wells"
+    },
+    {
+      "from_table": "well_distances",
+      "constraint_name": "dist_from_fk",
+      "to_table": "operator_wells"
+    },
+    {
+      "from_table": "well_economics",
+      "constraint_name": "econ_well_fk",
+      "to_table": "operator_wells"
+    },
+    {
+      "from_table": "well_h2s_profile",
+      "constraint_name": "h2s_well_fk",
+      "to_table": "operator_wells"
+    }
+  ],
+  "rule_catalog": [
+    {
+      "rule_id": "R-ECON-SOURCAPEX",
+      "glossary_term": "Sour capex materiality",
+      "threshold_value": "10.0",
+      "definition_owner": "Finance",
+      "open_items_today": "2"
+    },
+    {
+      "rule_id": "R-EQ-LONGLEAD",
+      "glossary_term": "Long-lead sour component",
+      "threshold_value": "18.0",
+      "definition_owner": "Supply chain",
+      "open_items_today": "1"
+    },
+    {
+      "rule_id": "R-H2S-AUDIT",
+      "glossary_term": "H2S safety audit interval",
+      "threshold_value": "365.0",
+      "definition_owner": "HSE",
+      "open_items_today": "2"
+    },
+    {
+      "rule_id": "R-H2S-SAMPLE",
+      "glossary_term": "H2S re-sample interval",
+      "threshold_value": "180.0",
+      "definition_owner": "Production engineering",
+      "open_items_today": "3"
+    },
+    {
+      "rule_id": "R-INV-COVER",
+      "glossary_term": "Days of cover",
+      "threshold_value": null,
+      "definition_owner": "Supply chain",
+      "open_items_today": "3"
+    },
+    {
+      "rule_id": "R-SAF-CRIT",
+      "glossary_term": "Sour service",
+      "threshold_value": "100.0",
+      "definition_owner": "HSE",
+      "open_items_today": "1"
+    }
+  ],
+  "table_tags": [
+    {
+      "table_name": "business_glossary",
+      "tag_name": "glossary_steward",
+      "tag_value": "HSE"
+    },
+    {
+      "table_name": "business_glossary",
+      "tag_name": "domain",
+      "tag_value": "operations"
+    },
+    {
+      "table_name": "engineer_rules",
+      "tag_name": "domain",
+      "tag_value": "operations"
+    },
+    {
+      "table_name": "v_engineer_rule_catalog",
+      "tag_name": "domain",
+      "tag_value": "operations"
+    }
+  ]
+}

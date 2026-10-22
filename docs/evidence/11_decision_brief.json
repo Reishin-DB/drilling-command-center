@@ -1,7 +1,7 @@
 {
-  "brief_id": "e4b05aa3-795a-4a35-9ff8-72be4e22493a",
+  "brief_id": "3b4b4d4f-8096-4f81-b037-3a54048213d2",
   "well": "SANJUAN-01",
-  "plan": "**Recommendation**\n\nApprove the step-out well 2,616 ft from SANJUAN-01 with $58M capex authorization [F1, F6].\n\n**Why this well**\n\n- Delivers $40.3M NPV10 at 34% IRR with 2.0 yr payback and $53 break-even WTI, well below current $79.18 strip [F5, F6].\n- Voxel model predicts 253.0 ft hydrocarbon pore thickness vs 238.6 ft at SANJUAN-01, risked to 167.5 ft for distance from control [F2, F3].\n- Synthetic-sonic model demonstrates 3.0 us/ft accuracy on held-out wells, significantly outperforming calibrated Gardner at 10.7 us/ft [F9].\n\n**Why now**\n\n- Six-month delay costs $1.9M (4.7% of risked NPV) due to discounting [F8].\n- Structural closure of 158 ft and 140 ft normal fault support hydrocarbon column with free-water level at 9275 ft [F10].\n\n**Risks and how they are controlled**\n\n- Subsurface uncertainty of 0.68 (moderate-high on 0-1 scale) reflects 2,616 ft distance from control; risked economics haircut pore thickness from 253.0 ft to 167.5 ft [F3, F2].\n- H2S risk is low at 1.2 ppm with no NACE MR0175 requirement and $0.00M sour-service upgrade [F11, F12].\n\n**Next actions**\n\n- **Asset team**: Finalize drilling AFE at $58M capex using offset well design [F6].\n- **VP of Engineering**: Confirm wellbore design incorporates 140 ft fault crossing and free-water level at 9275 ft [F10].\n- **SVP Digital Operations**: Commission post-drill voxel model calibration to reduce uncertainty for future step-outs [F3].",
+  "plan": "**Recommendation**\n\nDrill the Blanco field step-out well 2,616 ft from SANJUAN-01 [F1].\n\n**Why this well**\n\n\u2022 Voxel model predicts 253.0 ft hydrocarbon pore thickness, exceeding SANJUAN-01's 238.6 ft [F2], with risked economics of $40.3M NPV10, 34% IRR, and 2.0 yr payback at $79.18 WTI [F5].\n\n\u2022 Break-even WTI of $53 provides substantial downside protection in current $79.18 price environment [F5] [F6].\n\n\u2022 Synthetic-sonic model demonstrates strong predictive accuracy (3.0 us/ft error vs 10.7 us/ft for calibrated Gardner on held-out wells) [F9], supporting confidence in subsurface interpretation.\n\n**Why now**\n\n\u2022 Six-month delay costs $1.9M (4.7% of risked NPV) [F8], eroding project returns in a favorable price environment.\n\n\u2022 158 ft closure and 140 ft normal fault provide adequate structural definition [F10] to proceed without additional data acquisition.\n\n**Risks and how they are controlled**\n\n\u2022 Subsurface uncertainty: Model uncertainty of 0.68 [F3] reflects 2,616 ft distance from control [F1]; risked pore thickness of 167.5 ft [F3] vs unrisked 253.0 ft [F2] appropriately haircuts geological risk.\n\n\u2022 Sour service: H2S measured at 1.2 ppm with NACE MR0175 not required [F11]; no equipment upgrade cost or schedule impact [F12].\n\n**Next actions**\n\n\u2022 **Asset team**: Finalize $58M AFE using offset well design [F6] and secure rig contract.\n\n\u2022 **VP of Engineering**: Confirm well design incorporates free-water level at 9275 ft [F10] and H2S monitoring protocols [F11].\n\n\u2022 **SVP Digital Operations**: Validate voxel model calibration at step-out location after drilling to refine future predictions.",
   "facts": [
     {
       "id": "F1",
@@ -65,14 +65,19 @@
     }
   ],
   "validation": {
-    "figures_checked": 24,
+    "figures_checked": 21,
     "unsupported": [],
     "facts_cited": [
+      "F1",
+      "F2",
       "F3",
+      "F5",
       "F6",
       "F8",
       "F9",
-      "F10"
+      "F10",
+      "F11",
+      "F12"
     ],
     "grounded": true
   },
@@ -82,18 +87,18 @@
   "fell_back": false,
   "usage": {
     "cache_read_input_tokens": 0,
-    "completion_tokens": 495,
+    "completion_tokens": 508,
     "prompt_tokens": 686,
-    "total_tokens": 1181,
+    "total_tokens": 1194,
     "cache_creation_input_tokens": 0
   },
   "logged_to": "oil_pump_monitor_catalog.subsurface_command.gold_action_plans",
   "log_error": null,
-  "generated": "2026-10-22T16:02:46.468181+00:00",
+  "generated": "2026-10-22T17:51:53.043554+00:00",
   "log_rows": [
     {
-      "briefs": "4",
-      "grounded": "3"
+      "briefs": "5",
+      "grounded": "4"
     }
   ]
 }

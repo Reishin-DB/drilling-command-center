@@ -31,6 +31,7 @@ const PLATFORM_PIECES = [
   { name: 'Foundation Model APIs', role: 'Frontier LLMs power the Subsurface Supervisor synthesis, pay-per-token, no key management.' },
   { name: 'Vector Search', role: 'RAG over analog wells and drilling knowledge with Unity Catalog-governed indexes.' },
   { name: 'Databricks AI Gateway', role: 'Safety + PII guardrails, rate limits, model choice, multi-endpoint failover, and per-run usage/spend tracking (logged to Unity Catalog) in front of every agent.' },
+  { name: 'Business glossary + ontology', role: 'Glossary terms with owners and live thresholds, tagged on the columns they govern and joined by PK/FK to rules, tickets and wells; the agent, dashboard and Genie all read them.' },
   { name: 'MLflow + Model Serving', role: 'Synthetic-sonic model trained against the Gardner baseline on held-out wells, registered in Unity Catalog, served behind AI Gateway.' },
   { name: 'Voxel geomodel', role: 'Kriged property model from the well logs, computed in the app, honest about its uncertainty.' },
 ]
@@ -98,8 +99,8 @@ const STEPS: Step[] = [
   {
     num: 10, title: "The engineer's morning on the H2S well", tab: 'Morning Action Items', tabId: 'engineer', duration: '2 min',
     talkTrack: 'Switch the header persona to Engineer. Agent notifications arrive: the operations agent has run the governed business rules in the glossary over this morning\'s Unity Catalog data and raised seven action items on EASTTEXAS-05, the 12,000 ppm extreme-sour well. Each item shows its evidence, the glossary definition and threshold behind it, and links to close it out: the sour-service dashboard, the Equipment tab with the well selected, the source table, or a ticket written back to UC. Ask Genie why, and Genie explains the flag from the same rule and data.',
-    pointAt: ['Notification stack + bell count', 'Grounded agent note with citations', 'Glossary definition, threshold and owner on every item', 'Create ticket (SUB-) and Ask Genie why'],
-    features: ['Business glossary in UC', 'Governed rules', 'AI/BI dashboard', 'Genie'],
+    pointAt: ['Notification stack + bell count', 'Grounded agent note with citations', 'The rules behind this briefing: change the H2S audit interval 365 to 400 and the item drops off', 'business_glossary and v_engineer_rule_catalog in Catalog Explorer', 'Create ticket (SUB-) and Ask Genie why'],
+    features: ['Business glossary in UC', 'Ontology: PK/FK + glossary tags', 'Governed rules', 'AI/BI dashboard', 'Genie'],
   },
   {
     num: 11, title: 'Show how it is built', tab: 'How It Works', tabId: 'dataflow', duration: '45s',

@@ -1,6 +1,6 @@
 {
   "app": "https://subsurface-command-7474647106303257.aws.databricksapps.com",
-  "captured": "2026-10-22T16:02:29.039998+00:00",
+  "captured": "2026-10-22T17:51:36.245315+00:00",
   "responses": {
     "/api/sonic/metrics": {
       "status": 200,
@@ -142,7 +142,7 @@
     },
     "/api/voxels/stepouts": {
       "status": 200,
-      "seconds": 0.27,
+      "seconds": 0.34,
       "body": {
         "stepouts": [
           {
@@ -231,7 +231,7 @@
     },
     "/api/voxels/stepout_value/SANJUAN-01": {
       "status": 200,
-      "seconds": 1.22,
+      "seconds": 1.19,
       "body": {
         "field": "Blanco",
         "basin": "San Juan",
@@ -294,7 +294,7 @@
     },
     "/api/economics/summary": {
       "status": 200,
-      "seconds": 1.16,
+      "seconds": 1.06,
       "body": {
         "wti_spot": 79.18,
         "wti_date": "2026-10-22",

@@ -1,7 +1,7 @@
 {
   "endpoint": "subsurface-synthetic-sonic",
   "state": "READY",
-  "latency_s": 0.174,
+  "latency_s": 117.944,
   "served_entities": [
     {
       "name": "synthetic_sonic-3",
@@ -169,10 +169,10 @@
   ],
   "inference_table": [
     {
-      "logged_requests": "185",
+      "logged_requests": "193",
       "first_request": "2026-10-21T17:32:54.403Z",
-      "last_request": "2026-10-22T15:38:44.291Z",
-      "ok": "185"
+      "last_request": "2026-10-22T16:02:28.983Z",
+      "ok": "193"
     }
   ]
 }

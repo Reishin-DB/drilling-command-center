@@ -146,6 +146,16 @@ python ml/local_check.py
 
 The app deploys from a clean `_deploy/` copy with `databricks apps deploy` (see `DEPLOY.md`). Env vars it reads: `ADME_CATALOG`, `ADME_SCHEMA`, `DATABRICKS_WAREHOUSE_ID`, `GENIE_SPACE_ID`, `SONIC_ENDPOINT`.
 
+## Ontology in Unity Catalog
+
+The ontology is not a separate product or a copy of the data; it is governed Unity Catalog objects the app, the agents and Genie all read:
+
+- **Business glossary** (`business_glossary`): 7 terms with definition, owning function and the `threshold_value` the rules read live. Change a threshold and the next engineer briefing changes, with no code.
+- **Terms on the data**: each glossary term is tagged (`glossary_term`) on the columns it governs, for example `well_h2s_profile.last_safety_audit_date` carries "H2S safety audit interval".
+- **Relationships**: a PK/FK graph with `operator_wells` as the hub, extended to the engineer layer: `engineer_tickets` to `engineer_rules` to `business_glossary`, and tickets to wells (`governance/engineer_ontology.sql`).
+- **Rules and one business view**: `engineer_rules` holds the governed rule queries; `v_engineer_rule_catalog` shows each rule with its definition, owner, live threshold and open items today (`governance/engineer_rule_catalog.sql`).
+- **Logic and measures**: certified functions (`calculate_npv10`, `calculate_break_even`, `f_wells_within_km`), metric views, table and column descriptions, and governed tags (`domain = operations` under the workspace tag policy).
+
 ## Execution evidence
 
 Everything above ran. [`docs/evidence/EVIDENCE.md`](docs/evidence/EVIDENCE.md) summarises output captured from the live FEVM workspace, with the raw API responses beside it: the bundle job run and its task attempts, the Lakeflow pipeline update with row counts and data-quality expectations, the MLflow training run and its logged metrics, a live call to the served model with inference-table logging, a Genie conversation with its SQL and answers, the Unity Catalog policy before and after mapping a JV partner, live app API responses, the test suite, and an executed workspace notebook (`notebooks/evidence_run.py`). Re-capture with `python scripts/collect_evidence.py --profile <profile>`.

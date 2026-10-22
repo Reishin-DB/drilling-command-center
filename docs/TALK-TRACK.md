@@ -151,6 +151,7 @@ Click path follows the left rail. For each step: **click**, **say**, **land the 
 **Click:** **Show the glossary and rules** in *The rules behind this briefing*. Point at the **H2S safety audit interval** row: definition, owner HSE, threshold **365** days.
 **Say:** "Here's the part I want you to see. Nobody coded 365 days into this app. It's a governed glossary term that HSE owns, in Unity Catalog, and the rule reads it. Watch." Change it to **400**, click **Apply**.
 **Say:** "The audit item is gone, because 386 days is now inside the interval, and the agent rewrote its note. The business changed the policy; the briefing followed, with no code and no deploy. The same definition is what Genie and the dashboard read." Set it back to **365** and Apply; the item returns. Click **Show SQL** on R-H2S-AUDIT if the VP of Engineering leans in.
+**Optional, for the VP of Engineering:** click **business_glossary in Catalog Explorer ↗**. Show the Sample data (the 365 row, owner HSE), then open `v_engineer_rule_catalog`: every rule with its definition, owner, live threshold and open items today. On `well_h2s_profile`, point at the `glossary_term` tag on `last_safety_audit_date`. "The meaning is on the data itself, governed in Unity Catalog."
 **Click:** **Create reorder ticket** on the wellhead spool (a `SUB-` ticket appears, written to UC), then **Ask Genie why** on the audit item.
 **Say:** "And if the engineer wants to know why, Genie answers from the same rule, the same glossary definition and the same data, with the SQL to prove it."
 **Land:** "The agent, the dashboard, the ticket and Genie all read one governed definition of what matters this morning."
@@ -211,6 +212,9 @@ Then stop talking.
 
 **"What does this cost to run?"**
 > The sonic model is a small endpoint that scales to zero, behind AI Gateway with usage tracking and inference tables, so you see the cost per call. The Supervisor shows token cost per run. The rest is pipeline and SQL on serverless.
+
+**"Is this an ontology, or just some tables?"**
+> It's an ontology in the Databricks sense: governed Unity Catalog objects, not a separate graph product you copy data into. The glossary defines the business terms with owners and thresholds, each term is tagged on the columns it governs, primary and foreign keys connect tickets to rules to glossary terms and to wells, and metric views and certified functions hold the canonical measures and logic. The agent, the dashboard and Genie all read the same definitions, so when HSE changes a threshold, everything follows.
 
 **"Can partners query this through Genie and see too much?"**
 > No. The row filter and column mask are on the tables in Unity Catalog, and Genie runs as the signed-in user. The partner sees 30 rows, San Juan only, with the masked columns NULL, whichever tool they use.
