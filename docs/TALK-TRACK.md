@@ -2,7 +2,7 @@
 
 For the FE Bar AI roleplay: about 20 minutes with two personas, a **business stakeholder** (asset manager or VP subsurface, owns the next-well decision and the capex) and a **technical stakeholder** (petrophysics or subsurface data lead, owns whether this is trustworthy and fits the stack). Scored on demo setup, value communication, reading the room, and professionalism.
 
-Shape: **open and discover (3 min) → the value pitch (3 min) → demo (9 min) → architecture and decisions (2 min) → ask (1 min) → questions.** Leave room; the questions are where the score is made.
+Shape: **open and discover (3 min) → deck slides 1 to 3, the value (3 min) → live demo (10 min) → recap, then deck slide 4, how it is built (2 min) → deck slide 5, the ask (1 min) → questions.** The deck is six slides on purpose: it frames the value and the ask, and the demo carries the proof. Leave room; the questions are where the score is made.
 
 Every number is tagged so you can defend it: **[demo]** computed live by the app or the training job on the synthetic fleet, **[yours]** a number you ask them for. There are no industry-benchmark dollar figures in this track on purpose; if they ask for one, turn it into a **[yours]** question.
 
@@ -13,7 +13,7 @@ Every number is tagged so you can defend it: **[demo]** computed live by the app
 - **Check the step-out price.** On *Value the Well* the card's chip must read `Live · certified UC function`. The dollar figures move with WTI each day: read them off the card, not from this page, if WTI has moved from **$79.18**.
 - **Open the app in a fresh browser window** so your session token carries the `sql` and Genie scopes. Check *Governance & Audit*: the "As you" table must show 84 rows, not a scope message.
 - **Reset governance.** The policy button must read "Make me a San Juan JV partner"; if it reads "Restore operator view", click it.
-- **Have the deck open** on slide 1, and the two Genie questions ready to paste (section 3, step 8).
+- **Have the deck open** on slide 1 in one window and the app in another, and the two Genie questions ready to paste (section 3, step 7).
 - **Reset the camera** on the voxel tab by switching tabs away and back if you rehearsed with it rotated.
 
 ## 1. Open and discover (3 min)
@@ -31,30 +31,42 @@ Every number is tagged so you can defend it: **[demo]** computed live by the app
 
 **Listen for, and reuse later:** the number of hand-offs, weeks or months of cycle time, wells drilled without sonic, distrust of black-box models, partners who need some data but not all. Play their words back at each step.
 
-## 2. The value pitch (3 min) · deck slides 1 to 3, then go straight to the app
+## 2. The value pitch (3 min) · deck slides 1 to 3, then straight to the app
 
-### The 30-second version
+The deck is the frame; the demo is the proof. Three slides, about a minute each, then switch to the app and do not come back to the deck until after the demo.
 
-> The data to place the next well already exists: logs, tops, headers, economics. It just lives in five places, and every gap, like a well with no sonic, becomes a side project. We put it on one governed platform. The missing sonic is filled by a model that beats the relation your petrophysicists use today, **3.6 times lower error on wells it never saw**. The logs become a **voxel geomodel in under a second** that proposes a step-out, risked for how far it is from control, and the platform's own certified NPV function prices it: **$103 million unrisked, $40 million risked**, against **$58 million** of capex. And everyone, including partners and AI assistants, sees only what they are entitled to.
+### Slide 1 · Title (30 s)
+**Say:**
+> This is Subsurface Intelligence: one decision, where the next well goes, taken from raw well logs to a located, priced, governed proposal on one platform. Three numbers to hold onto: a next well worth **$40 million risked**, found in data your team already has; a missing sonic log filled with **3.6 times lower error** than today's method; and all of it in **one sitting**.
 
-### What is new here (say it this way)
+### Slide 2 · The decision (45 s)
+**Say:**
+> The data to place the next well already exists: logs, tops, headers, OSDU records, economics. It lives in five places with five owners, so every new question starts with an export and a hand-off. Gaps make it worse: a well drilled without a sonic log blocks geomechanics until someone patches it by hand. And when AI assistants arrive, they either can't see the governed data or they see too much.
+
+**Tie back:** play back their answer to "how long does a step-out proposal take today?" in their words.
+
+### Slide 3 · The business value (1.5 min)
+Walk the four levers top to bottom, then the cost line.
+
+| Lever | Say | The number |
+|---|---|---|
+| **1. Value per decision** | "The geomodel finds and ranks a step-out in data you already have, and the certified NPV function prices it." | **$103M** NPV10 unrisked, **$40M** risked, **34%** IRR, **$53** break-even on **$58M** capex at $79 WTI **[demo]** |
+| **2. Speed to decision** | "Logs to a priced proposal in one sitting instead of a chain of hand-offs. Time has a price." | Every **6 months** of delay costs **$1.9M** of the risked value, **$4.8M** unrisked, **4.7%** of NPV at 10% **[demo]**. "How long does it take you today?" **[yours]** |
+| **3. No blocked decisions** | "Missing curves are filled in seconds by a served model scored against the method your petrophysicists trust." | **3.6x** lower error than Gardner refit on the same wells, on **13** held-out wells **[demo]**. "How many of your wells lack sonic?" **[yours]** |
+| **4. Safe to share** | "Partners and AI see only what they're entitled to, enforced once in Unity Catalog." | JV partner sees **30 of 84** rows, interpretation masked, in the app, Genie and SQL **[demo]** |
+
+**Cost line, say:** "And the cost side stays small: a scale-to-zero model endpoint metered through AI Gateway, a serverless pipeline, and AI that shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not."
+
+### What is new here (if they ask, or work it into slide 2)
 
 > None of the techniques are exotic. Pseudo-sonic from other curves, kriging between wells, saturation-height functions: your team knows all of them. What is new is that they run **as one governed workflow on the platform where the data already is**: the pipeline, the model registry, the served model, the geomodel, the economics, and the AI, with Unity Catalog enforcing who sees what in every one of them.
 
 Lead with "one governed workflow", not "a new algorithm". The first is hard to rebut; the second invites someone to name a vendor.
 
-### The value, in four levers (deck slide 3)
+### Hand-off to the demo
+**Say:** "Let me show you every one of those numbers being produced, live." Switch to the app.
 
-| Lever | What changes | The number |
-|---|---|---|
-| **1. Fill the gaps** | Missing sonic is predicted from the other curves, scored against Gardner on held-out wells | **3.0 µs/ft** error vs **10.7** for Gardner refit on the same wells, **3.6x** lower, across **13 wells** and **31,189 samples** **[demo]** |
-| **2. Place and price the well** | The logs become a geomodel that ranks a step-out, states its uncertainty, and prices it with the certified UC function | Blanco step-out **2,616 ft** from SANJUAN-01 with **253 ft** of hydrocarbon pore thickness, **15%** above the control wells. **$103.4M NPV10 unrisked, $40.3M risked** (34% IRR, 2-year payback, **$53** break-even) on **$58M** capex at $79 WTI **[demo]** |
-| **3. Decide sooner** | Logs to a located, priced proposal in one sitting instead of a chain of hand-offs | Every **6 months** of delay costs **$1.9M** of the risked value (**$4.8M** unrisked), **4.7%** of NPV at 10% **[demo]**. How long does a step-out proposal take today **[yours]**? |
-| **4. Safe to share** | Partners and AI see only what they are entitled to, enforced once in Unity Catalog | JV partner sees **30 of 84** zone rows, Sw and HC pore feet masked, in the app, Genie and SQL **[demo]** |
-
-And the cost side: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline is serverless, and the Supervisor shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.
-
-## 3. The demo (9 min)
+## 3. The demo (10 min)
 
 Click path follows the left rail. For each step: **click**, **say**, **land the line**.
 
@@ -121,9 +133,15 @@ Click path follows the left rail. For each step: **click**, **say**, **land the 
 **Click:** *How It Works*.
 **Say:** "Volume, Lakeflow bronze, silver, gold, MLflow against the baselines, the model registry, Model Serving behind AI Gateway, then the app, Genie and the Supervisor. One Asset Bundle job rebuilds it."
 
-## 4. Architecture and decisions (2 min) · deck slide 4, appendix slide 6 for questions
+### Recap before you leave the app (30 s)
+**Say:** "So, back to what you told me at the start." Play back their cycle time and their missing-curve problem, then: "We filled the sonic on a well that had none, built the geomodel, found a step-out worth $40 million risked, priced it with your governed NPV, and the partner could only see their basin. One sitting, one platform."
+**Ask:** "Is that the kind of candidate your team would want to start from?" Then switch back to the deck.
 
-Say these as decisions you made, each with the reason:
+## 4. How it is built, and the decisions behind it (2 min) · deck slide 4, appendix slide 6 for questions
+
+**Say on slide 4:** "One pipeline, one registry, one governance layer. Everything you saw lives in one Unity Catalog schema, and one Asset Bundle job rebuilds it: lands the data, runs the pipeline, trains, registers, serves, scores."
+
+Then say these as decisions you made, each with the reason:
 
 - **Held-out wells, not rows.** Samples from one well share a geology; a random split would leak and flatter the model.
 - **The baseline is the method they use.** Gardner, and Gardner refit on the same training wells, so the comparison is fair. The textbook version is shown too, because it's what most people apply.
@@ -186,3 +204,7 @@ Then stop talking.
 - If the **technical persona** leans in on step 4, toggle uncertainty and pay-only, and offer the method panel on the right.
 - After step 4, check in with both: "Is that the kind of candidate your team would want to start from?"
 - If time is short, cut step 9 and shorten step 6 to the model picker and cost meter.
+
+## 9. The 10-minute version
+
+If the slot shrinks: slide 1 (20 s), slide 3 (1 min), then demo steps 3, 4, 5 and 8 only (6 min): fill the sonic, the voxel model, the step-out price, and the JV partner toggle. Recap in one sentence, slide 5, the ask. Everything else goes into the questions.
