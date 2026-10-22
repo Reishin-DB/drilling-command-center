@@ -450,7 +450,7 @@ const ONT_FUNCTIONS = [
 ]
 
 // ─── Knowledge-graph nodes/edges (the ontology drawn as a graph) ─────────────
-interface GNode { id: string; label: string; sub: string; x: number; y: number; w: number; h: number; kind: 'hub'|'entity'|'ref'|'gov'|'metric'|'fn'; color: string }
+interface GNode { id: string; label: string; sub: string; x: number; y: number; w: number; h: number; kind: 'hub'|'entity'|'ref'|'gov'|'metric'|'fn'|'glossary'; color: string }
 const G_NODES: GNode[] = [
   { id: 'operator_wells',   label: 'operator_wells',   sub: 'HUB · well_id PK',        x: 292, y: 210, w: 160, h: 48, kind: 'hub',    color: '#4fb3e8' },
   { id: 'well_economics',   label: 'well_economics',   sub: 'FK → operator_wells',     x: 297, y: 96,  w: 150, h: 40, kind: 'entity', color: '#27AE60' },
@@ -466,8 +466,13 @@ const G_NODES: GNode[] = [
   { id: 'f_wells_economic_at_wti', label: 'f_wells_economic_at_wti()', sub: 'economic at $X WTI', x: 610, y: 330, w: 230, h: 40, kind: 'fn', color: '#b37feb' },
   { id: 'f_wells_within_km', label: 'f_wells_within_km()', sub: 'proximity', x: 618, y: 386, w: 214, h: 40, kind: 'fn', color: '#b37feb' },
   { id: 'f_equipment_spec_for_well', label: 'f_equipment_spec_for_well()', sub: 'sour-service spec', x: 604, y: 442, w: 242, h: 40, kind: 'fn', color: '#b37feb' },
+  // Business glossary and engineer rules: the operations agent's context, in the same graph.
+  { id: 'business_glossary', label: 'business_glossary', sub: 'term PK · owner · threshold', x: 262,  y: 548, w: 176, h: 44, kind: 'glossary', color: '#f5a524' },
+  { id: 'engineer_rules',    label: 'engineer_rules',    sub: 'rule_id PK · FK → glossary', x: 486, y: 548, w: 176, h: 44, kind: 'glossary', color: '#f5a524' },
+  { id: 'engineer_tickets',  label: 'engineer_tickets',  sub: 'FK → rules · FK → wells',    x: 710, y: 548, w: 176, h: 44, kind: 'entity',   color: '#ff8a75' },
+  { id: 'v_engineer_rule_catalog', label: 'v_engineer_rule_catalog', sub: 'rule + definition + open items', x: 34, y: 548, w: 190, h: 44, kind: 'metric', color: '#2ec26a' },
 ]
-interface GEdge { from: string; to: string; kind: 'fk'|'derives'|'reads'; label: string }
+interface GEdge { from: string; to: string; kind: 'fk'|'derives'|'reads'|'tags'; label: string }
 const G_EDGES: GEdge[] = [
   { from: 'well_economics',   to: 'operator_wells', kind: 'fk', label: 'FK' },
   { from: 'well_h2s_profile', to: 'operator_wells', kind: 'fk', label: 'FK' },
@@ -480,6 +485,12 @@ const G_EDGES: GEdge[] = [
   { from: 'well_equipment_integrity', to: 'well_h2s_profile', kind: 'derives', label: 'from H2S' },
   { from: 'mv_equipment_integrity', to: 'well_equipment_integrity', kind: 'derives', label: 'defines over' },
   { from: 'f_equipment_spec_for_well', to: 'well_equipment_integrity', kind: 'reads', label: 'certified read' },
+  { from: 'engineer_rules',   to: 'business_glossary', kind: 'fk', label: 'FK' },
+  { from: 'engineer_tickets', to: 'engineer_rules',    kind: 'fk', label: 'FK' },
+  { from: 'engineer_tickets', to: 'operator_wells',    kind: 'fk', label: 'FK' },
+  { from: 'v_engineer_rule_catalog', to: 'business_glossary', kind: 'derives', label: 'joins rules + glossary' },
+  { from: 'business_glossary', to: 'well_h2s_profile', kind: 'tags', label: 'glossary_term on columns' },
+  { from: 'engineer_rules',   to: 'well_equipment_integrity', kind: 'reads', label: 'rule queries' },
 ]
 const gById = (id: string) => G_NODES.find(n => n.id === id)!
 const gCenter = (n: GNode): [number, number] => [n.x + n.w / 2, n.y + n.h / 2]
@@ -493,13 +504,13 @@ function gBorder(n: GNode, tx: number, ty: number): [number, number] {
   const s = Math.min(sx, sy)
   return [cx + dx * s, cy + dy * s]
 }
-const G_EDGE_COLOR: Record<GEdge['kind'], string> = { fk: '#4fb3e8', derives: '#2ec26a', reads: '#b37feb' }
+const G_EDGE_COLOR: Record<GEdge['kind'], string> = { fk: '#4fb3e8', derives: '#2ec26a', reads: '#b37feb', tags: '#f5a524' }
 
 function OntologyGraph() {
   return (
     <div style={{ marginBottom: 18 }}>
-      <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 8px' }}>Knowledge graph · entities → metric views → certified functions</div>
-      <svg viewBox="0 0 900 500" style={{ width: '100%', maxWidth: 820, margin: '0 auto', display: 'block', background: 'var(--bg-primary)', borderRadius: 6, border: '1px solid var(--border)' }}>
+      <div style={{ fontSize: 15, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 8px' }}>Knowledge graph · entities → metric views → certified functions → business glossary and rules</div>
+      <svg viewBox="0 0 900 610" style={{ width: '100%', maxWidth: 820, margin: '0 auto', display: 'block', background: 'var(--bg-primary)', borderRadius: 6, border: '1px solid var(--border)' }}>
         <defs>
           <marker id="ontArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
             <path d="M0,0 L10,5 L0,10 Z" fill="#8b949e" />
@@ -508,6 +519,9 @@ function OntologyGraph() {
         {/* governed semantic-layer band on the right */}
         <rect x="596" y="78" width="290" height="410" fill="#2ec26a" opacity="0.05" rx="10" />
         <text x="741" y="70" textAnchor="middle" fill="#2ec26a" fontSize="10" fontFamily="monospace" fontWeight="700">GOVERNED SEMANTIC LAYER</text>
+        {/* business glossary and rules band along the bottom */}
+        <rect x="24" y="520" width="868" height="84" fill="#f5a524" opacity="0.05" rx="10" />
+        <text x="32" y="514" fill="#f5a524" fontSize="10" fontFamily="monospace" fontWeight="700">BUSINESS GLOSSARY & RULES · OPERATIONS AGENT CONTEXT</text>
 
         {G_EDGES.map((e, i) => {
           const a = gById(e.from), b = gById(e.to)
@@ -519,7 +533,7 @@ function OntologyGraph() {
           return (
             <g key={`ge-${i}`}>
               <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={col} strokeWidth="1.4"
-                    strokeDasharray={e.kind === 'fk' ? 'none' : '5 4'} markerEnd="url(#ontArrow)" opacity="0.9" />
+                    strokeDasharray={e.kind === 'fk' ? 'none' : e.kind === 'tags' ? '2 3' : '5 4'} markerEnd="url(#ontArrow)" opacity="0.9" />
               <text x={mx} y={my - 3} textAnchor="middle" fill={col} fontSize="8.5" fontFamily="monospace" opacity="0.95">{e.label}</text>
             </g>
           )
@@ -542,7 +556,8 @@ function OntologyGraph() {
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 15, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
         <span><span style={{ color: '#4fb3e8' }}>──</span> foreign key (RELY)</span>
         <span><span style={{ color: '#2ec26a' }}>╌╌</span> metric view defines over</span>
-        <span><span style={{ color: '#b37feb' }}>╌╌</span> certified function reads</span>
+        <span><span style={{ color: '#b37feb' }}>╌╌</span> certified function / rule reads</span>
+        <span><span style={{ color: '#f5a524' }}>┈┈</span> glossary term tagged on columns</span>
         <span style={{ color: '#4fb3e8' }}>● hub</span>
         <span style={{ color: '#F39C12' }}>◌ reference (no FK)</span>
       </div>
