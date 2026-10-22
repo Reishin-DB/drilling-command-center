@@ -39,6 +39,11 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
   <div class="k" style="margin-top:1.25in">Databricks · upstream subsurface</div>
   <h1 style="font-size:60px;color:#fff;margin-top:14px">Subsurface Intelligence</h1>
   <p class="lead" style="color:#A6B7C2;font-size:22px">From raw well logs to a located, valued, governed drilling decision, on one platform, in one sitting.</p>
+  <div style="margin-top:0.45in;display:flex;gap:44px">
+    <div><div style="font-size:46px;font-weight:700;color:#F5A524">$40M</div><div style="font-size:15px;color:#A6B7C2">risked NPV10 of the next well,<br>found in data the team already has</div></div>
+    <div><div style="font-size:46px;font-weight:700;color:#2FD39B">3.6x</div><div style="font-size:15px;color:#A6B7C2">lower error filling a missing<br>sonic log than today's method</div></div>
+    <div><div style="font-size:46px;font-weight:700;color:#4FB3E8">1 sitting</div><div style="font-size:15px;color:#A6B7C2">from raw logs to a located,<br>priced, governed well</div></div>
+  </div>
   <div style="margin-top:0.85in" class="row">
     <span class="chip" style="background:#132836;color:#EEF3F6;border-color:#2B4A5E">Locate</span><span class="arrow">→</span>
     <span class="chip" style="background:#132836;color:#EEF3F6;border-color:#2B4A5E">Read</span><span class="arrow">→</span>
@@ -59,79 +64,19 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
   <div class="callout" style="margin-top:26px">Subsurface Intelligence puts the logs, the geomodel, the economics and the AI on one governed platform, so the decision is one workflow instead of five projects.</div>
   <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">2</span></div>
 </div><div class="s">
-  <div class="k">02 · What it does, end to end</div>
-  <h2>Six steps, one platform, every number traceable to a governed table</h2>
-  <table style="margin-top:6px">
-    <tr><th>#</th><th>Step</th><th>What happens</th><th>Databricks</th></tr>
-    <tr><td>1</td><td>Locate the wells</td><td>Fleet map with basin footprints and well spacing; the voxel model's proposed step-out per field</td><td>Spatial SQL (ST_ConvexHull, ST_Distance), H3</td></tr>
-    <tr><td>2</td><td>Read the logs</td><td>Raw curves, QC flags, corrections, Vcl / porosity / Archie Sw</td><td>Lakeflow SDP bronze → silver → gold</td></tr>
-    <tr><td>3</td><td>Fill the missing sonic</td><td>A served model predicts DT where none was logged, scored on held-out wells</td><td>MLflow, UC model registry, Model Serving, AI Gateway</td></tr>
-    <tr><td>4</td><td>Model the subsurface</td><td>49,152-cell voxel geomodel kriged from the logs, with uncertainty, ranks a step-out location</td><td>Apps, Unity Catalog</td></tr>
-    <tr><td>5</td><td>Value the well</td><td>NPV10, IRR, break-even against WTI</td><td>Certified UC functions, metric views</td></tr>
-    <tr><td>6</td><td>Decide with AI</td><td>Supervisor plans specialists, cites evidence, meters cost; Genie answers in plain English</td><td>Agents, AI Gateway, Genie</td></tr>
+  <div class="k">02 · The business value</div>
+  <h2>Four levers: a better well, found sooner, without blocked decisions, safe to share</h2>
+  <table style="margin-top:4px">
+    <tr><th style="width:23%">Lever</th><th style="width:40%">What changes</th><th>The number</th></tr>
+    <tr><td><b>1. Value per decision</b></td><td>The geomodel finds and ranks a step-out in data the team already has, and the certified NPV function prices it</td><td><b class="a">$103M</b> NPV10 unrisked, <b>$40M</b> risked, 34% IRR, $53 break-even on $58M capex <span class="badge live">demo</span></td></tr>
+    <tr><td><b>2. Speed to decision</b></td><td>Logs to a located, priced proposal in one sitting instead of a chain of exports and hand-offs</td><td>Every <b>6 months</b> of delay costs <b>$1.9M</b> of the risked value (<b>$4.8M</b> unrisked), 4.7% of NPV at 10% <span class="badge live">demo</span>. How long does a step-out proposal take today? <span class="badge ill">yours</span></td></tr>
+    <tr><td><b>3. No blocked decisions</b></td><td>Missing curves are filled in seconds by a served model scored against the method engineers trust</td><td><b class="g">3.6x</b> lower error than calibrated Gardner on 13 held-out wells <span class="badge live">demo</span>. How many of your wells lack sonic? <span class="badge ill">yours</span></td></tr>
+    <tr><td><b>4. Safe to share</b></td><td>Partners and AI assistants see only what they are entitled to, enforced once in Unity Catalog</td><td>JV partner sees <b>30 of 84</b> rows, interpretation masked, in the app, Genie and SQL <span class="badge live">demo</span></td></tr>
   </table>
+  <div class="callout" style="margin-top:22px">The cost side stays small: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline runs on serverless, and the AI shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.</div>
   <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">3</span></div>
 </div><div class="s">
-  <div class="k">03 · Fill the missing sonic</div>
-  <h2>The model has to beat the method engineers already trust, on wells it never saw</h2>
-  <div class="grid" style="grid-template-columns: 1.05fr 1fr; gap: 26px; margin-top: 4px">
-    <div>
-      <table>
-        <tr><th>Method · leave-one-well-out</th><th>MAE µs/ft</th><th>RMSE</th><th>R²</th></tr>
-        <tr><td>Gardner, published coefficients</td><td>17.23</td><td>22.25</td><td>-1.54</td></tr>
-        <tr><td>Gardner, refit on training wells</td><td>10.68</td><td>12.34</td><td>0.22</td></tr>
-        <tr><td>Faust, refit on training wells</td><td>6.64</td><td>8.66</td><td>0.62</td></tr>
-        <tr><td>Gradient-boosted trees, all curves</td><td>3.05</td><td>3.81</td><td>0.925</td></tr>
-        <tr class="win"><td>Linear, all curves · served</td><td>3.00</td><td>3.76</td><td>0.927</td></tr>
-      </table>
-      <p style="font-size:14px;margin-top:10px">13 wells, 31,189 samples. Whole wells are held out because samples from one well share its geology; a random split would leak. Champion rule: lowest leave-one-well-out MAE; within 2% the simpler model wins.</p>
-    </div>
-    <div>
-      <div class="grid c2">
-        <div class="tile"><div class="v g">3.6x</div><div class="l">lower error than Gardner calibrated on the same wells</div></div>
-        <div class="tile"><div class="v">3.0</div><div class="l">µs/ft mean error on unseen wells</div></div>
-      </div>
-      <div class="card" style="margin-top:16px"><div class="k">Decision worth defending</div><p>Trees and linear tie at the noise floor, so the simpler model is served: easier to explain to a petrophysicist, cheaper to run, nothing lost. It lives in Unity Catalog as <b>synthetic_sonic@champion</b> behind AI Gateway, and the app falls back to Gardner, labelled, if the endpoint is cold.</p></div>
-    </div>
-  </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">4</span></div>
-</div><div class="s">
-  <div class="k">04 · Model the subsurface</div>
-  <h2>A voxel geomodel from the logs in under a second, honest about what it does not know</h2>
-  <div class="grid" style="grid-template-columns: 1.35fr 1fr; gap: 22px">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/voxel_model.png" style="height:4.7in">
-    <div>
-      <div class="grid c2">
-        <div class="tile"><div class="v a">253 ft</div><div class="l">hydrocarbon pore thickness at the step-out, 15% above the control wells (221 ft)</div></div>
-        <div class="tile"><div class="v">168 ft</div><div class="l">risked for distance from control (uncertainty 0.68)</div></div>
-      </div>
-      <ul style="padding-left:20px;margin-top:16px">
-        <li style="font-size:15px">Structure honours every well top; dip, closure and one normal fault are a modeled framework <span class="badge ill">Illustrative</span></li>
-        <li style="font-size:15px">Vcl, porosity and Sw from the logs, kriged between wells per stratigraphic sub-layer <span class="badge live">Live</span></li>
-        <li style="font-size:15px">Reservoir Sw follows a saturation-height function above the free-water level, so the crest carries more oil than the flank</li>
-        <li style="font-size:15px">Step-out 2,616 ft from SANJUAN-01, ranked on kriged HCPT and haircut by uncertainty</li>
-      </ul>
-    </div>
-  </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">5</span></div>
-</div><div class="s">
-  <div class="k">05 · Value the step-out</div>
-  <h2>The proposed well, priced by the same certified function the whole platform uses</h2>
-  <div class="grid c3" style="margin-top:4px">
-    <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Offset · SANJUAN-01</div><div class="v">$92.8M</div><div class="l">NPV10 re-priced from scratch · IRR 63% · break-even $37</div></div>
-    <div class="tile"><div class="k">Step-out · unrisked</div><div class="v a">$103.4M</div><div class="l">HCPT 253.0 ft (1.06x the offset) · IRR 68% · payback 1.2 yr</div></div>
-    <div class="tile" style="border-color:#12232E"><div class="k" style="color:#12232E">Step-out · risked</div><div class="v">$40.3M</div><div class="l">HCPT 167.5 ft (0.70x) · IRR 34% · break-even $53</div></div>
-  </div>
-  <div class="grid" style="grid-template-columns: 1.3fr 1fr; gap: 22px; margin-top: 20px">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/stepout_value.png" style="height:3.0in;object-position:center 12%">
-    <div>
-      <div class="card"><div class="k">How it is priced</div><p>The offset's type curve is scaled by the ratio of hydrocarbon pore thickness at the step-out to the offset, the way screening teams scale type curves. Capex ($58M), opex and decline are the offset's. Both wells are priced by <b>calculate_npv10</b> and <b>calculate_break_even</b> in Unity Catalog at $79.18 WTI, 10 years, 10% discount.</p></div>
-      <p style="font-size:14px;margin-top:10px"><span class="badge live">Live</span> HCPT, WTI, the certified functions. <span class="badge ill">Illustrative</span> same well design and cost as the offset; productivity proportional to HCPT. Even risked for distance from control, the well clears its $58M capex with a $53 break-even.</p>
-    </div>
-  </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">6</span></div>
-</div><div class="s">
-  <div class="k">06 · How it is built</div>
+  <div class="k">03 · How it is built</div>
   <h2>One pipeline, one registry, one governance layer</h2>
   <div class="uc" style="margin-top:14px"><span class="lbl">UNITY CATALOG · oil_pump_monitor_catalog.subsurface_command</span>
     <div class="row" style="margin-bottom:12px"><span class="lane">LAND</span>
@@ -153,33 +98,10 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
       <div class="box" style="flex:1">Row filters + column masks <small>enforced for app, Genie, SQL</small></div>
     </div>
   </div>
-  <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command.</p>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">7</span></div>
+  <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command. Cost stays visible: serverless pipeline, a scale-to-zero endpoint with usage tracking and inference tables, and per-run token cost on the Supervisor.</p>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">4</span></div>
 </div><div class="s">
-  <div class="k">07 · Govern the data and the AI</div>
-  <h2>The same policy holds in the app, in Genie, and in the SQL editor, because it lives in Unity Catalog</h2>
-  <div class="grid c3" style="margin-top:6px">
-    <div class="card"><div class="k">Row filter</div><h3>JV partners see only their basin</h3><p>gold_zone_summary: an operator sees 84 rows across 4 basins; mapped as a San Juan JV partner, the same query returns 30 rows, San Juan only.</p></div>
-    <div class="card"><div class="k">Column mask</div><h3>Interpretation stays in-house</h3><p>Sw and hydrocarbon pore feet return NULL to the partner while net pay stays visible. One function, applied to every consumer.</p></div>
-    <div class="card"><div class="k">AI control</div><h3>Choice, cost, control</h3><p>Swap models through AI Gateway with no code change, see token cost per run, guardrails on every call, and agents running as the signed-in user.</p></div>
-  </div>
-  <div class="callout" style="margin-top:24px">Governance is not an app feature you have to trust; it is the platform. Ask Genie the same question as the partner and the masked columns stay masked.</div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">8</span></div>
-</div><div class="s">
-  <div class="k">08 · What is real, and what is illustrative</div>
-  <h2>Every screen says where its numbers come from</h2>
-  <table style="margin-top:4px">
-    <tr><th>Element</th><th>Status</th><th>Detail</th></tr>
-    <tr><td>Pipeline, model, endpoint, policies, Genie</td><td><span class="badge live">Live</span></td><td>Running on Databricks; job, endpoint and policies verified</td></tr>
-    <tr><td>Sonic predictions</td><td><span class="badge live">Live</span></td><td>Served model on every request; labelled Gardner fallback if cold</td></tr>
-    <tr><td>Voxel properties and step-out</td><td><span class="badge live">Live</span></td><td>Computed in the app from the wells' logs and tops on every load</td></tr>
-    <tr><td>Well logs</td><td><span class="badge ill">Synthetic</span></td><td>Physically coupled rock model (porosity, shale, fluids); your logs replace them in the pilot</td></tr>
-    <tr><td>Structural framework</td><td><span class="badge ill">Illustrative</span></td><td>Dip, closure and fault are modeled, honoured at the tops; a real horizon model plugs in</td></tr>
-    <tr><td>OSDU analog panels</td><td><span class="badge ill">Offline</span></td><td>Fed by a partner ADME workspace that is not live; the panels say so</td></tr>
-  </table>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">9</span></div>
-</div><div class="s">
-  <div class="k">09 · The path, and the ask</div>
+  <div class="k">04 · The path, and the ask</div>
   <h2>Prove it on one field with your logs, then reuse the template</h2>
   <div class="grid c4" style="margin-top:6px">
     <div class="tile"><div class="k" style="color:#566874">Weeks 1–2</div><h3 style="margin:6px 0">Land</h3><div class="l">Your LAS files, tops and headers for one field into a UC volume; same pipeline, your data.</div></div>
@@ -191,15 +113,18 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
     <div class="card" style="border-color:#EBC48A"><div class="k">Ask 1 · business</div><h3>Name one field and the person who owns its next-well decision</h3><p>Success is a step-out your team agrees is credible, with its value, in weeks instead of a quarter.</p></div>
     <div class="card" style="border-color:#9FCFEA"><div class="k b">Ask 2 · technical</div><h3>A two-week working session with petrophysics and data</h3><p>Map your logs, tops and OSDU records to the pipeline, and agree the acceptance bar for the sonic model.</p></div>
   </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">10</span></div>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">5</span></div>
 </div><div class="s">
-  <div class="k">Appendix · the app</div>
-  <h2>What you will see</h2>
-  <div class="grid c2" style="gap:16px">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/spatial_wells.png" style="height:2.75in">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/sonic.png" style="height:2.75in">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/stepout_value.png" style="height:2.75in">
-    <img class="shot" src="file:///Users/reishin.toolsi/drilling-command-center/screenshots/voxel_model.png" style="height:2.75in;object-position:center 60%">
-  </div>
-  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">11</span></div>
+  <div class="k">Appendix · What is real, and what is illustrative</div>
+  <h2>Every screen says where its numbers come from</h2>
+  <table style="margin-top:4px">
+    <tr><th>Element</th><th>Status</th><th>Detail</th></tr>
+    <tr><td>Pipeline, model, endpoint, policies, Genie</td><td><span class="badge live">Live</span></td><td>Running on Databricks; job, endpoint and policies verified</td></tr>
+    <tr><td>Sonic predictions</td><td><span class="badge live">Live</span></td><td>Served model on every request; labelled Gardner fallback if cold</td></tr>
+    <tr><td>Voxel properties and step-out</td><td><span class="badge live">Live</span></td><td>Computed in the app from the wells' logs and tops on every load</td></tr>
+    <tr><td>Well logs</td><td><span class="badge ill">Synthetic</span></td><td>Physically coupled rock model (porosity, shale, fluids); your logs replace them in the pilot</td></tr>
+    <tr><td>Structural framework</td><td><span class="badge ill">Illustrative</span></td><td>Dip, closure and fault are modeled, honoured at the tops; a real horizon model plugs in</td></tr>
+    <tr><td>OSDU analog panels</td><td><span class="badge ill">Offline</span></td><td>Fed by a partner ADME workspace that is not live; the panels say so</td></tr>
+  </table>
+  <div class="foot"><span class="src">Subsurface Intelligence · FE Bar build · synthetic well data</span><span class="src">6</span></div>
 </div></body></html>

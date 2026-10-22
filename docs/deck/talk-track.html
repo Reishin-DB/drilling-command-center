@@ -19,7 +19,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><b>Check the step-out price.</b> On <i>Value the Well</i> the card's chip must read <code>Live · certified UC function</code>. The dollar figures move with WTI each day: read them off the card, not from this page, if WTI has moved from <b>$79.18</b>.</li>
 <li><b>Open the app in a fresh browser window</b> so your session token carries the <code>sql</code> and Genie scopes. Check <i>Governance &amp; Audit</i>: the "As you" table must show 84 rows, not a scope message.</li>
 <li><b>Reset governance.</b> The policy button must read "Make me a San Juan JV partner"; if it reads "Restore operator view", click it.</li>
-<li><b>Have the deck open</b> on slide 2, and the two Genie questions ready to paste (section 3, step 8).</li>
+<li><b>Have the deck open</b> on slide 1, and the two Genie questions ready to paste (section 3, step 8).</li>
 <li><b>Reset the camera</b> on the voxel tab by switching tabs away and back if you rehearsed with it rotated.</li>
 </ul>
 <h2>1. Open and discover (3 min)</h2>
@@ -36,14 +36,15 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li>What would you need to see before you trusted a model to fill a missing curve, or to rank a location?</li>
 </ul>
 <p><b>Listen for, and reuse later:</b> the number of hand-offs, weeks or months of cycle time, wells drilled without sonic, distrust of black-box models, partners who need some data but not all. Play their words back at each step.</p>
-<h2>2. The value pitch (3 min) · deck slides 2 and 3</h2>
+<h2>2. The value pitch (3 min) · deck slides 1 to 3, then go straight to the app</h2>
 <h3>The 30-second version</h3>
 <blockquote>The data to place the next well already exists: logs, tops, headers, economics. It just lives in five places, and every gap, like a well with no sonic, becomes a side project. We put it on one governed platform. The missing sonic is filled by a model that beats the relation your petrophysicists use today, <b>3.6 times lower error on wells it never saw</b>. The logs become a <b>voxel geomodel in under a second</b> that proposes a step-out, risked for how far it is from control, and the platform's own certified NPV function prices it: <b>$103 million unrisked, $40 million risked</b>, against <b>$58 million</b> of capex. And everyone, including partners and AI assistants, sees only what they are entitled to.</blockquote>
 <h3>What is new here (say it this way)</h3>
 <blockquote>None of the techniques are exotic. Pseudo-sonic from other curves, kriging between wells, saturation-height functions: your team knows all of them. What is new is that they run <b>as one governed workflow on the platform where the data already is</b>: the pipeline, the model registry, the served model, the geomodel, the economics, and the AI, with Unity Catalog enforcing who sees what in every one of them.</blockquote>
 <p>Lead with "one governed workflow", not "a new algorithm". The first is hard to rebut; the second invites someone to name a vendor.</p>
-<h3>The value, in three levers</h3>
-<table><tr><th>Lever</th><th>What changes</th><th>The number</th></tr><tr><td><b>1. Fill the gaps</b></td><td>Missing sonic is predicted from the other curves, scored against Gardner on held-out wells</td><td><b>3.0 µs/ft</b> error vs <b>10.7</b> for Gardner refit on the same wells, <b>3.6x</b> lower, across <b>13 wells</b> and <b>31,189 samples</b> <b>[demo]</b></td></tr><tr><td><b>2. Place and price the well</b></td><td>The logs become a geomodel that ranks a step-out, states its uncertainty, and prices it with the certified UC function</td><td>Blanco step-out <b>2,616 ft</b> from SANJUAN-01 with <b>253 ft</b> of hydrocarbon pore thickness, <b>15%</b> above the control wells. <b>$103.4M NPV10 unrisked, $40.3M risked</b> (34% IRR, 2-year payback, <b>$53</b> break-even) on <b>$58M</b> capex at $79 WTI <b>[demo]</b></td></tr><tr><td><b>3. Decide faster, safely</b></td><td>Question to governed answer in one sitting, partners see only their basin</td><td>How long does a step-out proposal take today <b>[yours]</b>? JV partner sees <b>30 of 84</b> zone rows, Sw and HC pore feet masked <b>[demo]</b></td></tr></table>
+<h3>The value, in four levers (deck slide 3)</h3>
+<table><tr><th>Lever</th><th>What changes</th><th>The number</th></tr><tr><td><b>1. Fill the gaps</b></td><td>Missing sonic is predicted from the other curves, scored against Gardner on held-out wells</td><td><b>3.0 µs/ft</b> error vs <b>10.7</b> for Gardner refit on the same wells, <b>3.6x</b> lower, across <b>13 wells</b> and <b>31,189 samples</b> <b>[demo]</b></td></tr><tr><td><b>2. Place and price the well</b></td><td>The logs become a geomodel that ranks a step-out, states its uncertainty, and prices it with the certified UC function</td><td>Blanco step-out <b>2,616 ft</b> from SANJUAN-01 with <b>253 ft</b> of hydrocarbon pore thickness, <b>15%</b> above the control wells. <b>$103.4M NPV10 unrisked, $40.3M risked</b> (34% IRR, 2-year payback, <b>$53</b> break-even) on <b>$58M</b> capex at $79 WTI <b>[demo]</b></td></tr><tr><td><b>3. Decide sooner</b></td><td>Logs to a located, priced proposal in one sitting instead of a chain of hand-offs</td><td>Every <b>6 months</b> of delay costs <b>$1.9M</b> of the risked value (<b>$4.8M</b> unrisked), <b>4.7%</b> of NPV at 10% <b>[demo]</b>. How long does a step-out proposal take today <b>[yours]</b>?</td></tr><tr><td><b>4. Safe to share</b></td><td>Partners and AI see only what they are entitled to, enforced once in Unity Catalog</td><td>JV partner sees <b>30 of 84</b> zone rows, Sw and HC pore feet masked, in the app, Genie and SQL <b>[demo]</b></td></tr></table>
+<p>And the cost side: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline is serverless, and the Supervisor shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.</p>
 <h2>3. The demo (9 min)</h2>
 <p>Click path follows the left rail. For each step: <b>click</b>, <b>say</b>, <b>land the line</b>.</p>
 <h3>Start Here (20 s)</h3>
@@ -100,7 +101,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <h3>9. How It Works (30 s, or skip if short on time)</h3>
 <p><b>Click:</b> <i>How It Works</i>.</p>
 <p><b>Say:</b> "Volume, Lakeflow bronze, silver, gold, MLflow against the baselines, the model registry, Model Serving behind AI Gateway, then the app, Genie and the Supervisor. One Asset Bundle job rebuilds it."</p>
-<h2>4. Architecture and decisions (2 min) · deck slides 5 to 7</h2>
+<h2>4. Architecture and decisions (2 min) · deck slide 4, appendix slide 6 for questions</h2>
 <p>Say these as decisions you made, each with the reason:</p>
 <ul>
 <li><b>Held-out wells, not rows.</b> Samples from one well share a geology; a random split would leak and flatter the model.</li>
@@ -109,9 +110,9 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><b>Fallback is labelled.</b> If the endpoint is cold the app uses Gardner and says so on screen. No silent degradation.</li>
 <li><b>The geomodel states its uncertainty.</b> Kriging standard deviation is an attribute you can show, and the ranking is haircut by it.</li>
 <li><b>Policies live in Unity Catalog.</b> The row filter and column mask are SQL functions on the tables, so the app, Genie, and the SQL editor all obey them.</li>
-<li><b>Every screen tags Live vs Illustrative.</b> Slide 7 lists exactly what is synthetic.</li>
+<li><b>Every screen tags Live vs Illustrative.</b> Appendix slide 6 lists exactly what is synthetic.</li>
 </ul>
-<h2>5. The ask (1 min) · deck slide 8</h2>
+<h2>5. The ask (1 min) · deck slide 5</h2>
 <blockquote>Here's what I'd propose. <b>Business:</b> name one field and the person who owns its next-well decision. Success is a step-out your team agrees is credible, priced with your own type curves and costs, in weeks rather than a quarter. <b>Technical:</b> a two-week working session with petrophysics and data to map your logs, tops and OSDU records to this pipeline, and agree the bar the sonic model has to clear against your current method.</blockquote>
 <p>Then stop talking.</p>
 <h2>6. Objection handling</h2>

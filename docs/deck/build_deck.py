@@ -18,6 +18,9 @@ STEPS = json.loads((HERE / "stepouts.json").read_text())["stepouts"]
 SO = next(s for s in STEPS if s["field"] == "Blanco")
 V = json.loads((HERE / "stepout_value.json").read_text())
 VC = V["cases"]
+DELAY = 1 - 1 / 1.10 ** 0.5          # share of NPV lost to a 6-month delay at 10%
+DELAY_R = VC["risked"]["npv10_musd"] * DELAY
+DELAY_U = VC["stepout"]["npv10_musd"] * DELAY
 
 P = M["pooled"]
 CH = M["champion_scores"]
@@ -80,6 +83,11 @@ def slides():
   <div class="k" style="margin-top:1.25in">Databricks · upstream subsurface</div>
   <h1 style="font-size:60px;color:#fff;margin-top:14px">Subsurface Intelligence</h1>
   <p class="lead" style="color:#A6B7C2;font-size:22px">From raw well logs to a located, valued, governed drilling decision, on one platform, in one sitting.</p>
+  <div style="margin-top:0.45in;display:flex;gap:44px">
+    <div><div style="font-size:46px;font-weight:700;color:#F5A524">${VC['risked']['npv10_musd']:.0f}M</div><div style="font-size:15px;color:#A6B7C2">risked NPV10 of the next well,<br>found in data the team already has</div></div>
+    <div><div style="font-size:46px;font-weight:700;color:#2FD39B">{X_BETTER:.1f}x</div><div style="font-size:15px;color:#A6B7C2">lower error filling a missing<br>sonic log than today's method</div></div>
+    <div><div style="font-size:46px;font-weight:700;color:#4FB3E8">1 sitting</div><div style="font-size:15px;color:#A6B7C2">from raw logs to a located,<br>priced, governed well</div></div>
+  </div>
   <div style="margin-top:0.85in" class="row">
     <span class="chip" style="background:#132836;color:#EEF3F6;border-color:#2B4A5E">Locate</span><span class="arrow">→</span>
     <span class="chip" style="background:#132836;color:#EEF3F6;border-color:#2B4A5E">Read</span><span class="arrow">→</span>
@@ -104,7 +112,21 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">02 · What it does, end to end</div>
+  <div class="k">02 · The business value</div>
+  <h2>Four levers: a better well, found sooner, without blocked decisions, safe to share</h2>
+  <table style="margin-top:4px">
+    <tr><th style="width:23%">Lever</th><th style="width:40%">What changes</th><th>The number</th></tr>
+    <tr><td><b>1. Value per decision</b></td><td>The geomodel finds and ranks a step-out in data the team already has, and the certified NPV function prices it</td><td><b class="a">${VC['stepout']['npv10_musd']:.0f}M</b> NPV10 unrisked, <b>${VC['risked']['npv10_musd']:.0f}M</b> risked, {VC['risked']['irr_pct']:.0f}% IRR, ${VC['risked']['break_even_wti']:.0f} break-even on ${VC['risked']['capex_musd']:.0f}M capex <span class="badge live">demo</span></td></tr>
+    <tr><td><b>2. Speed to decision</b></td><td>Logs to a located, priced proposal in one sitting instead of a chain of exports and hand-offs</td><td>Every <b>6 months</b> of delay costs <b>${DELAY_R:.1f}M</b> of the risked value (<b>${DELAY_U:.1f}M</b> unrisked), {DELAY*100:.1f}% of NPV at 10% <span class="badge live">demo</span>. How long does a step-out proposal take today? <span class="badge ill">yours</span></td></tr>
+    <tr><td><b>3. No blocked decisions</b></td><td>Missing curves are filled in seconds by a served model scored against the method engineers trust</td><td><b class="g">{X_BETTER:.1f}x</b> lower error than calibrated Gardner on {M['n_wells']} held-out wells <span class="badge live">demo</span>. How many of your wells lack sonic? <span class="badge ill">yours</span></td></tr>
+    <tr><td><b>4. Safe to share</b></td><td>Partners and AI assistants see only what they are entitled to, enforced once in Unity Catalog</td><td>JV partner sees <b>30 of 84</b> rows, interpretation masked, in the app, Genie and SQL <span class="badge live">demo</span></td></tr>
+  </table>
+  <div class="callout" style="margin-top:22px">The cost side stays small: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline runs on serverless, and the AI shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.</div>
+  {foot()}
+</div>""")
+
+    out.append(f"""<div class="s">
+  <div class="k">03 · What it does, end to end</div>
   <h2>Six steps, one platform, every number traceable to a governed table</h2>
   <table style="margin-top:6px">
     <tr><th>#</th><th>Step</th><th>What happens</th><th>Databricks</th></tr>
@@ -119,7 +141,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">03 · Fill the missing sonic</div>
+  <div class="k">04 · Fill the missing sonic</div>
   <h2>The model has to beat the method engineers already trust, on wells it never saw</h2>
   <div class="grid" style="grid-template-columns: 1.05fr 1fr; gap: 26px; margin-top: 4px">
     <div>
@@ -145,7 +167,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">04 · Model the subsurface</div>
+  <div class="k">05 · Model the subsurface</div>
   <h2>A voxel geomodel from the logs in under a second, honest about what it does not know</h2>
   <div class="grid" style="grid-template-columns: 1.35fr 1fr; gap: 22px">
     <img class="shot" src="{shots}/voxel_model.png" style="height:4.7in">
@@ -167,7 +189,7 @@ def slides():
 
 
     out.append(f"""<div class="s">
-  <div class="k">05 · Value the step-out</div>
+  <div class="k">06 · Value the step-out</div>
   <h2>The proposed well, priced by the same certified function the whole platform uses</h2>
   <div class="grid c3" style="margin-top:4px">
     <div class="tile" style="border-color:#9AAAB5"><div class="k" style="color:#566874">Offset · {V['offset_well']}</div><div class="v">${VC['offset']['npv10_musd']:.1f}M</div><div class="l">NPV10 re-priced from scratch · IRR {VC['offset']['irr_pct']:.0f}% · break-even ${VC['offset']['break_even_wti']:.0f}</div></div>
@@ -184,7 +206,7 @@ def slides():
   {foot()}
 </div>""")
     out.append(f"""<div class="s">
-  <div class="k">06 · How it is built</div>
+  <div class="k">07 · How it is built</div>
   <h2>One pipeline, one registry, one governance layer</h2>
   <div class="uc" style="margin-top:14px"><span class="lbl">UNITY CATALOG · oil_pump_monitor_catalog.subsurface_command</span>
     <div class="row" style="margin-bottom:12px"><span class="lane">LAND</span>
@@ -206,12 +228,12 @@ def slides():
       <div class="box" style="flex:1">Row filters + column masks <small>enforced for app, Genie, SQL</small></div>
     </div>
   </div>
-  <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command.</p>
+  <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command. Cost stays visible: serverless pipeline, a scale-to-zero endpoint with usage tracking and inference tables, and per-run token cost on the Supervisor.</p>
   {foot(6)}
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">07 · Govern the data and the AI</div>
+  <div class="k">08 · Govern the data and the AI</div>
   <h2>The same policy holds in the app, in Genie, and in the SQL editor, because it lives in Unity Catalog</h2>
   <div class="grid c3" style="margin-top:6px">
     <div class="card"><div class="k">Row filter</div><h3>JV partners see only their basin</h3><p>gold_zone_summary: an operator sees 84 rows across 4 basins; mapped as a San Juan JV partner, the same query returns 30 rows, San Juan only.</p></div>
@@ -223,7 +245,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">08 · What is real, and what is illustrative</div>
+  <div class="k">09 · What is real, and what is illustrative</div>
   <h2>Every screen says where its numbers come from</h2>
   <table style="margin-top:4px">
     <tr><th>Element</th><th>Status</th><th>Detail</th></tr>
@@ -238,7 +260,7 @@ def slides():
 </div>""")
 
     out.append(f"""<div class="s">
-  <div class="k">09 · The path, and the ask</div>
+  <div class="k">10 · The path, and the ask</div>
   <h2>Prove it on one field with your logs, then reuse the template</h2>
   <div class="grid c4" style="margin-top:6px">
     <div class="tile"><div class="k" style="color:#566874">Weeks 1–2</div><h3 style="margin:6px 0">Land</h3><div class="l">Your LAS files, tops and headers for one field into a UC volume; same pipeline, your data.</div></div>
@@ -268,7 +290,22 @@ def slides():
 
 
 def main():
-    pages = slides()
+    # The demo shows the workflow, the sonic model, the voxel model, the step-out
+    # price and governance live, so the deck keeps only the frame around it:
+    # the decision, the value, how it is built, and the ask, with what is real
+    # vs illustrative held back as an appendix for questions.
+    allp = slides()
+    pick = lambda key: next(p for p in allp if key in p)
+    pages = [allp[0], pick("· The decision"), pick("· The business value"), pick("· How it is built"),
+             pick("· The path, and the ask"), pick("· What is real, and what is illustrative")]
+    import re
+    n = 0
+    def kick(m):
+        nonlocal n
+        n += 1
+        return f'<div class="k">{n:02d} · '
+    pages = [pages[0]] + [re.sub(r'<div class="k">\d\d · ', kick, p, count=1) for p in pages[1:-1]] + \
+            [re.sub(r'<div class="k">\d\d · ', '<div class="k">Appendix · ', pages[-1], count=1)]
     pages = [p.replace("@@PAGE@@", str(i + 1)) for i, p in enumerate(pages)]
     html = f"<!doctype html><html><head><meta charset='utf-8'><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap' rel='stylesheet'><style>{CSS}</style></head><body>{''.join(pages)}</body></html>"
     src = HERE / "deck.html"

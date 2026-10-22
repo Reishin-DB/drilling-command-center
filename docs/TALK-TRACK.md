@@ -13,7 +13,7 @@ Every number is tagged so you can defend it: **[demo]** computed live by the app
 - **Check the step-out price.** On *Value the Well* the card's chip must read `Live · certified UC function`. The dollar figures move with WTI each day: read them off the card, not from this page, if WTI has moved from **$79.18**.
 - **Open the app in a fresh browser window** so your session token carries the `sql` and Genie scopes. Check *Governance & Audit*: the "As you" table must show 84 rows, not a scope message.
 - **Reset governance.** The policy button must read "Make me a San Juan JV partner"; if it reads "Restore operator view", click it.
-- **Have the deck open** on slide 2, and the two Genie questions ready to paste (section 3, step 8).
+- **Have the deck open** on slide 1, and the two Genie questions ready to paste (section 3, step 8).
 - **Reset the camera** on the voxel tab by switching tabs away and back if you rehearsed with it rotated.
 
 ## 1. Open and discover (3 min)
@@ -31,7 +31,7 @@ Every number is tagged so you can defend it: **[demo]** computed live by the app
 
 **Listen for, and reuse later:** the number of hand-offs, weeks or months of cycle time, wells drilled without sonic, distrust of black-box models, partners who need some data but not all. Play their words back at each step.
 
-## 2. The value pitch (3 min) · deck slides 2 and 3
+## 2. The value pitch (3 min) · deck slides 1 to 3, then go straight to the app
 
 ### The 30-second version
 
@@ -43,13 +43,16 @@ Every number is tagged so you can defend it: **[demo]** computed live by the app
 
 Lead with "one governed workflow", not "a new algorithm". The first is hard to rebut; the second invites someone to name a vendor.
 
-### The value, in three levers
+### The value, in four levers (deck slide 3)
 
 | Lever | What changes | The number |
 |---|---|---|
 | **1. Fill the gaps** | Missing sonic is predicted from the other curves, scored against Gardner on held-out wells | **3.0 µs/ft** error vs **10.7** for Gardner refit on the same wells, **3.6x** lower, across **13 wells** and **31,189 samples** **[demo]** |
 | **2. Place and price the well** | The logs become a geomodel that ranks a step-out, states its uncertainty, and prices it with the certified UC function | Blanco step-out **2,616 ft** from SANJUAN-01 with **253 ft** of hydrocarbon pore thickness, **15%** above the control wells. **$103.4M NPV10 unrisked, $40.3M risked** (34% IRR, 2-year payback, **$53** break-even) on **$58M** capex at $79 WTI **[demo]** |
-| **3. Decide faster, safely** | Question to governed answer in one sitting, partners see only their basin | How long does a step-out proposal take today **[yours]**? JV partner sees **30 of 84** zone rows, Sw and HC pore feet masked **[demo]** |
+| **3. Decide sooner** | Logs to a located, priced proposal in one sitting instead of a chain of hand-offs | Every **6 months** of delay costs **$1.9M** of the risked value (**$4.8M** unrisked), **4.7%** of NPV at 10% **[demo]**. How long does a step-out proposal take today **[yours]**? |
+| **4. Safe to share** | Partners and AI see only what they are entitled to, enforced once in Unity Catalog | JV partner sees **30 of 84** zone rows, Sw and HC pore feet masked, in the app, Genie and SQL **[demo]** |
+
+And the cost side: the sonic model is a scale-to-zero endpoint metered through AI Gateway, the pipeline is serverless, and the Supervisor shows its cost per run. Value per decision is in the tens of millions; the platform cost per decision is not.
 
 ## 3. The demo (9 min)
 
@@ -118,7 +121,7 @@ Click path follows the left rail. For each step: **click**, **say**, **land the 
 **Click:** *How It Works*.
 **Say:** "Volume, Lakeflow bronze, silver, gold, MLflow against the baselines, the model registry, Model Serving behind AI Gateway, then the app, Genie and the Supervisor. One Asset Bundle job rebuilds it."
 
-## 4. Architecture and decisions (2 min) · deck slides 5 to 7
+## 4. Architecture and decisions (2 min) · deck slide 4, appendix slide 6 for questions
 
 Say these as decisions you made, each with the reason:
 
@@ -128,9 +131,9 @@ Say these as decisions you made, each with the reason:
 - **Fallback is labelled.** If the endpoint is cold the app uses Gardner and says so on screen. No silent degradation.
 - **The geomodel states its uncertainty.** Kriging standard deviation is an attribute you can show, and the ranking is haircut by it.
 - **Policies live in Unity Catalog.** The row filter and column mask are SQL functions on the tables, so the app, Genie, and the SQL editor all obey them.
-- **Every screen tags Live vs Illustrative.** Slide 7 lists exactly what is synthetic.
+- **Every screen tags Live vs Illustrative.** Appendix slide 6 lists exactly what is synthetic.
 
-## 5. The ask (1 min) · deck slide 8
+## 5. The ask (1 min) · deck slide 5
 
 > Here's what I'd propose. **Business:** name one field and the person who owns its next-well decision. Success is a step-out your team agrees is credible, priced with your own type curves and costs, in weeks rather than a quarter. **Technical:** a two-week working session with petrophysics and data to map your logs, tops and OSDU records to this pipeline, and agree the bar the sonic model has to clear against your current method.
 
