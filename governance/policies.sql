@@ -32,3 +32,30 @@ CREATE OR REPLACE FUNCTION ${schema}.mask_interpretation(v DOUBLE)
   RETURNS DOUBLE
   COMMENT 'Column mask: hides operator-interpreted saturation and hydrocarbon volume from JV partners.'
   RETURN CASE WHEN ${schema}.is_jv_partner() THEN NULL ELSE v END;
+
+-- Equipment and H2S: the same JV-partner policy, applied to the base tables so
+-- every view built on them (v_well_sour_band, well_equipment_integrity, the
+-- equipment metric view) inherits it for the querying user. H2S concentration,
+-- alarm levels and PPE stay visible: safety data is never masked from people
+-- who may be on location. What is masked is the operator's commercial and
+-- interpretive content: component upgrade capex, risk scoring, and free-text notes.
+
+CREATE OR REPLACE FUNCTION ${schema}.mask_commercial_dec32(v DECIMAL(3,2))
+  RETURNS DECIMAL(3,2)
+  COMMENT 'Column mask: hides operator upgrade capex from JV partners.'
+  RETURN CASE WHEN ${schema}.is_jv_partner() THEN NULL ELSE v END;
+
+CREATE OR REPLACE FUNCTION ${schema}.mask_interpretation_int(v INT)
+  RETURNS INT
+  COMMENT 'Column mask: hides operator risk scoring from JV partners.'
+  RETURN CASE WHEN ${schema}.is_jv_partner() THEN NULL ELSE v END;
+
+CREATE OR REPLACE FUNCTION ${schema}.mask_interpretation_str(v STRING)
+  RETURNS STRING
+  COMMENT 'Column mask: hides operator free-text interpretation from JV partners.'
+  RETURN CASE WHEN ${schema}.is_jv_partner() THEN NULL ELSE v END;
+
+ALTER TABLE ${schema}.well_h2s_profile SET ROW FILTER ${schema}.basin_filter ON (basin);
+ALTER TABLE ${schema}.well_h2s_profile ALTER COLUMN notes SET MASK ${schema}.mask_interpretation_str;
+ALTER TABLE ${schema}.equipment_component_spec ALTER COLUMN capex_musd SET MASK ${schema}.mask_commercial_dec32;
+ALTER TABLE ${schema}.equipment_component_spec ALTER COLUMN risk_score SET MASK ${schema}.mask_interpretation_int;

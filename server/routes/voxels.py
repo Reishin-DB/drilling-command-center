@@ -40,3 +40,10 @@ async def value_stepout(well_id: str):
 async def voxel_model(well_id: str):
     """Voxel property model for the anchor well's field (cached per set of wells)."""
     return await build_model(well_id)
+
+
+@router.post("/voxels/decision_brief/{well_id}")
+async def brief(well_id: str):
+    """Plain-English 'why this well, why now' brief, grounded in governed facts and logged to UC."""
+    from server.action_plan import decision_brief
+    return await decision_brief(well_id)

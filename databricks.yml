@@ -82,6 +82,31 @@ resources:
             python_file: ./ml/train_synthetic_sonic.py
             parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}"]
 
+    drift_check:
+      name: subsurface-sonic-drift-check
+      description: "Score the served synthetic-sonic model on every well with measured sonic against its validated accuracy and calibrated Gardner; retrain via subsurface-command-build when a well drifts."
+      schedule:
+        quartz_cron_expression: "0 0 6 ? * MON"
+        timezone_id: "America/Chicago"
+        pause_status: PAUSED
+      parameters:
+        - name: simulate_well
+          default: ""
+      environments:
+        - environment_key: ml
+          spec:
+            environment_version: "3"
+            dependencies:
+              - numpy
+              - pandas
+              - databricks-sdk>=0.40
+      tasks:
+        - task_key: drift_check
+          environment_key: ml
+          spark_python_task:
+            python_file: ./ml/drift_check.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}", "--trigger", "--simulate-well", "{{job.parameters.simulate_well}}"]
+
 # The app itself deploys with `databricks apps deploy` from a clean _deploy/ copy
 # (see DEPLOY.md); the bundle owns the data and ML layer. No development-mode
 # name prefixing: the pipeline, volume path, and app all use the same schema.

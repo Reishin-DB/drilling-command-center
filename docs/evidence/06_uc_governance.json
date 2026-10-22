@@ -35,6 +35,43 @@
       "hc_pore_visible": "0"
     }
   ],
+  "equipment_h2s_query": "SELECT 'well_equipment_integrity (view)' AS object, count(*) AS rows_, concat_ws(',', sort_array(collect_set(basin))) AS basins, count(h2s_ppm) AS h2s_ppm_visible, count(upgrade_capex_musd) AS capex_visible, count(risk_score) AS risk_score_visible FROM oil_pump_monitor_catalog.subsurface_command.well_equipment_integrity UNION ALL SELECT 'well_h2s_profile (table)', count(*), concat_ws(',', sort_array(collect_set(basin))), count(h2s_ppm_last_measured), NULL, count(notes) FROM oil_pump_monitor_catalog.subsurface_command.well_h2s_profile",
+  "equipment_h2s_operator": [
+    {
+      "object": "well_equipment_integrity (view)",
+      "rows_": "48",
+      "basins": "East Texas,Green River,Permian Basin,San Juan",
+      "h2s_ppm_visible": "48",
+      "capex_visible": "48",
+      "risk_score_visible": "48"
+    },
+    {
+      "object": "well_h2s_profile (table)",
+      "rows_": "6",
+      "basins": "East Texas,Green River,Permian Basin,San Juan",
+      "h2s_ppm_visible": "6",
+      "capex_visible": null,
+      "risk_score_visible": "6"
+    }
+  ],
+  "equipment_h2s_partner": [
+    {
+      "object": "well_equipment_integrity (view)",
+      "rows_": "16",
+      "basins": "San Juan",
+      "h2s_ppm_visible": "16",
+      "capex_visible": "0",
+      "risk_score_visible": "0"
+    },
+    {
+      "object": "well_h2s_profile (table)",
+      "rows_": "2",
+      "basins": "San Juan",
+      "h2s_ppm_visible": "2",
+      "capex_visible": null,
+      "risk_score_visible": "0"
+    }
+  ],
   "partner_sample_rows": [
     {
       "well_id": "SANJUAN-01",
@@ -107,16 +144,28 @@
   ],
   "policies": [
     {
-      "routine_name": "mask_interpretation",
-      "comment": "Column mask: hides operator-interpreted saturation and hydrocarbon volume from JV partners."
+      "routine_name": "mask_interpretation_int",
+      "comment": "Column mask: hides operator risk scoring from JV partners."
+    },
+    {
+      "routine_name": "mask_interpretation_str",
+      "comment": "Column mask: hides operator free-text interpretation from JV partners."
     },
     {
       "routine_name": "basin_filter",
       "comment": "Row filter: JV partners only see the basins they are party to."
     },
     {
+      "routine_name": "mask_commercial_dec32",
+      "comment": "Column mask: hides operator upgrade capex from JV partners."
+    },
+    {
       "routine_name": "is_jv_partner",
       "comment": "True when the caller is mapped to the jv_partner persona."
+    },
+    {
+      "routine_name": "mask_interpretation",
+      "comment": "Column mask: hides operator-interpreted saturation and hydrocarbon volume from JV partners."
     }
   ]
 }

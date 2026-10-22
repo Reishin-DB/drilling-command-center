@@ -27,6 +27,11 @@ QUERY = (
     f"FROM {CATALOG}.{SCHEMA}.gold_zone_summary\n"
     f"GROUP BY basin ORDER BY basin"
 )
+EQUIP = (
+    f"SELECT 'Equipment integrity' AS object, count(*) AS rows_, count(h2s_ppm) AS h2s_visible, count(upgrade_capex_musd) AS capex_visible, "
+    f"count(risk_score) AS interp_visible FROM {CATALOG}.{SCHEMA}.well_equipment_integrity "
+    f"UNION ALL SELECT 'H2S profile', count(*), count(h2s_ppm_last_measured), NULL, count(notes) FROM {CATALOG}.{SCHEMA}.well_h2s_profile"
+)
 WHO = f"SELECT current_user() AS principal, {FQS}.is_jv_partner() AS jv_partner"
 POLICY_SQL = (
     f"ALTER TABLE {CATALOG}.{SCHEMA}.gold_zone_summary\n"
@@ -84,11 +89,11 @@ def _run_rest(statements: list[str], token: str) -> list[list[dict]]:
 
 def _view(token: str | None) -> dict:
     try:
-        who, rows = _run_rest([WHO, QUERY], token) if token else _run([(WHO, None), (QUERY, None)], None)
-        return {"principal": who[0]["principal"], "jv_partner": bool(who[0]["jv_partner"]), "rows": rows,
+        who, rows, equip = _run_rest([WHO, QUERY, EQUIP], token) if token else _run([(WHO, None), (QUERY, None), (EQUIP, None)], None)
+        return {"principal": who[0]["principal"], "jv_partner": bool(who[0]["jv_partner"]), "rows": rows, "equipment": equip,
                 "total_rows": sum(r["zone_rows"] for r in rows), "error": None}
     except Exception as e:
-        return {"principal": None, "jv_partner": None, "rows": [], "total_rows": 0, "error": f"{type(e).__name__}: {str(e)[:240]}"}
+        return {"principal": None, "jv_partner": None, "rows": [], "equipment": [], "total_rows": 0, "error": f"{type(e).__name__}: {str(e)[:240]}"}
 
 
 def _identity(request: Request) -> tuple[str | None, str | None]:

@@ -1,0 +1,458 @@
+{
+  "datasets": [
+    {
+      "name": "h2s",
+      "displayName": "H2S profile",
+      "queryLines": [
+        "SELECT well_id, basin, h2s_risk_level, CAST(h2s_ppm_last_measured AS DOUBLE) AS h2s_ppm, h2s_measurement_date, datediff(current_date(), h2s_measurement_date) AS days_since_sample, last_safety_audit_date, datediff(current_date(), last_safety_audit_date) AS days_since_audit, safety_status, ppe_level FROM oil_pump_monitor_catalog.subsurface_command.well_h2s_profile"
+      ]
+    },
+    {
+      "name": "equip",
+      "displayName": "Sour-service components",
+      "queryLines": [
+        "SELECT well_id, component_name, required_spec, degradation_mechanism, risk_score, CAST(upgrade_capex_musd AS DOUBLE) AS upgrade_capex_musd, upgrade_lead_weeks FROM oil_pump_monitor_catalog.subsurface_command.well_equipment_integrity WHERE upgrade_required"
+      ]
+    },
+    {
+      "name": "inv",
+      "displayName": "Sour-critical inventory",
+      "queryLines": [
+        "SELECT part_id, part_name, category, on_hand_qty, CAST(daily_burn AS DOUBLE) AS daily_burn, round(on_hand_qty / daily_burn, 1) AS days_of_cover, lead_time_days, supplier FROM oil_pump_monitor_catalog.subsurface_command.drilling_inventory WHERE category IN ('Wellhead', 'Casing')"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "main",
+      "displayName": "Sour-service readiness",
+      "layout": [
+        {
+          "widget": {
+            "name": "hdr",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Sour-service readiness\n",
+                "H2S, equipment and inventory for sour wells, from the governed Unity Catalog tables the engineer's morning action items are built on. Filter to **EASTTEXAS-05** (12,000 ppm) for the extreme-band well."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "ppm",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "h2s",
+                  "fields": [
+                    {
+                      "name": "well_id",
+                      "expression": "`well_id`"
+                    },
+                    {
+                      "name": "sum(h2s_ppm)",
+                      "expression": "SUM(`h2s_ppm`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "well_id",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "well_id"
+                },
+                "y": {
+                  "fieldName": "sum(h2s_ppm)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "h2s_ppm"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "H2S last measured (ppm)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "lead",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "equip",
+                  "fields": [
+                    {
+                      "name": "component_name",
+                      "expression": "`component_name`"
+                    },
+                    {
+                      "name": "sum(upgrade_lead_weeks)",
+                      "expression": "SUM(`upgrade_lead_weeks`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "component_name",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "component_name"
+                },
+                "y": {
+                  "fieldName": "sum(upgrade_lead_weeks)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "upgrade_lead_weeks"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Upgrade lead time by component (weeks, all sour wells)"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "h2st",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "h2s",
+                  "fields": [
+                    {
+                      "name": "well_id",
+                      "expression": "`well_id`"
+                    },
+                    {
+                      "name": "h2s_ppm",
+                      "expression": "`h2s_ppm`"
+                    },
+                    {
+                      "name": "days_since_sample",
+                      "expression": "`days_since_sample`"
+                    },
+                    {
+                      "name": "days_since_audit",
+                      "expression": "`days_since_audit`"
+                    },
+                    {
+                      "name": "safety_status",
+                      "expression": "`safety_status`"
+                    },
+                    {
+                      "name": "ppe_level",
+                      "expression": "`ppe_level`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "well_id",
+                    "displayName": "Well",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Well"
+                  },
+                  {
+                    "fieldName": "h2s_ppm",
+                    "displayName": "H2S ppm",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "H2S ppm"
+                  },
+                  {
+                    "fieldName": "days_since_sample",
+                    "displayName": "Days since sample",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Days since sample"
+                  },
+                  {
+                    "fieldName": "days_since_audit",
+                    "displayName": "Days since audit",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Days since audit"
+                  },
+                  {
+                    "fieldName": "safety_status",
+                    "displayName": "Safety status",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Safety status"
+                  },
+                  {
+                    "fieldName": "ppe_level",
+                    "displayName": "PPE",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "PPE"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "H2S profile and overdue checks"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "eqt",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "equip",
+                  "fields": [
+                    {
+                      "name": "well_id",
+                      "expression": "`well_id`"
+                    },
+                    {
+                      "name": "component_name",
+                      "expression": "`component_name`"
+                    },
+                    {
+                      "name": "required_spec",
+                      "expression": "`required_spec`"
+                    },
+                    {
+                      "name": "risk_score",
+                      "expression": "`risk_score`"
+                    },
+                    {
+                      "name": "upgrade_capex_musd",
+                      "expression": "`upgrade_capex_musd`"
+                    },
+                    {
+                      "name": "upgrade_lead_weeks",
+                      "expression": "`upgrade_lead_weeks`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "well_id",
+                    "displayName": "Well",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Well"
+                  },
+                  {
+                    "fieldName": "component_name",
+                    "displayName": "Component",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Component"
+                  },
+                  {
+                    "fieldName": "required_spec",
+                    "displayName": "Required spec",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Required spec"
+                  },
+                  {
+                    "fieldName": "risk_score",
+                    "displayName": "Risk",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Risk"
+                  },
+                  {
+                    "fieldName": "upgrade_capex_musd",
+                    "displayName": "Capex $M",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Capex $M"
+                  },
+                  {
+                    "fieldName": "upgrade_lead_weeks",
+                    "displayName": "Lead wk",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Lead wk"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sour-service components requiring upgrade"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "invt",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "inv",
+                  "fields": [
+                    {
+                      "name": "part_id",
+                      "expression": "`part_id`"
+                    },
+                    {
+                      "name": "part_name",
+                      "expression": "`part_name`"
+                    },
+                    {
+                      "name": "on_hand_qty",
+                      "expression": "`on_hand_qty`"
+                    },
+                    {
+                      "name": "days_of_cover",
+                      "expression": "`days_of_cover`"
+                    },
+                    {
+                      "name": "lead_time_days",
+                      "expression": "`lead_time_days`"
+                    },
+                    {
+                      "name": "supplier",
+                      "expression": "`supplier`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "part_id",
+                    "displayName": "Part",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Part"
+                  },
+                  {
+                    "fieldName": "part_name",
+                    "displayName": "Name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Name"
+                  },
+                  {
+                    "fieldName": "on_hand_qty",
+                    "displayName": "On hand",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "On hand"
+                  },
+                  {
+                    "fieldName": "days_of_cover",
+                    "displayName": "Days of cover",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Days of cover"
+                  },
+                  {
+                    "fieldName": "lead_time_days",
+                    "displayName": "Lead days",
+                    "type": "float",
+                    "displayAs": "number",
+                    "title": "Lead days"
+                  },
+                  {
+                    "fieldName": "supplier",
+                    "displayName": "Supplier",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Supplier"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Sour-critical inventory: days of cover vs lead time"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ]
+    }
+  ]
+}

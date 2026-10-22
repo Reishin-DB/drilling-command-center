@@ -29,8 +29,14 @@ export default function GenieSidebar() {
   const abortRef = useRef<AbortController | null>(null)
 
   // The header "Ask the Data" button opens the sidebar from anywhere.
+  // A caller can also hand over a question, e.g. "Ask Genie why" on an engineer action item.
+  const askRef = useRef<(t: string) => void>(() => {})
   useEffect(() => {
-    const onOpen = () => setOpen(true)
+    const onOpen = (e: Event) => {
+      setOpen(true)
+      const question = (e as CustomEvent).detail?.question
+      if (question) setTimeout(() => askRef.current(question), 50)
+    }
     window.addEventListener('open-genie', onOpen)
     return () => window.removeEventListener('open-genie', onOpen)
   }, [])
@@ -97,6 +103,8 @@ export default function GenieSidebar() {
       setLoad(false); setStage(null); abortRef.current = null
     }
   }
+
+  askRef.current = ask
 
   function cancel() {
     abortRef.current?.abort()

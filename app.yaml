@@ -31,6 +31,9 @@ env:
   - name: SONIC_ENDPOINT
     value: "subsurface-synthetic-sonic"
 
+  - name: SOUR_DASHBOARD_URL
+    value: "https://fevm-oil-pump-monitor.cloud.databricks.com/dashboardsv3/01f1ce2cf499141a9fc2e28257d500ac/published"
+
 user_api_scopes:
   - sql
   - dashboards.genie

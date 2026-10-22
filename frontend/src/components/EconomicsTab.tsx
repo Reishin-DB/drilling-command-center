@@ -1,5 +1,6 @@
 import { wtiSourceLabel } from '../wti'
 import StepOutValueCard from './StepOutValueCard'
+import DecisionBriefCard from './DecisionBriefCard'
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, ReferenceLine } from 'recharts'
 
@@ -68,6 +69,7 @@ export default function EconomicsTab({ wellId, onNavigate }: { wellId: string; o
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <StepOutValueCard wellId={wellId} onNavigate={onNavigate} />
+      <DecisionBriefCard wellId={wellId} />
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12,
       }}>

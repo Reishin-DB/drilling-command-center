@@ -121,3 +121,35 @@ def test_saturation_height_function():
     assert _shf(-10) == 1.0                      # below the free-water level: water
     assert _shf(0.0) == 1.0
     assert SWIRR < float(_shf(500)) < float(_shf(50)) < 1.0   # drier with height
+
+
+# ── Engineer rules guard and the grounding validator ──────────────────────
+def _load(path, start, end, ns):
+    src = (ROOT / path).read_text()
+    exec(compile(src[src.index(start):src.index(end)], path, "exec"), ns)
+    return ns
+
+
+def test_rule_sql_guard_allows_select_with_semicolons_in_literals():
+    import re
+    ns = _load("server/routes/engineer.py", "def _safe_select", "def _links", {"re": re})
+    assert ns["_safe_select"]("SELECT concat('a); b', x) FROM t").startswith("SELECT")
+
+
+@pytest.mark.parametrize("bad", ["DELETE FROM t", "SELECT 1; DROP TABLE t", "SELECT 1 FROM t; DELETE FROM t",
+                                 "UPDATE t SET x = 1", "SELECT * FROM t WHERE 1 = 1 GRANT"])
+def test_rule_sql_guard_blocks_writes(bad):
+    import re
+    ns = _load("server/routes/engineer.py", "def _safe_select", "def _links", {"re": re})
+    with pytest.raises(ValueError):
+        ns["_safe_select"](bad)
+
+
+def test_validator_ignores_ids_and_catches_invented_figures():
+    import re
+    ns = _load("server/action_plan.py", "_NUM =", "async def decision_brief", {"re": re})
+    facts = [{"id": "A1", "label": "audit", "value": "Last audit 2025-10-01, 386 days ago; 12000.0 ppm"}]
+    ok = ns["validate"]("**EASTTEXAS-05** audit is 386 days old at 12000.0 ppm [A1]", facts)
+    assert ok["grounded"] and ok["unsupported"] == [] and ok["facts_cited"] == ["A1"]
+    bad = ns["validate"]("about 400 days [A1]", facts)
+    assert not bad["grounded"] and bad["unsupported"] == ["400"]

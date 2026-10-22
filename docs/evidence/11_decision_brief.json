@@ -1,0 +1,99 @@
+{
+  "brief_id": "e4b05aa3-795a-4a35-9ff8-72be4e22493a",
+  "well": "SANJUAN-01",
+  "plan": "**Recommendation**\n\nApprove the step-out well 2,616 ft from SANJUAN-01 with $58M capex authorization [F1, F6].\n\n**Why this well**\n\n- Delivers $40.3M NPV10 at 34% IRR with 2.0 yr payback and $53 break-even WTI, well below current $79.18 strip [F5, F6].\n- Voxel model predicts 253.0 ft hydrocarbon pore thickness vs 238.6 ft at SANJUAN-01, risked to 167.5 ft for distance from control [F2, F3].\n- Synthetic-sonic model demonstrates 3.0 us/ft accuracy on held-out wells, significantly outperforming calibrated Gardner at 10.7 us/ft [F9].\n\n**Why now**\n\n- Six-month delay costs $1.9M (4.7% of risked NPV) due to discounting [F8].\n- Structural closure of 158 ft and 140 ft normal fault support hydrocarbon column with free-water level at 9275 ft [F10].\n\n**Risks and how they are controlled**\n\n- Subsurface uncertainty of 0.68 (moderate-high on 0-1 scale) reflects 2,616 ft distance from control; risked economics haircut pore thickness from 253.0 ft to 167.5 ft [F3, F2].\n- H2S risk is low at 1.2 ppm with no NACE MR0175 requirement and $0.00M sour-service upgrade [F11, F12].\n\n**Next actions**\n\n- **Asset team**: Finalize drilling AFE at $58M capex using offset well design [F6].\n- **VP of Engineering**: Confirm wellbore design incorporates 140 ft fault crossing and free-water level at 9275 ft [F10].\n- **SVP Digital Operations**: Commission post-drill voxel model calibration to reduce uncertainty for future step-outs [F3].",
+  "facts": [
+    {
+      "id": "F1",
+      "label": "Proposed step-out location",
+      "value": "2,616 ft from SANJUAN-01 in the Blanco field, San Juan"
+    },
+    {
+      "id": "F2",
+      "label": "Hydrocarbon pore thickness at the step-out (voxel model)",
+      "value": "253.0 ft vs 238.6 ft at SANJUAN-01"
+    },
+    {
+      "id": "F3",
+      "label": "Risked hydrocarbon pore thickness (haircut for distance from control)",
+      "value": "167.5 ft; model uncertainty 0.68 on a 0 to 1 scale (0 at a well, 1 with no nearby control), so higher means less certain"
+    },
+    {
+      "id": "F4",
+      "label": "Step-out value, unrisked (certified calculate_npv10)",
+      "value": "$103.4M NPV10, 68% IRR, 1.2 yr payback"
+    },
+    {
+      "id": "F5",
+      "label": "Step-out value, risked (certified calculate_npv10)",
+      "value": "$40.3M NPV10, 34% IRR, 2.0 yr payback, $53 break-even WTI"
+    },
+    {
+      "id": "F6",
+      "label": "Capex and price assumptions",
+      "value": "$58M capex (offset well design), WTI $79.18"
+    },
+    {
+      "id": "F7",
+      "label": "Offset well priced the same way",
+      "value": "SANJUAN-01 $92.8M NPV10"
+    },
+    {
+      "id": "F8",
+      "label": "Cost of a six-month delay (10% discount)",
+      "value": "$1.9M of the risked value, $4.8M unrisked, 4.7% of NPV"
+    },
+    {
+      "id": "F9",
+      "label": "Synthetic-sonic model accuracy on held-out wells",
+      "value": "3.0 us/ft vs 10.7 us/ft for calibrated Gardner"
+    },
+    {
+      "id": "F10",
+      "label": "Structural setting",
+      "value": "158 ft closure, 140 ft normal fault, free-water level 9275 ft"
+    },
+    {
+      "id": "F11",
+      "label": "Offset well H2S profile (Unity Catalog)",
+      "value": "low risk, 1.2 ppm last measured, NACE MR0175 required: False"
+    },
+    {
+      "id": "F12",
+      "label": "Sour-service equipment for that severity band",
+      "value": "$0.00M upgrade capex, 0 weeks longest lead time"
+    }
+  ],
+  "validation": {
+    "figures_checked": 24,
+    "unsupported": [],
+    "facts_cited": [
+      "F3",
+      "F6",
+      "F8",
+      "F9",
+      "F10"
+    ],
+    "grounded": true
+  },
+  "attempts": 1,
+  "first_attempt_unsupported": [],
+  "served_by": "databricks-claude-sonnet-4-5",
+  "fell_back": false,
+  "usage": {
+    "cache_read_input_tokens": 0,
+    "completion_tokens": 495,
+    "prompt_tokens": 686,
+    "total_tokens": 1181,
+    "cache_creation_input_tokens": 0
+  },
+  "logged_to": "oil_pump_monitor_catalog.subsurface_command.gold_action_plans",
+  "log_error": null,
+  "generated": "2026-10-22T16:02:46.468181+00:00",
+  "log_rows": [
+    {
+      "briefs": "4",
+      "grounded": "3"
+    }
+  ]
+}

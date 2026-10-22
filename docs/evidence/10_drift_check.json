@@ -1,0 +1,405 @@
+{
+  "job": "subsurface-sonic-drift-check",
+  "checks": [
+    {
+      "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+      "checked_at": "2026-10-22T15:02:18.945Z",
+      "wells": 13,
+      "drifted": [],
+      "action": "none",
+      "rows": [
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "EASTTEXAS-05",
+          "simulated": "false",
+          "n_samples": "1203",
+          "model_mae": "2.85",
+          "gardner_mae": "10.297",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "ET-OFFSET-08",
+          "simulated": "false",
+          "n_samples": "2396",
+          "model_mae": "3.28",
+          "gardner_mae": "10.239",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "GR-OFFSET-04",
+          "simulated": "false",
+          "n_samples": "2385",
+          "model_mae": "3.218",
+          "gardner_mae": "10.895",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "GR-OFFSET-05",
+          "simulated": "false",
+          "n_samples": "2395",
+          "model_mae": "2.538",
+          "gardner_mae": "10.44",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "PB-OFFSET-06",
+          "simulated": "false",
+          "n_samples": "2392",
+          "model_mae": "2.614",
+          "gardner_mae": "9.907",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "PB-OFFSET-07",
+          "simulated": "false",
+          "n_samples": "2389",
+          "model_mae": "2.521",
+          "gardner_mae": "10.888",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "PERMIAN-04",
+          "simulated": "false",
+          "n_samples": "1218",
+          "model_mae": "2.628",
+          "gardner_mae": "10.888",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "PERMIAN-06",
+          "simulated": "false",
+          "n_samples": "1206",
+          "model_mae": "2.76",
+          "gardner_mae": "10.356",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "SANJUAN-01",
+          "simulated": "false",
+          "n_samples": "1212",
+          "model_mae": "2.595",
+          "gardner_mae": "11.229",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "SANJUAN-02",
+          "simulated": "false",
+          "n_samples": "2388",
+          "model_mae": "4.212",
+          "gardner_mae": "11.547",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "SJ-OFFSET-01",
+          "simulated": "false",
+          "n_samples": "2357",
+          "model_mae": "3.723",
+          "gardner_mae": "10.85",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "SJ-OFFSET-02",
+          "simulated": "false",
+          "n_samples": "1207",
+          "model_mae": "2.738",
+          "gardner_mae": "10.307",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        },
+        {
+          "check_id": "e6333cc4-fe58-4a39-a630-484d93049556",
+          "checked_at": "2026-10-22T15:02:18.945Z",
+          "well_id": "SJ-OFFSET-03",
+          "simulated": "false",
+          "n_samples": "2396",
+          "model_mae": "2.493",
+          "gardner_mae": "11.135",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "none",
+          "model_version": "2"
+        }
+      ]
+    },
+    {
+      "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+      "checked_at": "2026-10-22T15:03:31.489Z",
+      "wells": 14,
+      "drifted": [
+        "NEW-SANJUAN-01-NPHI+0.12"
+      ],
+      "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+      "rows": [
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "EASTTEXAS-05",
+          "simulated": "false",
+          "n_samples": "1203",
+          "model_mae": "2.85",
+          "gardner_mae": "10.297",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "ET-OFFSET-08",
+          "simulated": "false",
+          "n_samples": "2396",
+          "model_mae": "3.28",
+          "gardner_mae": "10.239",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "GR-OFFSET-04",
+          "simulated": "false",
+          "n_samples": "2385",
+          "model_mae": "3.218",
+          "gardner_mae": "10.895",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "GR-OFFSET-05",
+          "simulated": "false",
+          "n_samples": "2395",
+          "model_mae": "2.538",
+          "gardner_mae": "10.44",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "NEW-SANJUAN-01-NPHI+0.12",
+          "simulated": "true",
+          "n_samples": "1212",
+          "model_mae": "5.376",
+          "gardner_mae": "11.229",
+          "degrade_bar": "4.504",
+          "drift": "true",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "PB-OFFSET-06",
+          "simulated": "false",
+          "n_samples": "2392",
+          "model_mae": "2.614",
+          "gardner_mae": "9.907",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "PB-OFFSET-07",
+          "simulated": "false",
+          "n_samples": "2389",
+          "model_mae": "2.521",
+          "gardner_mae": "10.888",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "PERMIAN-04",
+          "simulated": "false",
+          "n_samples": "1218",
+          "model_mae": "2.628",
+          "gardner_mae": "10.888",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "PERMIAN-06",
+          "simulated": "false",
+          "n_samples": "1206",
+          "model_mae": "2.76",
+          "gardner_mae": "10.356",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "SANJUAN-01",
+          "simulated": "false",
+          "n_samples": "1212",
+          "model_mae": "2.595",
+          "gardner_mae": "11.229",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "SANJUAN-02",
+          "simulated": "false",
+          "n_samples": "2388",
+          "model_mae": "4.212",
+          "gardner_mae": "11.547",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "SJ-OFFSET-01",
+          "simulated": "false",
+          "n_samples": "2357",
+          "model_mae": "3.723",
+          "gardner_mae": "10.85",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "SJ-OFFSET-02",
+          "simulated": "false",
+          "n_samples": "1207",
+          "model_mae": "2.738",
+          "gardner_mae": "10.307",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        },
+        {
+          "check_id": "0666555a-16b4-4884-8149-41b641d99a01",
+          "checked_at": "2026-10-22T15:03:31.489Z",
+          "well_id": "SJ-OFFSET-03",
+          "simulated": "false",
+          "n_samples": "2396",
+          "model_mae": "2.493",
+          "gardner_mae": "11.135",
+          "degrade_bar": "4.504",
+          "drift": "false",
+          "action": "retrain triggered: subsurface-command-build run 753993907816317 (train_serve_score)",
+          "model_version": "2"
+        }
+      ]
+    }
+  ],
+  "triggered_retrain": {
+    "run_id": 753993907816317,
+    "result": "SUCCESS",
+    "start": "2026-10-22 15:03:35 UTC",
+    "end": "2026-10-22 15:16:55 UTC",
+    "tasks": [
+      {
+        "task_key": "train_serve_score",
+        "result": "SUCCESS"
+      },
+      {
+        "task_key": "land_raw",
+        "result": "DISABLED"
+      },
+      {
+        "task_key": "medallion",
+        "result": "DISABLED"
+      },
+      {
+        "task_key": "policies",
+        "result": "DISABLED"
+      }
+    ]
+  },
+  "champion_after": {
+    "version": 3,
+    "run_id": "b9412f716a8b4cf5bdbfa5ffccb21843",
+    "created": "2026-10-22 15:05:08 UTC"
+  }
+}

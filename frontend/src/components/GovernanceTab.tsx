@@ -612,7 +612,7 @@ function Panel({ title, subtitle, children }: { title: string; subtitle?: string
 
 
 // ── Live Unity Catalog policy: same query as the app SP and as you (OBO) ────
-interface PolicyView { principal: string | null; jv_partner: boolean | null; rows: { basin: string; zone_rows: number; sw_visible: number; hc_pore_visible: number; net_pay_ft: number }[]; total_rows: number; error: string | null }
+interface PolicyView { principal: string | null; jv_partner: boolean | null; equipment?: { object: string; rows_: number; h2s_visible: number; capex_visible: number | null; interp_visible: number }[]; rows: { basin: string; zone_rows: number; sw_visible: number; hc_pore_visible: number; net_pay_ft: number }[]; total_rows: number; error: string | null }
 interface PolicyResp { user: string | null; query: string; policy_sql: string; partner_basin: string; app_sp: PolicyView; you: PolicyView }
 
 function UcPolicyPanel() {
@@ -676,6 +676,15 @@ function PolicyTable({ title, sub, v, highlight }: { title: string; sub: string;
             <tr style={{ borderTop: '1px solid var(--border)', fontWeight: 600 }}><td style={{ padding: 4 }}>Total</td><td style={{ padding: 4 }}>{v?.total_rows}</td><td colSpan={3} /></tr>
           </tbody>
         </table>
+      )}
+      {!v?.error && v?.equipment && v.equipment.length > 0 && (
+        <div style={{ marginTop: 10, fontSize: 14, color: 'var(--text-secondary)', display: 'grid', gap: 3 }}>
+          {v.equipment.map(e => (
+            <div key={e.object}>{e.object}: <b style={{ color: 'var(--text-primary)' }}>{e.rows_}</b> rows · H2S ppm visible {e.h2s_visible}
+              {e.capex_visible != null && <> · upgrade capex {e.capex_visible ? e.capex_visible : <span style={{ color: 'var(--amber)' }}>masked</span>}</>}
+              {' '}· {e.object === 'H2S profile' ? 'notes' : 'risk score'} {e.interp_visible ? e.interp_visible : <span style={{ color: 'var(--amber)' }}>masked</span>}</div>))}
+          <div style={{ color: 'var(--text-muted)' }}>H2S concentration stays visible to partners on purpose: safety data is never masked.</div>
+        </div>
       )}
     </div>
   )

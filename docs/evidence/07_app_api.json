@@ -1,14 +1,14 @@
 {
   "app": "https://subsurface-command-7474647106303257.aws.databricksapps.com",
-  "captured": "2026-10-22T14:47:27.290110+00:00",
+  "captured": "2026-10-22T16:02:29.039998+00:00",
   "responses": {
     "/api/sonic/metrics": {
       "status": 200,
-      "seconds": 0.44,
+      "seconds": 0.3,
       "body": {
         "endpoint": "subsurface-synthetic-sonic",
         "model": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
-        "model_version": "2",
+        "model_version": "3",
         "champion": "linear_all_curves",
         "champion_rule": "lowest leave-one-well-out MAE; within 2% the simpler model wins",
         "evaluation": "leave-one-well-out",
@@ -136,12 +136,13 @@
           "faust_calibrated": "Faust (refit on training wells)",
           "linear_all_curves": "Linear, all curves",
           "model": "Gradient-boosted trees, all curves"
-        }
+        },
+        "retrained_by": "subsurface-sonic-drift-check (run 753993907816317); metrics identical to v2 on the same data"
       }
     },
     "/api/voxels/stepouts": {
       "status": 200,
-      "seconds": 0.4,
+      "seconds": 0.27,
       "body": {
         "stepouts": [
           {
@@ -230,7 +231,7 @@
     },
     "/api/voxels/stepout_value/SANJUAN-01": {
       "status": 200,
-      "seconds": 1.11,
+      "seconds": 1.22,
       "body": {
         "field": "Blanco",
         "basin": "San Juan",
@@ -293,7 +294,7 @@
     },
     "/api/economics/summary": {
       "status": 200,
-      "seconds": 1.21,
+      "seconds": 1.16,
       "body": {
         "wti_spot": 79.18,
         "wti_date": "2026-10-22",

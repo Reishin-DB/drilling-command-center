@@ -20,6 +20,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><b>Warm the voxel model.</b> Open <i>Model the Subsurface</i> with SANJUAN-01 as the active well. The banner should read <b>2,616 ft</b>, <b>253 ft</b>, <b>15% above</b>, <b>167.5 ft risked</b>, and end with the price.</li>
 <li><b>Check the step-out price.</b> On <i>Value the Well</i> the card's chip must read <code>Live · certified UC function</code>. The dollar figures move with WTI each day: read them off the card, not from this page, if WTI has moved from <b>$79.18</b>.</li>
 <li><b>Open the app in a fresh browser window</b> so your session token carries the <code>sql</code> and Genie scopes. Check <i>Governance &amp; Audit</i>: the "As you" table must show 84 rows, not a scope message.</li>
+<li><b>Reset the engineer demo.</b> In <i>The rules behind this briefing</i>, the H2S safety audit interval must read <b>365</b>; delete any rehearsal tickets (<code>DELETE FROM ...engineer_tickets</code>, <code>...engineer_action_log</code>) so the morning starts clean.</li>
 <li><b>Reset governance.</b> The policy button must read "Make me a San Juan JV partner"; if it reads "Restore operator view", click it.</li>
 <li><b>Have the deck open</b> on slide 1 in one window and the app in another, and the two Genie questions ready to paste (section 3, step 7).</li>
 <li><b>Reset the camera</b> on the voxel tab by switching tabs away and back if you rehearsed with it rotated.</li>
@@ -90,7 +91,8 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Say (SVP Digital Operations):</b> "Here's what that location is worth. Unrisked, <b>$103 million</b> of NPV10. Risked for its distance from control, <b>$40 million</b>, a <b>34%</b> IRR, paying back in <b>two years</b>, and it still breaks even at <b>$53</b> oil. On <b>$58 million</b> of capex."</p>
 <p><b>Say (VP of Engineering):</b> "How it's priced: we take the offset well's type curve and scale it by the ratio of pore thickness at the new location to the offset, the same way screening teams scale type curves. Capex, opex and decline are the offset's. Then both wells are priced from scratch by the <b>certified Unity Catalog function</b>, <code>calculate_npv10</code>, the same definition Genie, the Supervisor and the portfolio table below use: San Juan 01 shows <b>$92.8M</b> in both places." Click <b>Show SQL</b>.</p>
 <p><b>Point at:</b> the Live and Illustrative tags under the card: "HCPT, price and the function are live; same well design and cost as the offset is the assumption, and it says so."</p>
-<p><b>Land:</b> "From logs to a priced well in one sitting, with one governed definition of NPV."</p>
+<p><b>Click:</b> <b>Write the decision brief</b> under the card. <b>Say (to the SVP):</b> "And this is what lands on your desk: a plain-English brief, why this well and why now, written only from the governed facts on this screen. Every figure carries a citation, and a validator checks each one against the facts before you see it; this one traced all of them. Every brief is logged in Unity Catalog with the model that wrote it."</p>
+<p><b>Land:</b> "From logs to a priced well, and a brief the decision owner can act on, in one sitting."</p>
 <h3>6. Decide with AI (1.5 min)</h3>
 <p><b>Click:</b> <i>Decide with AI</i>. Ask about SANJUAN-01 or GREENRIVER-03; let the plan render.</p>
 <p><b>Say:</b> "The Supervisor first plans which specialists the question needs and greys out the rest with a reason, then runs those in parallel and synthesises one verdict with citations. Up here, I can swap between frontier and open-weight models through AI Gateway with no code change, and every run shows its cost and the guardrails that ran."</p>
@@ -109,7 +111,18 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <p><b>Say:</b> "I've just mapped myself as a joint-venture partner. Same query, my identity: 30 rows, San Juan only, and saturation and hydrocarbon pore feet are masked while net pay stays visible. That's a row filter and a column mask on the table in Unity Catalog, not code in this app. Because Genie and the Supervisor run as me, they obey it too."</p>
 <p><b>Click:</b> <b>Show policy SQL</b> if the VP of Engineering leans in, then <b>Restore operator view</b>.</p>
 <p><b>Land:</b> "Governance is the platform, not an app feature you have to trust."</p>
-<h3>9. How It Works (30 s, or skip if short on time)</h3>
+<h3>9. The engineer's morning (2 min) · H2S well, then Genie</h3>
+<p><b>Click:</b> the persona switch in the header, <b>Engineer</b>. Let the notifications slide in; point at the bell.</p>
+<p><b>Say (to the VP of Engineering):</b> "Same platform, different person. This is a production engineer arriving in the morning. The operations agent has already checked the governed rules against this morning's data and found seven open action items on East Texas 05, the 12,000 ppm extreme-sour well."</p>
+<p><b>Click:</b> a notification, or <i>Morning Action Items</i>. Point at the agent note and its <b>Grounded</b> chip, then the top card.</p>
+<p><b>Say:</b> "Every item comes from business context the business owns: a glossary term with its threshold and owner, and a rule that is a governed query over Unity Catalog. The H2S safety audit is 386 days old against a 365-day interval. Three sour-critical parts will stock out before a reorder lands; the wellhead spool has 20 days of cover against a 60-day lead time. Each item links to where it gets closed: the sour-service dashboard, the Equipment tab with this well selected, the source table, or a ticket."</p>
+<p><b>Click:</b> <b>Show the glossary and rules</b> in <i>The rules behind this briefing</i>. Point at the <b>H2S safety audit interval</b> row: definition, owner HSE, threshold <b>365</b> days.</p>
+<p><b>Say:</b> "Here's the part I want you to see. Nobody coded 365 days into this app. It's a governed glossary term that HSE owns, in Unity Catalog, and the rule reads it. Watch." Change it to <b>400</b>, click <b>Apply</b>.</p>
+<p><b>Say:</b> "The audit item is gone, because 386 days is now inside the interval, and the agent rewrote its note. The business changed the policy; the briefing followed, with no code and no deploy. The same definition is what Genie and the dashboard read." Set it back to <b>365</b> and Apply; the item returns. Click <b>Show SQL</b> on R-H2S-AUDIT if the VP of Engineering leans in.</p>
+<p><b>Click:</b> <b>Create reorder ticket</b> on the wellhead spool (a <code>SUB-</code> ticket appears, written to UC), then <b>Ask Genie why</b> on the audit item.</p>
+<p><b>Say:</b> "And if the engineer wants to know why, Genie answers from the same rule, the same glossary definition and the same data, with the SQL to prove it."</p>
+<p><b>Land:</b> "The agent, the dashboard, the ticket and Genie all read one governed definition of what matters this morning."</p>
+<h3>10. How It Works (30 s, or skip if short on time)</h3>
 <p><b>Click:</b> <i>How It Works</i>.</p>
 <p><b>Say:</b> "Volume, Lakeflow bronze, silver, gold, MLflow against the baselines, the model registry, Model Serving behind AI Gateway, then the app, Genie and the Supervisor. One Asset Bundle job rebuilds it."</p>
 <h3>Recap before you leave the app (30 s)</h3>
@@ -158,6 +171,10 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li><i>Where is the model?</i> <code>oil_pump_monitor_catalog.subsurface_command.synthetic_sonic</code>, alias <code>@champion</code>, served on <code>subsurface-synthetic-sonic</code>.</li>
 <li><i>How is the step-out priced?</i> Offset type curve scaled by HCPT ratio (1.06x unrisked, 0.70x risked), offset capex $58M, opex and 18%/yr decline, priced by <code>calculate_npv10</code> and <code>calculate_break_even</code> at today's WTI over 10 years at 10%. IRR and payback come from the same cash flows in the app.</li>
 <li><i>How is the step-out ranked?</i> Undrilled columns between 2,500 ft and one correlation range from control are ranked on kriged hydrocarbon pore thickness, times one minus half the column's kriging uncertainty.</li>
+<li><i>What happens when the model drifts?</i> A drift job scores the served model on every well with measured sonic against two bars: 1.5x its validated error, and calibrated Gardner. Today 0 of 13 wells drift. A simulated new well with a neutron-tool calibration shift went to 5.4 us/ft against a 4.5 bar, and the job retrained the model automatically.</li>
+<li><i>Is the AI brief making numbers up?</i> No: it may only use numbered governed facts, a validator rejects any figure that is not in them, and each brief is logged to <code>gold_action_plans</code> with its facts, prompt, model and result.</li>
+<li><i>Does the partner policy cover equipment and H2S?</i> Yes: the same row filter and typed masks hide upgrade capex, risk scores and notes, but H2S concentration stays visible because safety data is never masked.</li>
+<li><i>Where do the engineer's action items come from?</i> <code>engineer_rules</code>: each rule is a read-only governed SELECT tied to a <code>business_glossary</code> term with its threshold and owner; the app runs them, refuses anything that is not a single SELECT, and writes tickets and close-outs back to <code>engineer_tickets</code> and <code>engineer_action_log</code>. Change a threshold in the glossary and tomorrow's briefing changes, no code.</li>
 <li><i>How do I rebuild it?</i> <code>databricks bundle deploy -t fevm</code> then run the <code>subsurface-command-build</code> job.</li>
 </ul>
 <h2>8. Reading the room</h2>
@@ -165,7 +182,7 @@ h2, h3 { page-break-after: avoid } blockquote, li { page-break-inside: avoid }
 <li>If the <b>SVP Digital Operations</b> drifts during step 3, skip the optional measured-well check and go straight to the voxel banner.</li>
 <li>If the <b>VP of Engineering</b> leans in on step 4, toggle uncertainty and pay-only, and offer the method panel on the right.</li>
 <li>After step 4, check in with both: "Is that the kind of candidate your team would want to start from?"</li>
-<li>If time is short, cut step 9 and shorten step 6 to the model picker and cost meter.</li>
+<li>If time is short, cut step 10 and shorten step 6 to the model picker and cost meter. Keep step 9 if the VP of Engineering is the stronger voice in the room.</li>
 </ul>
 <h2>9. The 10-minute version</h2>
 <p>If the slot shrinks: slide 1 (20 s), slide 3 (1 min), then demo steps 3, 4, 5 and 8 only (6 min): fill the sonic, the voxel model, the step-out price, and the JV partner toggle. Recap in one sentence, slide 5, the ask. Everything else goes into the questions.</p></body></html>

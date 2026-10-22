@@ -623,6 +623,18 @@ const BUILD_LANES: { lane: string; color: string; steps: { name: string; sub: st
     { name: 'synthetic_sonic@champion', sub: 'Unity Catalog model registry' },
     { name: 'subsurface-synthetic-sonic', sub: 'Model Serving + AI Gateway' },
   ] },
+  { lane: 'MONITOR', color: '#f5a524', steps: [
+    { name: 'subsurface-sonic-drift-check', sub: 'served model vs validated error and Gardner' },
+    { name: 'Automatic retrain', sub: 'train_serve_score when a well drifts' },
+    { name: 'Decision brief', sub: 'governed facts only, figures validated' },
+    { name: 'gold_action_plans', sub: 'every brief logged in UC' },
+  ] },
+  { lane: 'ACT', color: '#ff8a75', steps: [
+    { name: 'business_glossary · engineer_rules', sub: 'governed terms, thresholds, rule queries' },
+    { name: 'Operations agent', sub: 'runs the rules, writes the grounded note' },
+    { name: 'Sour-service dashboard · Genie', sub: 'where the engineer looks and asks why' },
+    { name: 'engineer_tickets · action_log', sub: 'tickets and close-outs back in UC' },
+  ] },
   { lane: 'SERVE', color: '#4fb3e8', steps: [
     { name: 'Databricks App', sub: 'voxel model, map, sonic, economics' },
     { name: 'Genie', sub: 'gold tables, metric views, certified functions' },

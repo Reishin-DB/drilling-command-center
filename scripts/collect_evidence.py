@@ -10,6 +10,7 @@ app API responses, and the test suite. docs/evidence/EVIDENCE.md summarises it.
     python scripts/collect_evidence.py --profile fe-vm-oil-pump-monitor
 """
 import argparse
+import re
 import datetime as dt
 import json
 import subprocess
@@ -55,8 +56,14 @@ def sql(w, statement):
 
 def job_run(w):
     runs = list(w.jobs.list_runs(job_id=JOB_ID, limit=10))
-    ok = next(r for r in runs if r.state and r.state.result_state and r.state.result_state.value == "SUCCESS")
-    run = w.jobs.get_run(ok.run_id)
+    # The last full end-to-end build (drift-triggered retrains run only train_serve_score; see 10_drift_check.json).
+    run = None
+    for r in runs:
+        if r.state and r.state.result_state and r.state.result_state.value == "SUCCESS":
+            full = w.jobs.get_run(r.run_id)
+            if any(t.task_key == "land_raw" and t.state and t.state.result_state and t.state.result_state.value == "SUCCESS" for t in full.tasks or []):
+                run = full
+                break
     tasks = []
     for t in sorted(run.tasks or [], key=lambda t: t.start_time or 0):
         out = {}
@@ -171,20 +178,90 @@ def genie(w, questions):
 def governance(w):
     me = w.current_user.me().user_name
     q = f"SELECT basin, count(*) AS zone_rows, count(avg_pay_sw) AS sw_visible, count(hc_pore_ft) AS hc_pore_visible FROM {FQS}.gold_zone_summary GROUP BY basin ORDER BY basin"
+    qe = (f"SELECT 'well_equipment_integrity (view)' AS object, count(*) AS rows_, concat_ws(',', sort_array(collect_set(basin))) AS basins, "
+          f"count(h2s_ppm) AS h2s_ppm_visible, count(upgrade_capex_musd) AS capex_visible, count(risk_score) AS risk_score_visible FROM {FQS}.well_equipment_integrity "
+          f"UNION ALL SELECT 'well_h2s_profile (table)', count(*), concat_ws(',', sort_array(collect_set(basin))), count(h2s_ppm_last_measured), NULL, count(notes) FROM {FQS}.well_h2s_profile")
     before = sql(w, q)
+    equip_before = sql(w, qe)
     sql(w, f"DELETE FROM {FQS}.access_personas WHERE principal = '{me}'")
     sql(w, f"INSERT INTO {FQS}.access_personas VALUES ('{me}', 'jv_partner', 'San Juan', 'evidence capture')")
     try:
         partner = sql(w, q)
+        equip_partner = sql(w, qe)
         partner_sample = sql(w, f"SELECT well_id, formation_name, net_pay_ft, avg_pay_sw, hc_pore_ft FROM {FQS}.gold_zone_summary ORDER BY well_id, zone_index LIMIT 6")
     finally:
         sql(w, f"DELETE FROM {FQS}.access_personas WHERE principal = '{me}'")
     after = sql(w, q)
     rec = {"principal": me, "query": q, "operator_view": before, "as_jv_partner_san_juan": partner,
+           "equipment_h2s_query": qe, "equipment_h2s_operator": equip_before, "equipment_h2s_partner": equip_partner,
            "partner_sample_rows": partner_sample, "restored_view": after,
            "policies": sql(w, f"SELECT routine_name, comment FROM {CAT}.information_schema.routines WHERE routine_schema = '{SCH}' "
-                              "AND routine_name IN ('is_jv_partner','basin_filter','mask_interpretation')")}
+                              "AND routine_name IN ('is_jv_partner','basin_filter','mask_interpretation','mask_commercial_dec32','mask_interpretation_int','mask_interpretation_str')")}
     save("06_uc_governance.json", rec)
+    return rec
+
+
+def drift(w):
+    rows = sql(w, f"""SELECT check_id, checked_at, well_id, simulated, n_samples, model_mae, gardner_mae, degrade_bar, drift, action, model_version
+                     FROM {FQS}.gold_sonic_drift_checks ORDER BY checked_at, well_id""")
+    checks = {}
+    for r in rows:
+        checks.setdefault(r["check_id"], []).append(r)
+    rec = {"job": "subsurface-sonic-drift-check", "checks": [{"check_id": k, "checked_at": v[0]["checked_at"], "wells": len(v),
+           "drifted": [x["well_id"] for x in v if x["drift"] in (True, "true")], "action": v[0]["action"], "rows": v} for k, v in checks.items()]}
+    trig = re.search(r"run (\d+)", next((c["action"] for c in rec["checks"] if "triggered" in (c["action"] or "")), ""))
+    if trig:
+        run = w.jobs.get_run(int(trig.group(1)))
+        rec["triggered_retrain"] = {"run_id": run.run_id, "result": run.state.result_state.value if run.state.result_state else run.state.life_cycle_state.value,
+                                    "start": ts(run.start_time), "end": ts(run.end_time),
+                                    "tasks": [{"task_key": t.task_key, "result": t.state.result_state.value if t.state and t.state.result_state else None} for t in run.tasks or []]}
+        mv = w.model_versions.get_by_alias(MODEL, "champion")
+        rec["champion_after"] = {"version": mv.version, "run_id": mv.run_id, "created": ts(mv.created_at)}
+    save("10_drift_check.json", rec)
+    return rec
+
+
+def brief(w):
+    token = w.config.authenticate()["Authorization"]
+    r = requests.post(APP_URL + "/api/voxels/decision_brief/SANJUAN-01", headers={"Authorization": token}, timeout=240)
+    b = r.json()
+    b["log_rows"] = sql(w, f"SELECT count(*) AS briefs, sum(CASE WHEN grounded THEN 1 ELSE 0 END) AS grounded FROM {FQS}.gold_action_plans")
+    save("11_decision_brief.json", b)
+    return b
+
+
+def engineer(w):
+    """The engineer morning briefing, a ticket and close-out round trip (cleaned up), and Genie explaining a flag."""
+    token = w.config.authenticate()["Authorization"]
+    b = requests.get(APP_URL + "/api/engineer/briefing", headers={"Authorization": token}, timeout=240).json()
+    focus = [i for i in b["items"] if i["well_id"] == b["focus_well"]]
+    item = next(i for i in focus if i["rule_id"] == "R-INV-COVER")
+    t = requests.post(APP_URL + "/api/engineer/tickets", headers={"Authorization": token}, timeout=60,
+                      json={"item_key": item["item_key"], "rule_id": item["rule_id"], "well_id": item["well_id"],
+                            "title": f"Reorder ticket: {item['well_id']} {item['subject']}", "detail": item["evidence"]}).json()
+    in_uc = sql(w, f"SELECT ticket_id, created_by, rule_id, well_id, title, status FROM {FQS}.engineer_tickets WHERE ticket_id = '{t['ticket_id']}'")
+    sql(w, f"DELETE FROM {FQS}.engineer_tickets WHERE ticket_id = '{t['ticket_id']}'")
+    # Governed threshold drives the briefing: raise the audit interval, count, restore.
+    def audit_items():
+        bb = requests.get(APP_URL + "/api/engineer/briefing", headers={"Authorization": token}, timeout=240).json()
+        return bb["open_focus"], sum(1 for i in bb["items"] if i["rule_id"] == "R-H2S-AUDIT")
+    before = audit_items()
+    requests.post(APP_URL + "/api/engineer/glossary", headers={"Authorization": token}, timeout=60, json={"term": "H2S safety audit interval", "threshold_value": 400})
+    raised = audit_items()
+    requests.post(APP_URL + "/api/engineer/glossary", headers={"Authorization": token}, timeout=60, json={"term": "H2S safety audit interval", "threshold_value": 365})
+    restored = audit_items()
+    q = f"Why is {b['focus_well']} flagged by rule R-H2S-AUDIT (H2S safety audit)? Show the rule, its glossary definition and the data behind it."
+    m = w.genie.start_conversation_and_wait(GENIE_SPACE, q)
+    g = {"question": q, "text": next((a.text.content for a in m.attachments or [] if a.text and a.text.content), None),
+         "sql": next((a.query.query for a in m.attachments or [] if a.query), None)}
+    rec = {"focus_well": b["focus_well"], "open_focus": b["open_focus"], "open_total": b["open_total"], "other_wells": b["other_wells"],
+           "rules": b["rules"], "glossary_terms": b["glossary_terms"], "agent": b["agent"],
+           "items": [{k: i[k] for k in ("rule_id", "severity", "well_id", "subject", "evidence", "status", "source_tables")} | {"links": [l["kind"] for l in i["links"]]} for i in b["items"]],
+           "ticket_round_trip": {"created": t, "found_in_uc": in_uc, "deleted_after_check": True},
+           "genie_explains_flag": g,
+           "threshold_change": {"term": "H2S safety audit interval", "at_365": {"open_focus": before[0], "audit_items": before[1]},
+                                "at_400": {"open_focus": raised[0], "audit_items": raised[1]}, "restored_365": {"open_focus": restored[0], "audit_items": restored[1]}}, "glossary": sql(w, f"SELECT term, threshold, owner FROM {FQS}.business_glossary ORDER BY term")}
+    save("12_engineer_briefing.json", rec)
     return rec
 
 
@@ -211,7 +288,7 @@ def tests():
     return p.stdout.strip().splitlines()[-1] if p.stdout else p.stderr[-200:]
 
 
-def summary(job, pipe, ml, srv, gen, gov, app_out, test_line):
+def summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr=None, br=None, en=None):
     m = ml["metrics"]
     sv = app_out["/api/voxels/stepout_value/SANJUAN-01"]["body"]
     lines = [
@@ -282,6 +359,13 @@ def summary(job, pipe, ml, srv, gen, gov, app_out, test_line):
         *[f"| {name} | {sum(int(r['zone_rows']) for r in v)} | {', '.join(r['basin'] for r in v)} | {sum(int(r['sw_visible']) for r in v)} | {sum(int(r['hc_pore_visible']) for r in v)} |"
           for name, v in [("Operator", gov["operator_view"]), ("JV partner, San Juan", gov["as_jv_partner_san_juan"]), ("Restored", gov["restored_view"])]],
         "",
+        "The same policy on the equipment and H2S data (row filter on `well_h2s_profile`, masks on `equipment_component_spec`, inherited by every view built on them). H2S concentration stays visible to partners on purpose: safety data is not masked.",
+        "",
+        "| Object | View | Rows | Basins | H2S ppm visible | Upgrade capex visible | Risk score / notes visible |",
+        "|---|---|---|---|---|---|---|",
+        *[f"| {r['object']} | {label} | {r['rows_']} | {r['basins']} | {r['h2s_ppm_visible']} | {r['capex_visible'] if r['capex_visible'] is not None else 'n/a'} | {r['risk_score_visible']} |"
+          for label, rows in [("Operator", gov.get("equipment_h2s_operator", [])), ("JV partner", gov.get("equipment_h2s_partner", []))] for r in rows],
+        "",
         "## 7. Live app (`07_app_api.json`)",
         "",
         f"- `/api/sonic/GREENRIVER-03`: source **{app_out['/api/sonic/GREENRIVER-03']['source']}** via `{app_out['/api/sonic/GREENRIVER-03']['endpoint']}`, {app_out['/api/sonic/GREENRIVER-03']['rows_returned']} rows, no measured sonic on this well.",
@@ -303,6 +387,40 @@ def summary(job, pipe, ml, srv, gen, gov, app_out, test_line):
                   f"{res['serving']['n']} live predictions, mean abs error {res['serving']['mean_abs_error']} us/ft on measured sonic; Genie:", "",
                   *[f"- **{t['q']}** {t['a']}" for t in res["genie"]], "",
                   "The HTML export holds every cell with its output, including the governed query and the policy functions.", ""]
+    if dr:
+        lines += ["## 10. Drift check and automatic retrain (`10_drift_check.json`)", "",
+                  "Job `subsurface-sonic-drift-check` scores the served model on every well with measured sonic against two bars: 1.5x its validated leave-one-well-out MAE, and calibrated Gardner on that well.", "",
+                  "| Check | Wells | In drift | Action |", "|---|---|---|---|",
+                  *[f"| {c['checked_at']} | {c['wells']} | {', '.join(c['drifted']) or 'none'} | {c['action']} |" for c in dr["checks"]], ""]
+        sim = [x for c in dr["checks"] for x in c["rows"] if x["simulated"] in (True, "true")]
+        if sim:
+            x = sim[-1]
+            lines += [f"Simulated new well `{x['well_id']}` (an existing well with a +0.12 v/v neutron-tool calibration shift): model error {x['model_mae']} us/ft against a bar of {x['degrade_bar']} (Gardner {x['gardner_mae']}), so it drifted and the retrain fired.", ""]
+        if dr.get("triggered_retrain"):
+            t = dr["triggered_retrain"]
+            lines += [f"Triggered retrain: `subsurface-command-build` run {t['run_id']}, task {', '.join(x['task_key'] + ' ' + str(x['result']) for x in t['tasks'])}, {t['start']} to {t['end']}. Champion after: v{dr['champion_after']['version']} (run {dr['champion_after']['run_id']}).", ""]
+    if br and br.get("plan"):
+        v = br["validation"]
+        lines += ["## 11. Decision brief (`11_decision_brief.json`)", "",
+                  f"`POST /api/voxels/decision_brief/SANJUAN-01`, served by `{br['served_by']}` through the AI Gateway routing chain, {br['usage'].get('prompt_tokens')} prompt and {br['usage'].get('completion_tokens')} completion tokens. "
+                  f"Validator: {v['figures_checked']} figures checked, {len(v['unsupported'])} not in the governed facts, facts cited {', '.join(v['facts_cited'])}. Logged to `{br['logged_to']}` ({br['log_rows'][0]['briefs']} briefs logged, {br['log_rows'][0]['grounded']} fully grounded).", "",
+                  *["> " + l if l.strip() else ">" for l in br["plan"].splitlines()], ""]
+    if en:
+        av = en["agent"].get("validation") or {}
+        lines += ["## 12. Engineer morning briefing (`12_engineer_briefing.json`)", "",
+                  f"The operations agent ran {en['rules']} governed rules ({en['glossary_terms']} glossary terms in `business_glossary`) over UC data: "
+                  f"**{en['open_focus']} open action items on {en['focus_well']}** (the 12,000 ppm extreme-sour well) and {en['open_total'] - en['open_focus']} on {', '.join(en['other_wells'])}.", "",
+                  "| Rule | Severity | Well | Evidence | Links |", "|---|---|---|---|---|",
+                  *[f"| {i['rule_id']} | {i['severity']} | {i['well_id']} | {i['evidence']} | {', '.join(i['links'])} |" for i in en["items"]], "",
+                  f"Agent note by `{en['agent'].get('served_by')}`, validator: {av.get('figures_checked')} figures checked, {len(av.get('unsupported') or [])} not in the items:", "",
+                  f"> {en['agent'].get('note')}", "",
+                  f"Governed threshold drives the briefing: with the glossary's H2S safety audit interval at 365 days there are {en['threshold_change']['at_365']['audit_items']} audit items "
+                  f"({en['threshold_change']['at_365']['open_focus']} open on {en['focus_well']}); raised to 400 days through the app, {en['threshold_change']['at_400']['audit_items']} "
+                  f"({en['threshold_change']['at_400']['open_focus']} open); restored to 365, {en['threshold_change']['restored_365']['audit_items']}. No code changed.", "",
+                  f"Ticket round trip: `{en['ticket_round_trip']['created'].get('ticket_id')}` created through the app, found in `engineer_tickets` as {en['ticket_round_trip']['found_in_uc']}, then deleted.", "",
+                  f"Genie explains the flag: **{en['genie_explains_flag']['question']}**", "",
+                  f"```sql\n{en['genie_explains_flag']['sql']}\n```", "",
+                  "> " + (en["genie_explains_flag"]["text"] or "").replace("\n", " ")[:1200], ""]
     (OUT / "EVIDENCE.md").write_text("\n".join(lines))
     print("wrote EVIDENCE.md")
 
@@ -321,8 +439,11 @@ def main():
                     "What is the net pay in the Westwater formation for GREENRIVER-03?"])
     gov = governance(w)
     app_out = app(w)
+    dr = drift(w)
+    br = brief(w)
+    en = engineer(w)
     test_line = tests()
-    summary(job, pipe, ml, srv, gen, gov, app_out, test_line)
+    summary(job, pipe, ml, srv, gen, gov, app_out, test_line, dr, br, en)
 
 
 if __name__ == "__main__":

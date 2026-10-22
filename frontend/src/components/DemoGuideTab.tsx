@@ -96,7 +96,13 @@ const STEPS: Step[] = [
     features: ['Row filters', 'Column masks', 'OBO auth'],
   },
   {
-    num: 10, title: 'Show how it is built', tab: 'How It Works', tabId: 'dataflow', duration: '45s',
+    num: 10, title: "The engineer's morning on the H2S well", tab: 'Morning Action Items', tabId: 'engineer', duration: '2 min',
+    talkTrack: 'Switch the header persona to Engineer. Agent notifications arrive: the operations agent has run the governed business rules in the glossary over this morning\'s Unity Catalog data and raised seven action items on EASTTEXAS-05, the 12,000 ppm extreme-sour well. Each item shows its evidence, the glossary definition and threshold behind it, and links to close it out: the sour-service dashboard, the Equipment tab with the well selected, the source table, or a ticket written back to UC. Ask Genie why, and Genie explains the flag from the same rule and data.',
+    pointAt: ['Notification stack + bell count', 'Grounded agent note with citations', 'Glossary definition, threshold and owner on every item', 'Create ticket (SUB-) and Ask Genie why'],
+    features: ['Business glossary in UC', 'Governed rules', 'AI/BI dashboard', 'Genie'],
+  },
+  {
+    num: 11, title: 'Show how it is built', tab: 'How It Works', tabId: 'dataflow', duration: '45s',
     talkTrack: 'The whole stack on one view: volume, Lakeflow bronze/silver/gold, MLflow and Model Serving, Genie and the Supervisor on top, Unity Catalog governing all of it. One bundle job rebuilds the data and the model.',
     pointAt: ['Source → medallion → serving', 'Ontology: PK/FK graph, metric views, certified functions', 'Bundle job'],
     features: ['Lakeflow', 'Asset Bundles', 'Unity Catalog'],

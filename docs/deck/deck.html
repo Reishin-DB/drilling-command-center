@@ -102,7 +102,19 @@ tr.win td { color: #0F9B6E; font-weight: 700 }
       <div class="box" style="flex:1">Databricks App <small>voxel model · map · sonic · economics</small></div>
       <div class="box" style="flex:1">Genie <small>19 tables, certified functions</small></div>
       <div class="box" style="flex:1">Subsurface Supervisor <small>specialists · model choice · cost</small></div>
-      <div class="box" style="flex:1">Row filters + column masks <small>enforced for app, Genie, SQL</small></div>
+      <div class="box" style="flex:1">Row filters + column masks <small>zone, equipment, H2S · app, Genie, SQL</small></div>
+    </div>
+    <div class="row" style="margin-top:12px"><span class="lane">MONITOR</span>
+      <div class="box" style="flex:1">Drift check job <small>served model vs its validated error and Gardner</small></div><span class="arrow">→</span>
+      <div class="box" style="flex:1">Automatic retrain <small>train_serve_score on drift</small></div>
+      <div class="box" style="flex:1">Decision brief <small>governed facts only, every figure validated</small></div>
+      <div class="box" style="flex:1">gold_action_plans <small>every brief logged in UC</small></div>
+    </div>
+    <div class="row" style="margin-top:12px"><span class="lane">ACT</span>
+      <div class="box" style="flex:1">business_glossary · engineer_rules <small>governed terms, thresholds, rule queries</small></div><span class="arrow">→</span>
+      <div class="box" style="flex:1">Operations agent <small>engineer action items, grounded note</small></div><span class="arrow">→</span>
+      <div class="box" style="flex:1">Dashboard · app · Genie <small>where each item is closed</small></div><span class="arrow">→</span>
+      <div class="box" style="flex:1">engineer_tickets <small>tickets and close-outs in UC</small></div>
     </div>
   </div>
   <p style="font-size:15px;margin-top:16px">One Asset Bundle job, <b>subsurface-command-build</b>, lands the data, runs the pipeline, trains, registers, serves and scores. Rebuilding the whole stack is one command. Cost stays visible: serverless pipeline, a scale-to-zero endpoint with usage tracking and inference tables, and per-run token cost on the Supervisor. Every NPV you see, portfolio, step-out, Genie and Supervisor, comes from the certified <b>calculate_npv10</b> at today's WTI.</p>

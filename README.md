@@ -46,6 +46,9 @@ One decision, six steps, in one Databricks App, every number traceable to a gove
 | Geomodel | Voxel property model, step-out ranking, and step-out pricing via the certified UC NPV function | `server/voxels.py`, `server/stepout_value.py` |
 | App | React + FastAPI: voxel model (three.js), spatial wells, logs, sonic, economics, equipment, live UC policy panel, supervisor | `app.py`, `server/`, `frontend/` |
 | Orchestration | Bundle job `subsurface-command-build`: land, policies, pipeline, train/serve/score | `databricks.yml` |
+| Monitoring | Job `subsurface-sonic-drift-check`: scores the served model on every well with measured sonic against 1.5x its validated MAE and calibrated Gardner; drift triggers `train_serve_score` | `ml/drift_check.py` |
+| Engineer morning briefing | Operations agent runs `engineer_rules` (governed SELECTs tied to `business_glossary` terms and thresholds) over UC data; action items on the H2S well link to the sour-service AI/BI dashboard, the app, Catalog Explorer, Genie and tickets written to `engineer_tickets` | `governance/engineer_rules.sql`, `server/routes/engineer.py`, `dashboards/`, `genie/update_space_engineer.py` |
+| Decision brief | "Why this well, why now" for the SVP Digital Operations and VP of Engineering: numbered governed facts, AI Gateway routing, a validator that rejects any figure not in the facts, every brief logged to `gold_action_plans` | `server/action_plan.py` |
 
 ## Architecture
 
@@ -100,6 +103,7 @@ Read it this way: the published Gardner coefficients over-predict slowness by ab
 - `access_personas(principal, persona, allowed_basin)`: who is a JV partner and which basins they are party to.
 - `basin_filter(basin)`: JV partners only see rows for their basins.
 - `mask_interpretation(v)`: JV partners see net pay but not the operator's interpreted saturation or hydrocarbon pore feet.
+- The same row filter is on `well_h2s_profile`, and typed masks (`mask_commercial_dec32`, `mask_interpretation_int`, `mask_interpretation_str`) hide component upgrade capex, risk scores and H2S notes on the base tables, so every equipment view and the equipment metric view inherit them. H2S concentration, alarm levels and PPE stay visible to partners on purpose: safety data is never masked.
 
 Because the rules live on the tables, they hold in the app, Genie, the SQL editor, and notebooks alike. Verified on the FEVM workspace: the operator view of `gold_zone_summary` returns 84 rows across 4 basins; the same query as a JV partner mapped to San Juan returns 30 rows, San Juan only, with `avg_pay_sw` and `hc_pore_ft` NULL and net pay visible. `gold_synthetic_sonic` filters the same way.
 

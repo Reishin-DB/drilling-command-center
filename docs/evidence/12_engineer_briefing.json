@@ -1,0 +1,356 @@
+{
+  "focus_well": "EASTTEXAS-05",
+  "open_focus": 8,
+  "open_total": 12,
+  "other_wells": [
+    "GREENRIVER-03",
+    "PERMIAN-04"
+  ],
+  "rules": 6,
+  "glossary_terms": 7,
+  "agent": {
+    "note": "The H2S safety audit is 386 days overdue and must be completed immediately given the critical 12000.0 ppm concentration requiring PPE level-B and EEBA [A1][A2]. The H2S re-sample is also overdue at 342 days past its 180 day interval [A4], and three sour-critical parts will stock out before their lead times: P-002 has only 7.2 days of cover versus 35 day lead time, P-005 has 25.0 days versus 28 days, and P-008 has 20.0 days versus 60 days [A5][A6][A7]. Additionally, 5 long-lead sour components with 18+ week lead times totaling $12.60M capex remain not on order [A3].",
+    "served_by": "databricks-claude-sonnet-4-5",
+    "validation": {
+      "figures_checked": 12,
+      "unsupported": [],
+      "facts_cited": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "A7"
+      ],
+      "grounded": true
+    },
+    "facts": [
+      {
+        "id": "A1",
+        "label": "H2S safety audit overdue (critical)",
+        "value": "Last audit 2025-10-01, 386 days ago (interval 365 days); 12000.0 ppm, safety status critical"
+      },
+      {
+        "id": "A2",
+        "label": "Critical H2S safety status (critical)",
+        "value": "12000.0 ppm, alarm at 10 ppm, PPE level-B, EEBA required true, continuous monitor true"
+      },
+      {
+        "id": "A3",
+        "label": "Long-lead sour components not on order (high)",
+        "value": "5 components at risk 90+ with 18+ week lead: Production tubulars / casing 18 wk; Wellhead & Christmas tree 22 wk; ESP pump & motor metallurgy 24 wk; Flowlines & gathering 20 wk; Valves & BOP stack 20 wk. Upgrade capex $12.60M"
+      },
+      {
+        "id": "A4",
+        "label": "H2S re-sample overdue (high)",
+        "value": "Last measured 2025-11-14, 342 days ago (interval 180 days) at 12000.0 ppm"
+      },
+      {
+        "id": "A5",
+        "label": "Sour-critical parts will stock out (high)",
+        "value": "P-002: 18 jt on hand at 2.50/day = 7.2 days of cover vs 35 day lead time (Tubular Supplier)"
+      },
+      {
+        "id": "A6",
+        "label": "Sour-critical parts will stock out (high)",
+        "value": "P-005: 5 kit on hand at 0.20/day = 25.0 days of cover vs 28 day lead time (Wellhead Supplier)"
+      },
+      {
+        "id": "A7",
+        "label": "Sour-critical parts will stock out (high)",
+        "value": "P-008: 1 ea on hand at 0.05/day = 20.0 days of cover vs 60 day lead time (Wellhead Supplier)"
+      },
+      {
+        "id": "A8",
+        "label": "Sour capex material to the AFE (medium)",
+        "value": "$14.35M upgrade capex is 11.1% of the well live NPV10 of $129.9M"
+      }
+    ]
+  },
+  "items": [
+    {
+      "rule_id": "R-H2S-AUDIT",
+      "severity": "critical",
+      "well_id": "EASTTEXAS-05",
+      "subject": "H2S safety audit",
+      "evidence": "Last audit 2025-10-01, 386 days ago (interval 365 days); 12000.0 ppm, safety status critical",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_h2s_profile"
+      ],
+      "links": [
+        "catalog",
+        "app",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-SAF-CRIT",
+      "severity": "critical",
+      "well_id": "EASTTEXAS-05",
+      "subject": "Safety status",
+      "evidence": "12000.0 ppm, alarm at 10 ppm, PPE level-B, EEBA required true, continuous monitor true",
+      "status": "open",
+      "source_tables": [
+        "well_h2s_profile"
+      ],
+      "links": [
+        "dashboard",
+        "catalog",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-EQ-LONGLEAD",
+      "severity": "high",
+      "well_id": "EASTTEXAS-05",
+      "subject": "Sour-service equipment",
+      "evidence": "5 components at risk 90+ with 18+ week lead: Production tubulars / casing 18 wk; Wellhead & Christmas tree 22 wk; ESP pump & motor metallurgy 24 wk; Flowlines & gathering 20 wk; Valves & BOP stack 20 wk. Upgrade capex $12.60M",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_equipment_integrity"
+      ],
+      "links": [
+        "app",
+        "dashboard",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-H2S-SAMPLE",
+      "severity": "high",
+      "well_id": "EASTTEXAS-05",
+      "subject": "H2S concentration",
+      "evidence": "Last measured 2025-11-14, 342 days ago (interval 180 days) at 12000.0 ppm",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_h2s_profile"
+      ],
+      "links": [
+        "dashboard",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-INV-COVER",
+      "severity": "high",
+      "well_id": "EASTTEXAS-05",
+      "subject": "13-3/8in casing joint",
+      "evidence": "P-002: 18 jt on hand at 2.50/day = 7.2 days of cover vs 35 day lead time (Tubular Supplier)",
+      "status": "open",
+      "source_tables": [
+        "drilling_inventory",
+        "v_well_sour_band"
+      ],
+      "links": [
+        "catalog",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-INV-COVER",
+      "severity": "high",
+      "well_id": "EASTTEXAS-05",
+      "subject": "BOP ram seal kit",
+      "evidence": "P-005: 5 kit on hand at 0.20/day = 25.0 days of cover vs 28 day lead time (Wellhead Supplier)",
+      "status": "open",
+      "source_tables": [
+        "drilling_inventory",
+        "v_well_sour_band"
+      ],
+      "links": [
+        "catalog",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-INV-COVER",
+      "severity": "high",
+      "well_id": "EASTTEXAS-05",
+      "subject": "Wellhead spool",
+      "evidence": "P-008: 1 ea on hand at 0.05/day = 20.0 days of cover vs 60 day lead time (Wellhead Supplier)",
+      "status": "open",
+      "source_tables": [
+        "drilling_inventory",
+        "v_well_sour_band"
+      ],
+      "links": [
+        "catalog",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-ECON-SOURCAPEX",
+      "severity": "medium",
+      "well_id": "EASTTEXAS-05",
+      "subject": "Sour-service capex",
+      "evidence": "$14.35M upgrade capex is 11.1% of the well live NPV10 of $129.9M",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_economics",
+        "well_equipment_integrity"
+      ],
+      "links": [
+        "app",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-H2S-AUDIT",
+      "severity": "critical",
+      "well_id": "PERMIAN-04",
+      "subject": "H2S safety audit",
+      "evidence": "Last audit 2025-09-30, 387 days ago (interval 365 days); 44.0 ppm, safety status overdue",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_h2s_profile"
+      ],
+      "links": [
+        "catalog",
+        "app",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-H2S-SAMPLE",
+      "severity": "high",
+      "well_id": "GREENRIVER-03",
+      "subject": "H2S concentration",
+      "evidence": "Last measured 2025-12-03, 323 days ago (interval 180 days) at 32.5 ppm",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_h2s_profile"
+      ],
+      "links": [
+        "dashboard",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-H2S-SAMPLE",
+      "severity": "high",
+      "well_id": "PERMIAN-04",
+      "subject": "H2S concentration",
+      "evidence": "Last measured 2025-10-22, 365 days ago (interval 180 days) at 44.0 ppm",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_h2s_profile"
+      ],
+      "links": [
+        "dashboard",
+        "ticket",
+        "genie"
+      ]
+    },
+    {
+      "rule_id": "R-ECON-SOURCAPEX",
+      "severity": "medium",
+      "well_id": "PERMIAN-04",
+      "subject": "Sour-service capex",
+      "evidence": "$3.37M upgrade capex is 12.3% of the well live NPV10 of $27.4M",
+      "status": "open",
+      "source_tables": [
+        "business_glossary",
+        "well_economics",
+        "well_equipment_integrity"
+      ],
+      "links": [
+        "app",
+        "ticket",
+        "genie"
+      ]
+    }
+  ],
+  "ticket_round_trip": {
+    "created": {
+      "ok": true,
+      "ticket_id": "SUB-A5923F",
+      "table": "oil_pump_monitor_catalog.subsurface_command.engineer_tickets"
+    },
+    "found_in_uc": [
+      {
+        "ticket_id": "SUB-A5923F",
+        "created_by": "reishin.toolsi@databricks.com",
+        "rule_id": "R-INV-COVER",
+        "well_id": "EASTTEXAS-05",
+        "title": "Reorder ticket: EASTTEXAS-05 13-3/8in casing joint",
+        "status": "open"
+      }
+    ],
+    "deleted_after_check": true
+  },
+  "genie_explains_flag": {
+    "question": "Why is EASTTEXAS-05 flagged by rule R-H2S-AUDIT (H2S safety audit)? Show the rule, its glossary definition and the data behind it.",
+    "text": "\u26a0\ufe0f H2S HAZARD: This formation has known or potential hydrogen sulfide (H2S) exposure risk. Verify the following before any site entry or well operations: (1) H2S gas monitors are calibrated and active, (2) Emergency Escape Breathing Apparatus (EEBA) is available and accessible to all personnel, (3) All personnel hold current H2S Alive or equivalent certification, (4) A muster point and escape plan are established. Do not rely on this data system for real-time safety decisions \u2014 contact your HSE officer.\n\nEASTTEXAS-05 is flagged by **R-H2S-AUDIT** because the rule **\"H2S safety audit overdue\"** uses the glossary term **\"H2S safety audit interval\"**, defined as **\"Every sour well needs an on-site H2S safety audit (monitors, alarms, EEBA, contingency plan, training) at least once a year\"** with a threshold of **365 days** from **Company H2S standard** owned by **HSE**. For EASTTEXAS-05, the supporting data shows **sour_classified = true**, **h2s_ppm_last_measured = 12000.0**, **last_safety_audit_date = 2025-10-01**, and **days_since_audit = 386**, which is **21 days over** the **365-day** limit. EASTTEXAS-05 also shows **h2s_risk_level = high** and **safety_status = critical**, which is consistent with the need to keep the H2S audit current.",
+    "sql": "SELECT\n  r.`rule_id`,\n  r.`title`,\n  r.`glossary_term`,\n  g.`definition`,\n  g.`threshold`,\n  g.`threshold_value`,\n  g.`owner`,\n  g.`source`,\n  h.`well_id`,\n  h.`well_name`,\n  h.`basin`,\n  h.`h2s_risk_level`,\n  h.`sour_classified`,\n  h.`h2s_ppm_last_measured`,\n  h.`h2s_measurement_date`,\n  h.`last_safety_audit_date`,\n  DATEDIFF(CURRENT_DATE(), h.`last_safety_audit_date`) AS `days_since_audit`,\n  h.`safety_status`,\n  h.`ppe_level`,\n  h.`eeba_required`,\n  h.`continuous_monitor_required`,\n  h.`notes`\nFROM `oil_pump_monitor_catalog`.`subsurface_command`.`engineer_rules` r\nJOIN `oil_pump_monitor_catalog`.`subsurface_command`.`business_glossary` g\n  ON g.`term` = r.`glossary_term`\nCROSS JOIN `oil_pump_monitor_catalog`.`subsurface_command`.`well_h2s_profile` h\nWHERE r.`rule_id` = 'R-H2S-AUDIT'\n  AND h.`well_id` = 'EASTTEXAS-05'"
+  },
+  "threshold_change": {
+    "term": "H2S safety audit interval",
+    "at_365": {
+      "open_focus": 8,
+      "audit_items": 2
+    },
+    "at_400": {
+      "open_focus": 7,
+      "audit_items": 0
+    },
+    "restored_365": {
+      "open_focus": 8,
+      "audit_items": 2
+    }
+  },
+  "glossary": [
+    {
+      "term": "Days of cover",
+      "threshold": "days of cover < lead time",
+      "owner": "Supply chain"
+    },
+    {
+      "term": "H2S re-sample interval",
+      "threshold": "180 days",
+      "owner": "Production engineering"
+    },
+    {
+      "term": "H2S safety audit interval",
+      "threshold": "365 days",
+      "owner": "HSE"
+    },
+    {
+      "term": "Long-lead sour component",
+      "threshold": "risk_score >= 90 and lead >= 18 weeks",
+      "owner": "Supply chain"
+    },
+    {
+      "term": "Severity band",
+      "threshold": "sweet / low / moderate / high / extreme",
+      "owner": "Engineering"
+    },
+    {
+      "term": "Sour capex materiality",
+      "threshold": ">= 10% of NPV10",
+      "owner": "Finance"
+    },
+    {
+      "term": "Sour service",
+      "threshold": "H2S >= 100 ppm or sour_classified",
+      "owner": "HSE"
+    }
+  ]
+}

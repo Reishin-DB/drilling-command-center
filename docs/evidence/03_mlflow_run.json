@@ -1,15 +1,15 @@
 {
   "model": "oil_pump_monitor_catalog.subsurface_command.synthetic_sonic",
-  "version": 2,
+  "version": 3,
   "alias": "champion",
-  "run_id": "11806608ec9f4301826a8a61d45cff3d",
+  "run_id": "b9412f716a8b4cf5bdbfa5ffccb21843",
   "status": "READY",
-  "created": "2026-10-21 17:22:07 UTC",
+  "created": "2026-10-22 15:05:08 UTC",
   "experiment_id": "3957314298256109",
   "run_name": "synthetic-sonic",
   "run_status": "FINISHED",
-  "run_start": "2026-10-21 17:21:42 UTC",
-  "run_end": "2026-10-21 17:22:09 UTC",
+  "run_start": "2026-10-22 15:04:17 UTC",
+  "run_end": "2026-10-22 15:05:10 UTC",
   "metrics": {
     "faust_calibrated_bias": -0.5352697019128989,
     "faust_calibrated_mae": 6.6418194180543315,
@@ -40,20 +40,20 @@
     "n_wells": "13"
   },
   "tags": {
-    "mlflow.databricks.cluster.id": "1021-172101-fdqg8dcv-v2n",
+    "mlflow.databricks.cluster.id": "1022-150337-8zx8aqde-v2n",
     "mlflow.databricks.cluster.info": "{\"cluster_name\":\"\",\"spark_version\":\"client.3.6-aarch64-scala2.12\",\"autotermination_minutes\":120}",
     "mlflow.databricks.cluster.libraries": "{\"installable\":[],\"redacted\":[]}",
     "mlflow.databricks.jobID": "532814868767936",
-    "mlflow.databricks.jobRunID": "1054680819379707",
+    "mlflow.databricks.jobRunID": "244920454748527",
     "mlflow.databricks.jobType": "python",
-    "mlflow.databricks.notebook.commandID": "1792603265294_8979875293864692698_job-532814868767936-run-1054680819379707-action-6140678942790869",
+    "mlflow.databricks.notebook.commandID": "1792681421107_6173567380802832138_job-532814868767936-run-244920454748527-action-6140678942790869",
     "mlflow.databricks.webappURL": "https://fevm-oil-pump-monitor.cloud.databricks.com",
     "mlflow.databricks.workspaceID": "7474647106303257",
     "mlflow.databricks.workspaceURL": "https://fevm-oil-pump-monitor.cloud.databricks.com",
-    "mlflow.runColor": "#da4c4c",
+    "mlflow.runColor": "#479a5f",
     "mlflow.runName": "synthetic-sonic",
     "mlflow.user": "reishin.toolsi@databricks.com",
-    "mlflow.artifacts.spn": "/WorkspaceInternal/Mlflow/Artifacts/3957314298256109/Runs/11806608ec9f4301826a8a61d45cff3d/"
+    "mlflow.artifacts.spn": "/WorkspaceInternal/Mlflow/Artifacts/3957314298256109/Runs/b9412f716a8b4cf5bdbfa5ffccb21843/"
   },
   "metrics_table_error": "StatementState.FAILED: ServiceError(error_code=<ServiceErrorCode.BAD_REQUEST: 'BAD_REQUEST'>, message='[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `mae_usft` cannot be resolved. Did you mean one of the following? [`mae`, `bias`, `method`, `rmse`, `n_wells`]. SQLSTATE: 42703; line 1 pos 92')"
 }
